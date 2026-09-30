@@ -1,0 +1,696 @@
+{
+  "name": "UnclepelexBOT",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hello, this is Uncle Pelex. Jesus loves you 🙂 How can we help you today",
+        "options": {}
+      },
+      "id": "105d1f7a-bf07-4a64-84d0-578f3ea93568",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -32,
+        0
+      ],
+      "webhookId": "c2ec155c-7985-4c79-90a3-73c7ae499854"
+    },
+    {
+      "parameters": {
+        "promptType": "=define",
+        "text": "={{ $json.chatInput || $json.message?.text || $json.text || $json.body?.chatInput || \"Hello\" }}",
+        "options": {
+          "systemMessage": "={{ $('Telegram Trigger').isExecuted ? `You are Uncle Pelex AI, personal assistant to Emmanuel — the admin of Pelex Skill Hub. On Telegram, you are speaking directly with Emmanuel himself, not a customer. Address him as \"Admin\" or \"Emmanuel\". Help him manage his business: check calendar, draft emails, review spreadsheets, check the weather, and do other admin tasks.You have direct access to tools including Google Sheets, Gmail, and Google Calendar. When the user asks about registrations, sign-ups, new leads, or recent activity, automatically check the relevant connected tool yourself (e.g. Google Sheets for form submissions, Gmail for notification emails) instead of asking the user which method they use. Only ask the user for clarification if the tool genuinely has no relevant data or you need a specific detail like a name or date to search for. You can read Gmail using the \"Get many messages in Gmail\" tool and send emails using \"Send a message in Gmail\". Use these automatically when the user asks about their inbox or wants to send an email — never say you can't access email. Do not use the customer greeting script or collect his name/email You can label emails using the label tool when asked to organize or categorize messages. — you already know him. Be direct, efficient, and conversational Keep all letters, proposals, or documents and your response on any reseach or words under 3000 characters. If longer, summarize the key points and offer to send the rest as a follow-up message..` : `You are Uncle Pelex, AI assistant for Pelex Skill Hub\nGREETING: Start every new chat with exactly: \"Hello, this is Uncle Pelex, Jesus loves you 🙂 How can we help you today?\"\n\nTONE: Read the client's emotional tone and reply naturally, not scripted.\n\nIf they respond warmly (\"that's sweet\"): reply warmly, e.g. \"You're welcome! How are you doing? How can we help?\"\nIf they skip straight to business: follow their lead immediately, no dwelling on the greeting.\nIf they react negatively to the greeting: apologize briefly and warmly, e.g. \"Sorry if that offended you, I just wanted you to know Jesus loves you. How can we help today?\" Then stay fully professional after.\n\nAfter the opening exchange, keep a warm but professional, confident tone.\n\nSERVICES (if asked): Shopify setup/management, digital marketing strategy, e-commerce & dropshipping support, graphic design & social content (Canva), website design/management, AI automation, email marketing, admin support. Open to collaborations. Frame around value: faster growth, more sales, saved time, professional branding.\n\nOutput formatting: Only output your final, polished response intended for the user. Never\\ninclude internal reasoning, thinking steps, notes about what you are about to do, or draft\\ntext. The user should only ever see the clean, final message, nothing else.\n\nRESUME: If asked, share: https://drive.google.com/file/d/1ITQhuw5NthNPzo1oRWWzJLxfVNkRa-sj/view?usp=sharing\n\nCOLLECT: name, phone, email, once they show interest in a service. If missing, ask politely.\n\nNEWSLETTER: After collecting details, ask if they'd like updates via newsletter. Record yes/no.\n\nCLOSE: \"Thank you! Emmanuel will personally reach out within 2-3 minutes to discuss pricing and next steps.\"\n\nDATA: Save name, phone, email, service, newsletter pref to Sheets. Email summary to Emmanuel's Gmail. Send Telegram alert to Emmanuel.\n   When the user sends a link or URL in their message, always use the \"fetch_webpage\" tool to retrieve and read the page content before responding. Never say you can't open a link — use the tool instead.\n\nRULES: Never quote prices or timelines, that's Emmanuel only. Stay on topic. Keep replies concise and human.\n` }}"
+        }
+      },
+      "id": "1d47a53a-27bd-4d79-b4ca-36cb9cf8b0ef",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        832,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 700,
+          "temperature": 0.7
+        }
+      },
+      "id": "141d7d00-cc88-4f9e-b722-fbb93b32e9a5",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        208,
+        336
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "H12EaTxnELX4z8is",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ String($json.sessionId || $json.message?.chat?.id || $json.message?.from?.id) }}"
+      },
+      "id": "53cb1276-6161-4579-890c-563464456667",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        336,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "adds a new subscriber to the newsletter by saving their name, email, and phone number to the spreadsheet, use this whenever someone agrees to join the newsletter and provides their contact details.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q_pSSnFXT4sUBk2Ir0KkyJlpg4NIrRuiMH2-bGghVhA",
+          "mode": "list",
+          "cachedResultName": "Uncle Pelex Newsletter Subscriber",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q_pSSnFXT4sUBk2Ir0KkyJlpg4NIrRuiMH2-bGghVhA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q_pSSnFXT4sUBk2Ir0KkyJlpg4NIrRuiMH2-bGghVhA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $fromAI('Name', 'the subscriber full name', 'string') ",
+            "PHONE NUMBER": "={{ $fromAI('Phone', 'the subscriber phone number', 'string')",
+            "EMAIL": "={{ $fromAI('Email', 'the subscriber email address', 'string')",
+            "Date Joined": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PHONE NUMBER",
+              "displayName": "PHONE NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Joined",
+              "displayName": "Date Joined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "14a5eed9-5dd8-4d44-a0eb-7b184e728589",
+      "name": "calculate spreed sheet",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        336
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "D9Mn8jSnnAUxlTZN",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Column,What it’s for\nID,Unique row ID (for updating the correct row)\nCategory,Support / Sales / Content / Coding / Reasoning / etc.\nUser_Message,The actual prompt that goes to the AI Agent\nSystem_Context,Optional extra system instructions for that row\nExpected_Behavior,What you expect the AI to do (for manual checking)\nAI_Response,Leave empty – n8n writes the answer here\nStatus,Pending → agent processes it → change to Completed\nPriority,High / Medium / Low\nProcessed_At,Timestamp (n8n can fill this)\nNotes,Free notes for you"
+    },
+    {
+      "parameters": {
+        "format": "imperial",
+        "cityName": "={{ $fromAI(\"City\", \"The city or location the user wants weather information for. Accept cities anywhere in the world, including country names when needed to identify the correct location.\", \"string\") }}"
+      },
+      "id": "f5783dc7-8686-4130-81dd-7892b0677332",
+      "name": "Check Weather",
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        592,
+        336
+      ],
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "cq3tVozPXOpQlywF",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "pelumiephraim9@gmail.com",
+          "mode": "list",
+          "cachedResultName": "pelumiephraim9@gmail.com"
+        },
+        "start": "={{ $fromAI('Start', 'the event start date and time in ISO 8601 format, e.g., 2026-09-25T15:00:00', 'string')",
+        "end": "={{ $fromAI('End', 'the event end date and time in ISO 8601 format, e.g., 2026-09-25T16:00:00', 'string') ",
+        "additionalFields": {
+          "attendees": [
+            "={{ $fromAI('AttendeeEmail', 'the email address of the person to invite to the event', 'string')"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "summary": "={{ $fromAI('Title', 'the title or summary of the calendar event', 'string') "
+        }
+      },
+      "id": "8795dc26-bee7-4aa4-8ac0-84de9b4f1d6f",
+      "name": "schedule upcoming event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        336
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "zqm34L5L778sb8Bf",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8240459586",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', `The message text to send to the human on Telegram`, 'string') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b394c3e1-b7da-41fd-9e3a-731aa69be18f",
+      "name": "send_telegram_message",
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        336
+      ],
+      "webhookId": "fdcd13c0-27b1-49ea-ab76-2587aa3ce0c4",
+      "credentials": {
+        "telegramApi": {
+          "id": "xmlWnDZkwEg4wsim",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -32,
+        192
+      ],
+      "id": "6a1d68b6-e54b-4ddb-a0df-34efeff8e5e1",
+      "name": "Telegram Trigger",
+      "webhookId": "7303f7d5-ffc6-46ac-a113-4d77eb0df146",
+      "credentials": {
+        "telegramApi": {
+          "id": "xmlWnDZkwEg4wsim",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2256,
+        96
+      ],
+      "id": "50edd423-1226-420c-becb-dc3b2802cac0",
+      "name": "Send a text message",
+      "webhookId": "926e6268-fd3f-461f-ae65-daa09440895b",
+      "credentials": {
+        "telegramApi": {
+          "id": "xmlWnDZkwEg4wsim",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b995497f-f9a1-477a-ba22-4f8d0108163f",
+              "leftValue": "={{ $('Telegram Trigger').isExecuted }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2032,
+        96
+      ],
+      "id": "16462303-84a1-44a2-bce4-4b7e93e98ae4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nfor (const item of $input.all()) {\n  const text = (item.json.output || \"Sorry, I couldn't generate a response. Please try again.\").toString();\n  const chunkSize = 4000;\n  if (text.length === 0) {\n    results.push({ json: { output: \"Sorry, I couldn't generate a response. Please try again.\" } });\n    continue;\n  }\n  for (let i = 0; i < text.length; i += chunkSize) {\n    results.push({ json: { output: text.slice(i, i + chunkSize) } });\n  }\n}\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        96
+      ],
+      "id": "0ff01b8f-0bec-4a7d-a1c8-02a5ad0a286d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Sends a welcome email to a new newsletter subscriber. Use this whenever someone has agreed to join the newsletter and their details have been saved to the spreadsheet immediately after using the add newsletter subscriber tool.\n",
+        "sendTo": "={{ $fromAI('Email', 'the subscriber email address', 'string') ",
+        "subject": "WELCOME TO PELEXSKILLHUB NEWSLETTER",
+        "message": "=\n=<div style='font-family:Arial,sans-serif;background:#f4f7fa;padding:30px;text-align:center'><div style='display:inline-block;width:56px;height:56px;background:#087cf0;border-radius:14px;color:#fff;font-size:28px;font-weight:bold;line-height:56px'>P</div><h2 style='color:#0b1f33'>Welcome to Pelex Skill Hub</h2><p style='color:#33475b;font-size:15px;text-align:left;max-width:420px;margin:0 auto'>Hi {{ $fromAI('Name', 'the subscriber full name', 'string') }},</p><p style='color:#33475b;font-size:15px;text-align:left;max-width:420px;margin:10px auto'>You've been successfully added to the Pelex Skill Hub newsletter. You'll now receive our latest updates, tips, and product news straight to your inbox.</p><p style='color:#33475b;font-size:15px;text-align:left;max-width:420px;margin:10px auto'>Emmanuel will also personally reach out to you soon regarding your enquiry.</p><p style='color:#33475b;font-size:15px;text-align:left;max-width:420px;margin:10px auto'>Thanks for joining us on this journey.</p><p style='color:#7190ad;font-size:12px;margin-top:20px'>Pelex Skill Hub — Build, Design, Grow</p></div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        336
+      ],
+      "id": "d88e700a-90ad-43cf-805e-d715b5405ef5",
+      "name": "Send a message in Gmail",
+      "webhookId": "da86d4e2-1d15-442c-90b9-397a32ff669e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pdw56vNkge0NqxAx",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "pelumiephraim9@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4d9af158-ddf8-493a-8916-7630ff98ddca",
+      "name": "send message",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        336
+      ],
+      "webhookId": "f095c8ed-8ed4-48df-bcd8-627b96d5d367",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3bHGqj9UB4DIAABs",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-",
+              "value": "6592c50d9effe452294e2af52924bb4f37dce6ca"
+            },
+            {
+              "name": "content-type-",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"q\": {{$fromAI(\"query\", \"the search query to look up\", \"string\")}}, \"num\": 3 }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1232,
+        336
+      ],
+      "id": "91995fb6-34f1-429d-b79a-b0d72176bfd2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches the text content of a webpage when the user sends a URL, so it can be read and summarized",
+        "url": "=  {{ $fromAI(\"url\", \"The webpage URL to fetch and read\") }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1360,
+        336
+      ],
+      "id": "d2865d04-fe85-4704-823c-8fcd3a8f34a4",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Searches and retrieves emails from the Gmail inbox. Use this when the user asks to check their inbox, look for specific emails, or see recent messages.",
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "q": "={{ $fromAI(\"search_query\", \"Gmail search terms, e.g. sender name, subject keyword, or is:unread\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        336
+      ],
+      "id": "cf311d35-b4a6-40ae-a5ba-68414e17927b",
+      "name": "Get many messages in Gmail",
+      "webhookId": "a97ad10a-15e2-4704-ab1d-77c64f5ad15d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3bHGqj9UB4DIAABs",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Adds a label to an email in Gmail. Use this when the user asks to label, categorize, or organize an email.",
+        "operation": "addLabels",
+        "messageId": "={{ $fromAI(\"message_id\", \"The ID of the email to label\") }}",
+        "labelIds": "={{ $fromAI(\"label_name\", \"The label name to apply, e.g. Important, Follow-up, Spam\") }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        336
+      ],
+      "id": "fc46add8-1ef0-4850-8612-0d03c004775f",
+      "name": "Add label to message in Gmail",
+      "webhookId": "3148883b-907a-404d-8018-7bbc31c5953c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3bHGqj9UB4DIAABs",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calculate spreed sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule upcoming event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_telegram_message": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send message": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b79d77d0-9926-425f-a755-70694a729574",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "04ee81372b9819082df011efc1a8c58127cb033fbf297e43402759fb7d568802"
+  },
+  "nodeGroups": [],
+  "id": "2jCHvfZFZtNlsyTw",
+  "tags": []
+}
