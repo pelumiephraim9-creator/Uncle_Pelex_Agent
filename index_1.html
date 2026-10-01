@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uncle Pelex Agent 1.0</title>
+<style>
+:root{--bg:#F4F5F7;--glow:#BFDCF7;--ink:#0B2A5B;--mute:#6C84A3;--line:#D3E0EE;--card:#fff;--accent:#0A89F4;--lemon:#3FD8E8}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;display:flex;flex-direction:column;
+padding-top:env(safe-area-inset-top,0)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:700}
+header svg{width:34px;height:34px}
+#chat{position:relative;z-index:2;flex:1;overflow:auto;width:100%;max-width:760px;margin:0 auto;padding:8px 16px}
+h1{font-size:clamp(26px,4vw,38px);margin:8px 0 4px;text-align:center;letter-spacing:-.02em}
+.hello{text-align:center;color:var(--mute);margin:0 0 18px}
+.msg{max-width:85%;padding:12px 14px;border-radius:16px;margin:10px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+.msg.me{margin-left:auto;background:var(--ink);color:#fff;border-color:transparent}
+.msg.live{border-color:#0A89F4;box-shadow:0 0 0 3px rgba(10,137,244,.22),0 0 24px rgba(10,137,244,.45);animation:breathe 1.4s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 5px rgba(10,137,244,.3),0 0 34px rgba(10,137,244,.6)}}
+#pulse{position:fixed;left:0;right:0;bottom:0;height:42vh;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1;background:radial-gradient(70% 100% at 50% 100%,rgba(10,137,244,.38),transparent 70%);animation:breatheG 1.8s ease-in-out infinite}
+body:has(#mic.recording) #pulse{opacity:1}
+body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,rgba(255,138,43,.38),transparent 70%)}
+@keyframes breatheG{50%{transform:scaleY(1.18)}}
+@media(prefers-reduced-motion:reduce){#pulse,.msg.live{animation:none}}
+.msg.sys{background:none;border:0;color:var(--mute);font-size:14px;padding:4px 0}
+.msg img{max-width:220px;border-radius:10px;display:block;margin-bottom:6px}
+.bar{position:relative;z-index:2;max-width:760px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0));display:flex;gap:8px;align-items:center}
+.field{flex:1;display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 8px 5px 6px}
+.field input[type=text]{flex:1;border:0;background:none;color:var(--ink);font:inherit;min-width:0;padding:6px 4px}
+.field input[type=text]:focus-visible{outline:none}
+.ic{width:38px;height:38px;border-radius:50%;border:0;background:none;color:var(--mute);font-size:18px;flex-shrink:0;display:grid;place-items:center;transition:background .15s,color .15s}.ic:hover{background:rgba(11,42,91,.06)}.ic svg{width:18px;height:18px}#mic.recording{background:#D6453D;color:#fff}#mic.recording svg{animation:pulseMic 1.1s ease-in-out infinite}@keyframes pulseMic{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.send{background:var(--accent);color:#fff}
+.talk{border:0;border-radius:999px;padding:10px 16px;background:var(--ink);color:#fff;font-weight:600;flex-shrink:0}
+.talk.on{background:#D6453D}
+.chip{max-width:760px;margin:0 auto;padding:0 16px;color:var(--mute);font-size:14px;display:none}
+
+#imgOverlay{position:fixed;inset:0;z-index:60;background:rgba(11,42,91,.45);display:none;align-items:center;justify-content:center;padding:16px}
+#imgOverlay.show{display:flex}
+.preview-card{background:var(--card);border-radius:16px;padding:16px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.preview-card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;max-height:260px;object-fit:cover}
+.preview-card textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;color:var(--ink);resize:vertical;min-height:64px;background:var(--bg)}
+.preview-actions{display:flex;gap:8px;margin-top:10px}
+.preview-actions button{flex:1;border:0;border-radius:999px;padding:10px 0;font-weight:600}
+.preview-cancel{background:var(--line);color:var(--ink)}
+.preview-send{background:var(--accent);color:#fff}
+
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s ease, filter .6s ease, transform .6s ease}
+#intro.hide{opacity:0;filter:blur(8px);transform:scale(1.05);pointer-events:none}
+#intro svg{width:min(70vw,260px);height:auto;overflow:visible}
+#intro .n-glow{opacity:0;transform:scale(.3);transform-origin:center;transform-box:fill-box}
+#intro.go .n-glow{animation:glowPulse 1.7s ease-out forwards}
+#intro .n-line{stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+#intro.go .n-line{animation:drawLine .5s cubic-bezier(.4,0,.2,1) forwards}
+#intro .n-dot{opacity:0;transform:scale(0);transform-origin:center;transform-box:fill-box}
+#intro.go .n-dot{animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards}
+#intro .n-badge{opacity:0;transform:scale(.4);transform-origin:center;transform-box:fill-box}
+#intro.go .n-badge{animation:badgeIn .55s cubic-bezier(.34,1.56,.64,1) forwards}
+#intro .n-shine{opacity:0}
+#intro.go .n-shine{animation:shine .9s ease-out forwards}
+body.loading main,body.loading header{visibility:hidden}
+@keyframes glowPulse{0%{opacity:.5;transform:scale(.35)}65%{opacity:.18}100%{opacity:0;transform:scale(1.5)}}
+@keyframes drawLine{to{opacity:1;stroke-dashoffset:0}}
+@keyframes popIn{0%{opacity:0;transform:scale(0)}60%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}
+@keyframes badgeIn{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:scale(1)}}
+@keyframes shine{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(760px)}}
+@media(prefers-reduced-motion:reduce){#intro .n-dot,#intro .n-line,#intro .n-badge,#intro .n-glow,#intro .n-shine{animation:none!important;opacity:1!important;transform:none!important;stroke-dashoffset:0!important}}
+</style>
+</head>
+<body class="loading">
+<div id="intro" aria-hidden="true">
+  <svg viewBox="0 0 562 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#3FD8E8" stop-opacity=".4"/>
+        <stop offset="100%" stop-color="#3FD8E8" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#fff" stop-opacity=".6"/>
+        <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="badgeClip"><rect x="141" y="249" width="280" height="280" rx="58"/></clipPath>
+    </defs>
+    <circle class="n-glow" cx="281" cy="349" r="190" fill="url(#glowGrad)"/>
+    <g stroke="#7E97B5" stroke-width="2" fill="none">
+      <line class="n-line" style="animation-delay:.05s" pathLength="1" x1="281" y1="64" x2="44" y2="163"/>
+      <line class="n-line" style="animation-delay:.05s" pathLength="1" x1="281" y1="64" x2="518" y2="163"/>
+      <line class="n-line" style="animation-delay:.18s" pathLength="1" x1="44" y1="163" x2="44" y2="537"/>
+      <line class="n-line" style="animation-delay:.18s" pathLength="1" x1="518" y1="163" x2="518" y2="537"/>
+      <line class="n-line" style="animation-delay:.3s" pathLength="1" x1="44" y1="537" x2="281" y2="634"/>
+      <line class="n-line" style="animation-delay:.3s" pathLength="1" x1="518" y1="537" x2="281" y2="634"/>
+    </g>
+    <circle class="n-dot" style="animation-delay:.4s" cx="281" cy="64" r="10" fill="#3FD8E8"/>
+    <circle class="n-dot" style="animation-delay:.48s" cx="44" cy="163" r="10" fill="#0B2A5B"/>
+    <circle class="n-dot" style="animation-delay:.48s" cx="518" cy="163" r="10" fill="#0B2A5B"/>
+    <circle class="n-dot" style="animation-delay:.58s" cx="44" cy="537" r="10" fill="#0B2A5B"/>
+    <circle class="n-dot" style="animation-delay:.58s" cx="518" cy="537" r="10" fill="#0B2A5B"/>
+    <circle class="n-dot" style="animation-delay:.68s" cx="281" cy="634" r="10" fill="#3FD8E8"/>
+    <g class="n-badge" style="animation-delay:.82s">
+      <rect x="141" y="249" width="280" height="280" rx="58" fill="#fff"/>
+      <rect x="171" y="279" width="220" height="220" rx="44" fill="#0B2A5B"/>
+      <text x="281" y="422" text-anchor="middle" font-family="-apple-system,Arial,sans-serif" font-weight="800" font-size="150" fill="#fff">P</text>
+      <g clip-path="url(#badgeClip)">
+        <rect class="n-shine" style="animation-delay:1.2s" x="-320" y="249" width="140" height="280" fill="url(#shineGrad)" transform="skewX(-20)"/>
+      </g>
+    </g>
+  </svg>
+</div>
+<header>
+<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#7E97B5" stroke-width="2" opacity=".8"><line x1="50" y1="8" x2="10" y2="28"/><line x1="50" y1="8" x2="90" y2="28"/><line x1="10" y1="28" x2="10" y2="72"/><line x1="90" y1="28" x2="90" y2="72"/><line x1="10" y1="72" x2="50" y2="92"/><line x1="90" y1="72" x2="50" y2="92"/></g><circle cx="50" cy="8" r="5" fill="#3FD8E8"/><circle cx="50" cy="92" r="5" fill="#3FD8E8"/><circle cx="10" cy="28" r="5" fill="#0B2A5B"/><circle cx="90" cy="28" r="5" fill="#0B2A5B"/><circle cx="10" cy="72" r="5" fill="#0B2A5B"/><circle cx="90" cy="72" r="5" fill="#0B2A5B"/><rect x="24" y="24" width="52" height="52" rx="13" fill="#fff"/><rect x="29" y="29" width="42" height="42" rx="9" fill="#0B2A5B"/><text x="50" y="62" text-anchor="middle" font-size="34" font-weight="800" fill="#fff" font-family="Arial,sans-serif">P</text></svg>
+Uncle Pelex
+</header>
+<section id="chat" aria-live="polite">
+<h1>Uncle Pelex Agent 1.0</h1>
+<p class="hello" id="hello"></p>
+</section>
+<div class="chip" id="chip"></div>
+<div class="bar">
+<div class="field">
+<label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" hidden></label>
+<input id="in" type="text" placeholder="Message Uncle Pelex" aria-label="Message">
+<button class="ic" id="mic" aria-label="Record a voice message"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/><path d="M5 11a1 1 0 1 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.93V21h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-3.07A7 7 0 0 1 5 11Z" fill="currentColor"/></svg></button>
+<button class="ic send" id="send" aria-label="Send">➤</button>
+</div>
+<button class="talk" id="talk">Talk live</button>
+</div>
+
+<div id="pulse" aria-hidden="true"></div>
+<div id="imgOverlay">
+  <div class="preview-card">
+    <img id="previewImg" alt="Selected image">
+    <textarea id="previewCaption" placeholder="Add a description (optional)"></textarea>
+    <div class="preview-actions">
+      <button class="preview-cancel" id="previewCancel" type="button">Cancel</button>
+      <button class="preview-send" id="previewSend" type="button">Send</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ====== SET THIS ======
+var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
+// ======================
+var $ = function(i){return document.getElementById(i)};
+var chat=$('chat'), input=$('in'), chip=$('chip');
+
+(function(){
+  var intro=$('intro');
+  requestAnimationFrame(function(){requestAnimationFrame(function(){intro.classList.add('go')})});
+  setTimeout(function(){
+    document.body.classList.remove('loading');
+    intro.classList.add('hide');
+    setTimeout(function(){intro.remove()},650);
+  },2150);
+})();
+var sid; try{sid=localStorage.getItem('pelex_sid')}catch(e){}
+if(!sid){sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem('pelex_sid',sid)}catch(e){}}
+var h=new Date().getHours();
+$('hello').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+'. Type, speak, or attach an image or document.';
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function add(t,cls,img){var d=document.createElement('div');d.className='msg '+(cls||'');
+  if(img){var i=document.createElement('img');i.src=img;i.alt='Uploaded image';d.appendChild(i)}
+  d.appendChild(document.createTextNode(t));chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
+
+async function post(path,body){
+  var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  var j=await r.json().catch(function(){return{}});
+  if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')'));
+  return j;
+}
+
+async function askAgent(text){
+  if(WEBHOOK_URL.indexOf('PASTE_')===0) throw new Error('The chat backend is not connected yet. Add your n8n webhook URL in index.html.');
+  var r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:sid,chatInput:text})});
+  var raw=await r.text(), out=raw;
+  try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.response||o.reply||o.text||o.message||raw}catch(e){}
+  if(!r.ok) throw new Error('The agent could not reply ('+r.status+').');
+  return String(out);
+}
+
+// ---- speaking: reply is split into sentences; sentence 2 is fetched while sentence 1 plays ----
+var curAudio=null,curRes=null,speakTok=0;
+function chunk(t){
+  var x=t.replace(/[*_#`>]/g,'').replace(/\s+/g,' ').trim().slice(0,2500);
+  var parts=x.match(/[^.!?\n]+[.!?]*\s*/g)||[x],out=[],cur='';
+  parts.forEach(function(p){if(cur&&(cur+p).length>260){out.push(cur);cur=p}else cur+=p});
+  if(cur.trim())out.push(cur);return out}
+function fetchAudio(c){return post('/.netlify/functions/speak',{text:c}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
+function playUrl(u){return new Promise(function(res){
+  curRes=res;curAudio=new Audio(u);
+  curAudio.onended=curAudio.onerror=function(){curAudio=null;curRes=null;res(true)};
+  curAudio.play().catch(function(){curAudio=null;curRes=null;res(false)})})}
+function fallbackSpeak(clean){return new Promise(function(res){
+  if(!window.speechSynthesis){res();return}
+  var u=new SpeechSynthesisUtterance(clean);u.onend=u.onerror=function(){res()};speechSynthesis.speak(u)})}
+function stopSpeaking(){
+  speakTok++;
+  if(curAudio){curAudio.pause();curAudio=null}
+  if(curRes){var r=curRes;curRes=null;r(true)}
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  document.body.classList.remove('speaking')}
+async function speak(t){
+  stopSpeaking();var tok=speakTok,cs=chunk(t);if(!cs.length)return;
+  document.body.classList.add('speaking');
+  var next=fetchAudio(cs[0]);
+  for(var i=0;i<cs.length;i++){
+    var u=await next;if(tok!==speakTok)return;
+    if(i+1<cs.length)next=fetchAudio(cs[i+1]);
+    var ok=u?await playUrl(u):false;if(tok!==speakTok)return;
+    if(!ok)await fallbackSpeak(cs[i]);
+    if(tok!==speakTok)return}
+  document.body.classList.remove('speaking')}
+
+// ---- typed / spoken turn ----
+var pendingDoc=null;
+async function turn(text,shown,img,el){
+  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
+  var wait=add('Thinking...','sys');
+  try{var reply=await askAgent(text);wait.remove();add(reply);return reply}
+  catch(e){wait.remove();add(e.message,'sys');return ''}
+}
+async function sendTyped(){
+  var q=input.value.trim();
+  if(!q&&!pendingDoc) return;
+  input.value='';
+  if(pendingDoc){
+    var d=pendingDoc;pendingDoc=null;chip.style.display='none';
+    q=q||'Summarize this document.';
+    await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+q,'📄 '+d.name+'\n'+q);
+  } else await turn(q);
+}
+$('send').onclick=sendTyped;
+input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
+
+// ---- voice recording ----
+var live=false,rec=null,stream=null,actx=null,timer=null,heard=false,busy=false;
+function setLive(on){live=on;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
+  if(!on){stopSpeaking();if(recog){recog.cancelled=true;try{recog.abort()}catch(e){}}if(rec&&rec.state==='recording'){heard=false;rec.stop()}}}
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,recog=null;
+var srFailed=false;
+function listen(){return(SR&&!srFailed)?listenSR():listenRec()}
+function listenSR(){
+  if(busy) return;
+  var r=new SR(),text='',bubble=null;recog=r;
+  r.lang=navigator.language||'en-US';r.interimResults=true;r.continuous=false;
+  r.onstart=function(){stopSpeaking();$('mic').classList.add('recording');bubble=add('Listening...','me live')};
+  r.onresult=function(e){
+    text='';for(var i=0;i<e.results.length;i++)text+=e.results[i][0].transcript;text=text.trim();
+    if(!bubble)bubble=add(text,'me live');else bubble.textContent=text||'Listening...';
+    chat.scrollTop=chat.scrollHeight};
+  r.onerror=function(e){
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){r.cancelled=true;add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false)}
+    else if(e.error==='network'||e.error==='audio-capture'||e.error==='language-not-supported'){
+      r.cancelled=true;srFailed=true;add('Live captions are not available in this browser ('+e.error+'). Using standard voice instead.','sys');
+      setTimeout(function(){busy=false;listenRec()},300)}};
+  r.onend=async function(){
+    $('mic').classList.remove('recording');
+    if(r.cancelled){if(bubble)bubble.remove();return}
+    if(!text){if(bubble)bubble.remove();if(live){add('I did not hear anything, so live mode stopped.','sys');setLive(false)}return}
+    busy=true;var reply=await turn(text,null,null,bubble);
+    if(reply&&live)await speak(reply);
+    busy=false;if(live)listen()};
+  try{r.start()}catch(e){add('Could not start the microphone. Try again.','sys');setLive(false)}}
+async function listenRec(){
+  if(busy) return;
+  try{stream=stream||await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false);return}
+  var mime=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+  var chunks=[];rec=new MediaRecorder(stream,{mimeType:mime});
+  rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
+  rec.onstop=async function(){
+    clearInterval(timer);
+    if(!heard){if(live){add('I did not hear anything, so live mode stopped.','sys')}setLive(false);$('mic').classList.remove('recording');return}
+    $('mic').classList.remove('recording');
+    await handleAudio(new Blob(chunks,{type:mime}),mime);
+  };
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended'){try{await actx.resume()}catch(e){}}
+  var src=actx.createMediaStreamSource(stream),an=actx.createAnalyser();an.fftSize=1024;src.connect(an);
+  var buf=new Uint8Array(an.fftSize);heard=false;var last=Date.now(),t0=Date.now();
+  rec.start();$('mic').classList.add('recording');
+  timer=setInterval(function(){
+    an.getByteTimeDomainData(buf);var s=0;for(var i=0;i<buf.length;i++){var v=(buf[i]-128)/128;s+=v*v}
+    if(Math.sqrt(s/buf.length)>0.035){heard=true;last=Date.now()}
+    var now=Date.now();
+    if((heard&&now-last>1400)||now-t0>60000||(!heard&&now-t0>12000)){src.disconnect();if(rec.state==='recording')rec.stop()}
+  },100);
+}
+async function handleAudio(blob,mime){
+  busy=true;
+  var note=add('Listening...','sys');
+  try{
+    var b64=await new Promise(function(res){var f=new FileReader();f.onload=function(){res(String(f.result).split(',')[1])};f.readAsDataURL(blob)});
+    var r=await post('/.netlify/functions/transcribe',{audio:b64,mime:mime});
+    note.remove();
+    if(!r.text){add('I could not make out that recording. Try again.','sys');busy=false;if(live)listen();return}
+    var reply=await turn(r.text);busy=false;
+    if(reply&&live){await speak(reply)}
+  }catch(e){note.remove();add(e.message,'sys')}
+  busy=false;
+  if(live) listen();
+}
+$('mic').onclick=function(){if(recog&&$('mic').classList.contains('recording')){recog.stop();return}if(rec&&rec.state==='recording'){rec.stop();return}listen()};
+$('talk').onclick=function(){if(live){setLive(false)}else{setLive(true);listen()}};
+
+// ---- images and documents ----
+function shrink(file){return new Promise(function(res,rej){
+  var img=new Image(),u=URL.createObjectURL(file);
+  img.onload=function(){var m=1280,s=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82))};
+  img.onerror=function(){rej(new Error('That image could not be opened.'))};img.src=u})}
+async function readPdf(file){
+  if(!window.pdfjsLib) throw new Error('The PDF reader did not load. Check your connection and try again.');
+  var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out='';
+  for(var p=1;p<=Math.min(pdf.numPages,30);p++){var c=await(await pdf.getPage(p)).getTextContent();out+=c.items.map(function(i){return i.str}).join(' ')+'\n'}
+  return out}
+var overlay=$('imgOverlay'),previewImg=$('previewImg'),previewCaption=$('previewCaption'),pendingImg=null;
+function closeOverlay(){overlay.classList.remove('show');previewImg.src='';previewCaption.value='';pendingImg=null}
+$('previewCancel').onclick=closeOverlay;
+$('previewSend').onclick=async function(){
+  if(!pendingImg) return;
+  var data=pendingImg,q=previewCaption.value.trim()||'Describe this image and explain what matters in it.';
+  closeOverlay();
+  add(q,'me',data);var w=add('Looking at the image...','sys');
+  try{var r=await post('/.netlify/functions/vision',{image:data,prompt:q});w.remove();add(r.text)}
+  catch(err){w.remove();add(err.message,'sys')}
+};
+$('file').onchange=async function(e){
+  var f=e.target.files[0];e.target.value='';if(!f) return;
+  try{
+    if(f.type.indexOf('image/')===0){
+      var q=input.value.trim();input.value='';
+      var data=await shrink(f);
+      pendingImg=data;previewImg.src=data;previewCaption.value=q;
+      overlay.classList.add('show');previewCaption.focus();
+    } else {
+      var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
+      text=text.trim().slice(0,12000);
+      if(!text) throw new Error('No readable text was found in that file.');
+      pendingDoc={name:f.name,text:text};chip.textContent='📄 '+f.name+' is attached. Type your question and press send.';chip.style.display='block';
+    }
+  }catch(err){add(err.message,'sys')}
+};
+</script>
+</body>
+</html>
