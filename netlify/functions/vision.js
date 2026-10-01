@@ -1,4 +1,4 @@
-// Image understanding via Groq Qwen 3.8 27B (vision-capable).
+// Image understanding via Groq (vision-capable model).
 const json = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
 exports.handler = async (event) => {
@@ -9,7 +9,7 @@ exports.handler = async (event) => {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + process.env.GROQ_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen/qwen3.8-27b',
+        model: process.env.VISION_MODEL || 'qwen/qwen3.8-27b',
         max_tokens: 900,
         messages: [{ role: 'user', content: [
           { type: 'text', text: prompt || 'Describe this image and explain what matters in it.' },
