@@ -5,23 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Uncle Pelex Agent 1.0</title>
 <style>
-:root{--bg:#EAF1F8;--glow:#BFDCF7;--ink:#0B2A5B;--mute:#6C84A3;--line:#D3E0EE;--card:#fff;--accent:#0A89F4;--lemon:#3FD8E8}
+:root{--bg:#F4F5F7;--glow:#BFDCF7;--ink:#0B2A5B;--mute:#6C84A3;--line:#D3E0EE;--card:#fff;--accent:#0A89F4;--lemon:#3FD8E8}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;display:flex;flex-direction:column;
-background-image:radial-gradient(120% 55% at 50% 108%,var(--glow) 0%,transparent 70%);padding-top:env(safe-area-inset-top,0)}
+padding-top:env(safe-area-inset-top,0)}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 header{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:700}
 header svg{width:34px;height:34px}
-#chat{flex:1;overflow:auto;width:100%;max-width:760px;margin:0 auto;padding:8px 16px}
+#chat{position:relative;z-index:2;flex:1;overflow:auto;width:100%;max-width:760px;margin:0 auto;padding:8px 16px}
 h1{font-size:clamp(26px,4vw,38px);margin:8px 0 4px;text-align:center;letter-spacing:-.02em}
 .hello{text-align:center;color:var(--mute);margin:0 0 18px}
 .msg{max-width:85%;padding:12px 14px;border-radius:16px;margin:10px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
 .msg.me{margin-left:auto;background:var(--ink);color:#fff;border-color:transparent}
+.msg.live{border-color:#0A89F4;box-shadow:0 0 0 3px rgba(10,137,244,.22),0 0 24px rgba(10,137,244,.45);animation:breathe 1.4s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 5px rgba(10,137,244,.3),0 0 34px rgba(10,137,244,.6)}}
+#pulse{position:fixed;left:0;right:0;bottom:0;height:42vh;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1;background:radial-gradient(70% 100% at 50% 100%,rgba(10,137,244,.38),transparent 70%);animation:breatheG 1.8s ease-in-out infinite}
+body:has(#mic.recording) #pulse{opacity:1}
+body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,rgba(255,138,43,.38),transparent 70%)}
+@keyframes breatheG{50%{transform:scaleY(1.18)}}
+@media(prefers-reduced-motion:reduce){#pulse,.msg.live{animation:none}}
 .msg.sys{background:none;border:0;color:var(--mute);font-size:14px;padding:4px 0}
 .msg img{max-width:220px;border-radius:10px;display:block;margin-bottom:6px}
-.bar{max-width:760px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0));display:flex;gap:8px;align-items:center}
+.bar{position:relative;z-index:2;max-width:760px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0));display:flex;gap:8px;align-items:center}
 .field{flex:1;display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 8px 5px 6px}
 .field input[type=text]{flex:1;border:0;background:none;color:var(--ink);font:inherit;min-width:0;padding:6px 4px}
 .field input[type=text]:focus-visible{outline:none}
@@ -122,6 +129,7 @@ Uncle Pelex
 <button class="talk" id="talk">Talk live</button>
 </div>
 
+<div id="pulse" aria-hidden="true"></div>
 <div id="imgOverlay">
   <div class="preview-card">
     <img id="previewImg" alt="Selected image">
@@ -175,32 +183,43 @@ async function askAgent(text){
   return String(out);
 }
 
-// ---- speaking (ElevenLabs natural voice, falls back to browser voice) ----
-var curAudio=null;
-function speak(t){return new Promise(function(res){
-  var clean=t.replace(/[*_#`>]/g,'').slice(0,900);
-  if(curAudio){curAudio.pause();curAudio=null}
-  post('/.netlify/functions/speak',{text:clean}).then(function(r){
-    if(r&&r.audio){
-      curAudio=new Audio('data:audio/mpeg;base64,'+r.audio);
-      curAudio.onended=curAudio.onerror=function(){curAudio=null;res()};
-      curAudio.play().catch(function(){curAudio=null;fallbackSpeak(clean,res)});
-    } else {
-      fallbackSpeak(clean,res);
-    }
-  }).catch(function(){fallbackSpeak(clean,res)});
-})}
-function fallbackSpeak(clean,res){
+// ---- speaking: reply is split into sentences; sentence 2 is fetched while sentence 1 plays ----
+var curAudio=null,curRes=null,speakTok=0;
+function chunk(t){
+  var x=t.replace(/[*_#`>]/g,'').replace(/\s+/g,' ').trim().slice(0,2500);
+  var parts=x.match(/[^.!?\n]+[.!?]*\s*/g)||[x],out=[],cur='';
+  parts.forEach(function(p){if(cur&&(cur+p).length>260){out.push(cur);cur=p}else cur+=p});
+  if(cur.trim())out.push(cur);return out}
+function fetchAudio(c){return post('/.netlify/functions/speak',{text:c}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
+function playUrl(u){return new Promise(function(res){
+  curRes=res;curAudio=new Audio(u);
+  curAudio.onended=curAudio.onerror=function(){curAudio=null;curRes=null;res(true)};
+  curAudio.play().catch(function(){curAudio=null;curRes=null;res(false)})})}
+function fallbackSpeak(clean){return new Promise(function(res){
   if(!window.speechSynthesis){res();return}
-  speechSynthesis.cancel();
-  var u=new SpeechSynthesisUtterance(clean);
-  u.onend=u.onerror=function(){res()};speechSynthesis.speak(u);
-}
+  var u=new SpeechSynthesisUtterance(clean);u.onend=u.onerror=function(){res()};speechSynthesis.speak(u)})}
+function stopSpeaking(){
+  speakTok++;
+  if(curAudio){curAudio.pause();curAudio=null}
+  if(curRes){var r=curRes;curRes=null;r(true)}
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  document.body.classList.remove('speaking')}
+async function speak(t){
+  stopSpeaking();var tok=speakTok,cs=chunk(t);if(!cs.length)return;
+  document.body.classList.add('speaking');
+  var next=fetchAudio(cs[0]);
+  for(var i=0;i<cs.length;i++){
+    var u=await next;if(tok!==speakTok)return;
+    if(i+1<cs.length)next=fetchAudio(cs[i+1]);
+    var ok=u?await playUrl(u):false;if(tok!==speakTok)return;
+    if(!ok)await fallbackSpeak(cs[i]);
+    if(tok!==speakTok)return}
+  document.body.classList.remove('speaking')}
 
 // ---- typed / spoken turn ----
 var pendingDoc=null;
-async function turn(text,shown,img){
-  add(shown||text,'me',img);
+async function turn(text,shown,img,el){
+  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
   var wait=add('Thinking...','sys');
   try{var reply=await askAgent(text);wait.remove();add(reply);return reply}
   catch(e){wait.remove();add(e.message,'sys');return ''}
@@ -221,8 +240,33 @@ input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
 // ---- voice recording ----
 var live=false,rec=null,stream=null,actx=null,timer=null,heard=false,busy=false;
 function setLive(on){live=on;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
-  if(!on){if(window.speechSynthesis)speechSynthesis.cancel();if(rec&&rec.state==='recording'){heard=false;rec.stop()}}}
-async function listen(){
+  if(!on){stopSpeaking();if(recog){recog.cancelled=true;try{recog.abort()}catch(e){}}if(rec&&rec.state==='recording'){heard=false;rec.stop()}}}
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,recog=null;
+var srFailed=false;
+function listen(){return(SR&&!srFailed)?listenSR():listenRec()}
+function listenSR(){
+  if(busy) return;
+  var r=new SR(),text='',bubble=null;recog=r;
+  r.lang=navigator.language||'en-US';r.interimResults=true;r.continuous=false;
+  r.onstart=function(){stopSpeaking();$('mic').classList.add('recording');bubble=add('Listening...','me live')};
+  r.onresult=function(e){
+    text='';for(var i=0;i<e.results.length;i++)text+=e.results[i][0].transcript;text=text.trim();
+    if(!bubble)bubble=add(text,'me live');else bubble.textContent=text||'Listening...';
+    chat.scrollTop=chat.scrollHeight};
+  r.onerror=function(e){
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){r.cancelled=true;add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false)}
+    else if(e.error==='network'||e.error==='audio-capture'||e.error==='language-not-supported'){
+      r.cancelled=true;srFailed=true;add('Live captions are not available in this browser ('+e.error+'). Using standard voice instead.','sys');
+      setTimeout(function(){busy=false;listenRec()},300)}};
+  r.onend=async function(){
+    $('mic').classList.remove('recording');
+    if(r.cancelled){if(bubble)bubble.remove();return}
+    if(!text){if(bubble)bubble.remove();if(live){add('I did not hear anything, so live mode stopped.','sys');setLive(false)}return}
+    busy=true;var reply=await turn(text,null,null,bubble);
+    if(reply&&live)await speak(reply);
+    busy=false;if(live)listen()};
+  try{r.start()}catch(e){add('Could not start the microphone. Try again.','sys');setLive(false)}}
+async function listenRec(){
   if(busy) return;
   try{stream=stream||await navigator.mediaDevices.getUserMedia({audio:true})}
   catch(e){add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false);return}
@@ -261,7 +305,7 @@ async function handleAudio(blob,mime){
   busy=false;
   if(live) listen();
 }
-$('mic').onclick=function(){if(rec&&rec.state==='recording'){heard=heard;rec.stop();return}listen()};
+$('mic').onclick=function(){if(recog&&$('mic').classList.contains('recording')){recog.stop();return}if(rec&&rec.state==='recording'){rec.stop();return}listen()};
 $('talk').onclick=function(){if(live){setLive(false)}else{setLive(true);listen()}};
 
 // ---- images and documents ----
