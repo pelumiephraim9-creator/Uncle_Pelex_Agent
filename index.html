@@ -166,15 +166,6 @@ body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,r
 .talk.on{background:#D6453D}
 .chip{max-width:760px;margin:0 auto;padding:0 16px;color:var(--mute);font-size:14px;display:none}
 
-#imgOverlay{position:fixed;inset:0;z-index:60;background:rgba(11,42,91,.45);display:none;align-items:center;justify-content:center;padding:16px}
-#imgOverlay.show{display:flex}
-.preview-card{background:var(--card);border-radius:16px;padding:16px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.preview-card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;max-height:260px;object-fit:cover}
-.preview-card textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;color:var(--ink);resize:vertical;min-height:64px;background:var(--bg)}
-.preview-actions{display:flex;gap:8px;margin-top:10px}
-.preview-actions button{flex:1;border:0;border-radius:999px;padding:10px 0;font-weight:600}
-.preview-cancel{background:var(--line);color:var(--ink)}
-.preview-send{background:var(--accent);color:#fff}
 
 #intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s ease, filter .6s ease, transform .6s ease}
 #intro.hide{opacity:0;filter:blur(8px);transform:scale(1.05);pointer-events:none}
@@ -195,6 +186,31 @@ body.loading main,body.loading header{visibility:hidden}
 @keyframes popIn{0%{opacity:0;transform:scale(0)}60%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}
 @keyframes badgeIn{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:scale(1)}}
 @keyframes shine{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(760px)}}
+
+/* ---- v2 fixes: pinned composer, blue send, in-bar attachment tray ---- */
+.view.chat{padding:0;overflow:hidden;display:flex;flex-direction:column}
+#chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:0 clamp(12px,4vw,48px)}
+#chat .chatbody{flex:1;min-height:0}
+.barwrap{flex:none;padding-top:6px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));align-items:center;background:var(--bg)}
+.barwrap .bar{padding:0;max-width:760px;margin:0 auto}
+.barwrap .field{width:auto;min-width:0;flex:1 1 0;flex-wrap:wrap}
+.barwrap .field input[type=text]{flex:1 1 0;min-width:0}
+.barwrap .field .ic{flex:none}
+.chips{gap:6px}.chip-sugg{padding:6px 12px;min-height:36px;font-size:13.5px}
+.barwrap .talk{flex:none;white-space:nowrap}
+.barwrap .disclaimer{padding:0}
+.barwrap .plugshortcut{align-self:center}
+#send{width:44px;height:44px;background:#1B6EF3;color:#fff;box-shadow:0 4px 14px rgba(27,110,243,.35)}
+#send:hover{background:#155ed6}
+#send svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.attach{order:-1;flex:1 0 100%;display:flex;align-items:center;gap:10px;padding:4px 4px 6px}
+.attach[hidden]{display:none}
+.attach .th{position:relative;width:64px;height:64px;border-radius:12px;overflow:hidden;background:var(--soft);display:grid;place-items:center;font-size:26px}
+.attach img{width:100%;height:100%;object-fit:cover;display:block}
+.attach .nm{flex:1;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attach .x{width:28px;height:28px;border-radius:50%;border:0;background:#111;color:#fff;font-size:16px;line-height:1;cursor:pointer;flex:none}
+.field:has(.attach:not([hidden])){border-radius:22px}
+@media(max-width:820px){.barwrap .talk{padding:10px 14px}}
 </style>
 </head>
 <body>
@@ -228,10 +244,11 @@ body.loading main,body.loading header{visibility:hidden}
 <div class="limit" id="limit" hidden><strong>You have reached today's free limit.</strong><span class="muted">It resets in 6 hours. Your earlier chats are still open in the sidebar.</span><div class="limitbtns"><button class="btn" data-go="plans">Upgrade to General Premium</button><button class="btn alt" data-go="plans">Start 14-day trial</button></div></div>
 <div class="chip" id="chip"></div>
 <div class="barwrap"><div class="bar"><div class="field">
+<div class="attach" id="attach" hidden><div class="th" id="attachTh"></div><span class="nm" id="attachNm"></span><button class="x" id="attachX" type="button" aria-label="Remove attachment">×</button></div>
 <label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" hidden></label>
-<input id="in" type="text" placeholder="Message Uncle Pelex" aria-label="Message">
+<input id="in" type="text" placeholder="Ask anything" aria-label="Message">
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
-<button class="ic send" id="send" aria-label="Send">➤</button>
+<button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 </div><button class="talk" id="talk">Talk live</button></div>
 <div class="disclaimer">Uncle Pelex can make mistakes. Please check important info.</div>
 <button class="plugshortcut" data-go="plugins" aria-label="Open plugins"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Plugins</button></div>
@@ -334,16 +351,6 @@ body.loading main,body.loading header{visibility:hidden}
 </div></section>
 </main>
 </div>
-<div id="imgOverlay">
-  <div class="preview-card">
-    <img id="previewImg" alt="Selected image">
-    <textarea id="previewCaption" placeholder="Add a description (optional)"></textarea>
-    <div class="preview-actions">
-      <button class="preview-cancel" id="previewCancel" type="button">Cancel</button>
-      <button class="preview-send" id="previewSend" type="button">Send</button>
-    </div>
-  </div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 // ====== SET THIS ======
@@ -402,7 +409,7 @@ async function askAgent(text){
 }
 
 // ---- audio state + one reusable player (unlocked on a tap so phones keep allowing playback) ----
-var live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
+var silent=0,live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
 var player=new Audio();player.preload='auto';player.setAttribute('playsinline','');
 var SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',unlocked=false;
 function unlockAudio(){
@@ -487,11 +494,12 @@ async function turn(text,shown,img,el){
   catch(e){wait.remove();add(e.message,'sys');return ''}
 }
 async function sendTyped(){
+  if(pendingImg){await sendImage();return}
   var q=input.value.trim();
   if(!q&&!pendingDoc) return;
   input.value='';
   if(pendingDoc){
-    var d=pendingDoc;pendingDoc=null;chip.style.display='none';
+    var d=pendingDoc;clearAttach();
     q=q||'Summarize this document.';
     await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+q,'📄 '+d.name+'\n'+q);
   } else await turn(q);
@@ -500,7 +508,7 @@ $('send').onclick=sendTyped;
 input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
 
 // ---- voice recording ----
-function setLive(on){live=on;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
+function setLive(on){live=on;silent=0;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
   if(!on){stopSpeaking();clearInterval(timer);heard=false;
     if(rec&&rec.state==='recording')rec.stop();
     $('mic').classList.remove('recording');busy=false;closeMic()}}
@@ -515,7 +523,8 @@ async function listenRec(){
   rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
   rec.onstop=async function(){
     clearInterval(timer);$('mic').classList.remove('recording');
-    if(!heard){if(live){add('I did not hear anything, so live mode stopped.','sys');setLive(false)}else releaseSoon();return}
+    if(!heard){if(live){silent++;if(silent>=6){add('Live mode stopped after a while with no speech. Tap Talk live to continue.','sys');setLive(false)}else{listen()}}else releaseSoon();return}
+    silent=0;
     await handleAudio(new Blob(chunks,{type:mime}),mime)};
   heard=false;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02;
   rec.start();$('mic').classList.add('recording');
@@ -558,31 +567,33 @@ async function readPdf(file){
   var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out='';
   for(var p=1;p<=Math.min(pdf.numPages,30);p++){var c=await(await pdf.getPage(p)).getTextContent();out+=c.items.map(function(i){return i.str}).join(' ')+'\n'}
   return out}
-var overlay=$('imgOverlay'),previewImg=$('previewImg'),previewCaption=$('previewCaption'),pendingImg=null;
-function closeOverlay(){overlay.classList.remove('show');previewImg.src='';previewCaption.value='';pendingImg=null}
-$('previewCancel').onclick=closeOverlay;
-$('previewSend').onclick=async function(){
-  if(!pendingImg) return;
-  var data=pendingImg,q=previewCaption.value.trim()||'Describe this image and explain what matters in it.';
-  closeOverlay();
+var pendingImg=null,attach=$('attach');
+function showAttach(kind,data,name){
+  $('attachTh').innerHTML='';
+  if(kind==='img'){var i=document.createElement('img');i.src=data;i.alt='Attached image';$('attachTh').appendChild(i)}else $('attachTh').textContent='📄';
+  $('attachNm').textContent=name;attach.hidden=false}
+function clearAttach(){pendingImg=null;pendingDoc=null;attach.hidden=true;$('attachTh').innerHTML='';chip.style.display='none'}
+$('attachX').onclick=clearAttach;
+async function sendImage(){
+  var data=pendingImg,q=input.value.trim()||'Describe this image and explain what matters in it.';
+  input.value='';clearAttach();
   thumb(data).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})});
   add(q,'me',data);var w=add('Looking at the image...','sys');
   try{var r=await post('/.netlify/functions/vision',{image:data,prompt:q});w.remove();add(r.text)}
   catch(err){w.remove();add(err.message,'sys')}
-};
+}
 $('file').onchange=async function(e){
   var f=e.target.files[0];e.target.value='';if(!f) return;
   try{
+    clearAttach();
     if(f.type.indexOf('image/')===0){
-      var q=input.value.trim();input.value='';
       var data=await shrink(f);
-      pendingImg=data;previewImg.src=data;previewCaption.value=q;
-      overlay.classList.add('show');previewCaption.focus();
+      pendingImg=data;showAttach('img',data,f.name||'Image');input.focus();
     } else {
       var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
       text=text.trim().slice(0,12000);
       if(!text) throw new Error('No readable text was found in that file.');
-      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});chip.textContent='📄 '+f.name+' is attached. Type your question and press send.';chip.style.display='block';
+      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();
     }
   }catch(err){add(err.message,'sys')}
 };
