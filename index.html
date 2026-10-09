@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uncle Pelex Agent 1.0</title>
+<meta name="description" content="Uncle Pelex is an AI assistant for entrepreneurs and small businesses. Chat, voice and smart admin help on web and Telegram, built by PelexSkillHub.">
+<meta name="keywords" content="Uncle Pelex, Unclepelex, Uncle Pelex AI Agent, PelexSkillHub, AI assistant Nigeria, small business AI chatbot">
+<meta name="author" content="PelexSkillHub">
+<link rel="canonical" href="https://unclepelexai.netlify.app/">
+<meta property="og:title" content="Uncle Pelex Agent 1.0">
+<meta property="og:description" content="An AI assistant for entrepreneurs and small businesses, by PelexSkillHub.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://unclepelexai.netlify.app/">
+<meta property="og:image" content="https://unclepelexai.netlify.app/icons/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Uncle Pelex Agent 1.0">
+<meta name="twitter:description" content="An AI assistant for entrepreneurs and small businesses, by PelexSkillHub.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Uncle Pelex","alternateName":"Unclepelex","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://unclepelexai.netlify.app/","publisher":{"@type":"Organization","name":"PelexSkillHub"}}
+</script>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0B2A5B">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uncle Pelex">
+
+<style>
+:root{--bg:#ffffff;--panel:#fff;--ink:#111111;--muted:#55617f;--line:#dfe4ee;--soft:#e8eefb;--btn:#6495ED;--btnink:#0b1b4a;--teal:#a9c4f5;--sel:#e3eafb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45}
+button,input,textarea,select{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:272px 1fr;height:100%}
+aside{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:4px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:8px;padding:2px 8px 12px;font-weight:700;font-size:17px}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--btn);color:var(--btnink);display:grid;place-items:center;font-weight:800}
+.nav{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:10px;background:none;text-align:left;cursor:pointer}
+.nav:hover{background:var(--soft)}
+.nav[aria-current="true"]{background:var(--sel);font-weight:600}
+.nav svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.newchat{background:var(--btn);color:var(--btnink);font-weight:600;margin-bottom:6px}
+.newchat:hover{background:var(--btn);opacity:.92}
+.label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+.sub{display:block;padding:8px 10px 8px 38px;font-size:14px;color:var(--muted);border:0;background:none;text-align:left;width:100%;cursor:pointer;border-radius:8px;min-height:36px}
+.sub:hover{background:var(--soft);color:var(--ink)}
+.spacer{flex:1;min-height:12px}
+.me{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);margin-top:6px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;color:var(--btnink)}
+.badge{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--btnink);font-weight:600}
+main{display:flex;flex-direction:column;min-width:0;height:100%}
+.top{display:none;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+.iconbtn{min-width:44px;min-height:44px;border:0;background:none;border-radius:10px;cursor:pointer;display:grid;place-items:center}
+.iconbtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.view{flex:1;overflow-y:auto;padding:28px clamp(16px,4vw,48px)}
+.view[hidden]{display:none}
+h1{font-size:clamp(26px,5vw,38px);margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:20px;margin:0 0 4px}
+.muted{color:var(--muted)}
+.wrap{max-width:900px;margin:0 auto}
+.chat{display:flex;flex-direction:column;height:100%;padding:0}
+.chatbody{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px;gap:6px}
+.barwrap{padding:0 clamp(12px,4vw,48px) 16px;display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box}
+.bar{display:flex;gap:10px;align-items:center;padding:0;width:100%}
+.field{flex:1;display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:6px 8px 6px 10px;min-height:56px;width:100%}
+.field input{flex:1;border:0;background:none;outline:none;min-height:44px;min-width:0;font-size:16px}
+.send{width:44px;height:44px;padding:0;border-radius:50%;display:grid;place-items:center}
+.send svg{width:20px;height:20px;stroke:var(--btnink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mic svg{stroke:var(--teal)}
+.plugshortcut{align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:36px;padding:0 14px 0 10px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font-size:13px;font-weight:600}
+.plugshortcut svg{width:16px;height:16px;stroke:var(--btn);fill:none;stroke-width:2.4;stroke-linecap:round}
+.plugshortcut:hover{background:var(--soft)}
+.field{flex:1;display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 8px;min-height:52px}
+.field input{flex:1;border:0;background:none;outline:none;min-height:44px;min-width:0}
+.btn{min-height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--btn);color:var(--btnink);font-weight:600;cursor:pointer}
+.btn.alt{background:var(--soft);color:var(--ink)}
+.authcard{max-width:380px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px}
+.authcard h1{font-size:22px;margin:0 0 4px}
+.authcard .muted{margin-bottom:20px}
+.oauthbtn{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--bg,#fff);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;cursor:pointer;margin-bottom:10px}
+.oauthbtn svg{width:18px;height:18px}
+.authsep{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12px;margin:16px 0}
+.authsep::before,.authsep::after{content:"";flex:1;height:1px;background:var(--line)}
+.authcard .inp{width:100%;box-sizing:border-box;margin-bottom:10px}
+.authcard .btn{width:100%}
+.authswitch{text-align:center;margin-top:14px;font-size:14px;color:var(--mute)}
+.authswitch a{color:var(--btn);cursor:pointer;font-weight:600;text-decoration:none}
+.disclaimer{text-align:center;font-size:12px;color:var(--mute);padding:0 clamp(12px,4vw,48px) 4px}
+.msgactions{display:flex;gap:4px;margin-top:4px}
+.msgactions button{border:none;background:transparent;color:var(--mute);cursor:pointer;padding:4px 6px;border-radius:8px;font-size:14px;line-height:1}
+.msgactions button:hover{background:var(--panel);color:inherit}
+.msgactions button[aria-pressed="true"]{color:var(--btn)}
+.msgactions .fb{font-size:11px;color:var(--mute);margin-left:4px;align-self:center}
+.chip-sugg{border:1px solid var(--line);background:var(--panel);color:inherit;border-radius:99px;padding:8px 14px;min-height:40px;cursor:pointer;font:inherit;font-size:14px}
+.chip-sugg:not([disabled]):hover{border-color:var(--btn)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:8px 14px;min-height:40px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.card.pick{border:2px solid var(--teal)}
+.cardtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.plugbtn{width:36px;height:36px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:var(--btn);flex:none;transition:background .15s}
+.plugbtn svg{width:18px;height:18px;stroke:var(--btnink);fill:none;stroke-width:2.2;stroke-linecap:round}
+.plugbtn .ic-minus{display:none}
+.plugbtn[aria-pressed="true"]{background:#bcd4ff}
+.plugbtn[aria-pressed="true"] svg{stroke:#142654}
+.plugbtn[aria-pressed="true"] .ic-plus{display:none}
+.plugbtn[aria-pressed="true"] .ic-minus{display:block}
+.price{font-size:26px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:52px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+.tab{min-height:44px;padding:0 16px;border-radius:99px;border:1px solid var(--line);background:var(--panel);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+.pane[hidden]{display:none}
+label{display:block;font-weight:600;margin:14px 0 6px}
+textarea,select,.inp{width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:44px}
+textarea{min-height:120px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.note{background:var(--soft);border-radius:12px;padding:12px 14px;margin-top:16px;font-size:14px}
+.limit{margin:0 clamp(12px,4vw,48px) 10px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--soft);display:flex;flex-direction:column;gap:6px}
+.limit[hidden]{display:none}
+.limitbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.devbar{display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:10px clamp(12px,4vw,48px) 0;font-size:12px;color:var(--muted)}
+.devbar button{min-height:32px;padding:0 12px;border:1px solid var(--line);background:var(--panel);border-radius:99px;cursor:pointer;font-size:12px}
+.devbar button[aria-pressed="true"]{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+.scrim{display:none}
+@media (max-width:820px){
+.app{grid-template-columns:1fr}
+aside{position:fixed;z-index:20;left:0;top:0;bottom:0;width:min(86vw,300px);transform:translateX(-102%);transition:transform .2s;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+.open aside{transform:none}
+.open .scrim{display:block;position:fixed;inset:0;background:rgba(10,15,40,.45);z-index:10}
+.top{display:flex}
+.two{grid-template-columns:1fr}
+}
+.msg{max-width:85%;padding:12px 14px;border-radius:16px;margin:10px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+.msg.me{margin-left:auto;background:var(--ink);color:#fff;border-color:transparent}
+.msg.live{border-color:#0A89F4;box-shadow:0 0 0 3px rgba(10,137,244,.22),0 0 24px rgba(10,137,244,.45);animation:breathe 1.4s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 5px rgba(10,137,244,.3),0 0 34px rgba(10,137,244,.6)}}
+#pulse{position:fixed;left:0;right:0;bottom:0;height:42vh;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1;background:radial-gradient(70% 100% at 50% 100%,rgba(10,137,244,.38),transparent 70%);animation:breatheG 1.8s ease-in-out infinite}
+body:has(#mic.recording) #pulse{opacity:1}
+body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,rgba(255,138,43,.38),transparent 70%)}
+@keyframes breatheG{50%{transform:scaleY(1.18)}}
+@media(prefers-reduced-motion:reduce){#pulse,.msg.live{animation:none}}
+.msg.sys{background:none;border:0;color:var(--mute);font-size:14px;padding:4px 0}
+.msg img{max-width:220px;border-radius:10px;display:block;margin-bottom:6px}
+.bar{position:relative;z-index:2;max-width:760px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0));display:flex;gap:8px;align-items:center}
+.field{flex:1;display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 8px 5px 6px}
+.field input[type=text]{flex:1;border:0;background:none;color:var(--ink);font:inherit;min-width:0;padding:6px 4px}
+.field input[type=text]:focus-visible{outline:none}
+.ic{width:38px;height:38px;border-radius:50%;border:0;background:none;color:var(--mute);font-size:18px;flex-shrink:0;display:grid;place-items:center;transition:background .15s,color .15s}.ic:hover{background:rgba(11,42,91,.06)}.ic svg{width:18px;height:18px}#mic{width:44px;height:44px;color:#fff;background:linear-gradient(145deg,#1B8CF5,#0A5BD3);box-shadow:0 4px 14px rgba(10,110,230,.35)}
+#mic:hover{background:linear-gradient(145deg,#2A96FA,#0F66E0)}
+#mic svg{width:20px;height:20px}
+#mic .wv{display:none;align-items:center;gap:3px;height:20px}
+#mic .wv i{display:block;width:3px;height:6px;border-radius:2px;background:#fff;animation:bar .9s ease-in-out infinite}
+#mic .wv i:nth-child(2){animation-delay:.15s}#mic .wv i:nth-child(3){animation-delay:.3s}#mic .wv i:nth-child(4){animation-delay:.45s}
+#mic.recording{background:linear-gradient(145deg,#1B8CF5,#0A5BD3);animation:ripple 1.5s ease-out infinite}
+#mic.recording .mi{display:none}#mic.recording .wv{display:flex}
+@keyframes bar{50%{height:18px}}
+@keyframes ripple{0%{box-shadow:0 0 0 0 rgba(10,137,244,.55)}100%{box-shadow:0 0 0 16px rgba(10,137,244,0)}}
+@media(prefers-reduced-motion:reduce){#mic.recording,#mic .wv i{animation:none}}@keyframes pulseMic{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.send{background:var(--accent);color:#fff}
+.talk{border:0;border-radius:999px;padding:10px 16px;background:var(--ink);color:#fff;font-weight:600;flex-shrink:0}
+.talk.on{background:#D6453D}
+.chip{max-width:760px;margin:0 auto;padding:0 16px;color:var(--mute);font-size:14px;display:none}
+
+#imgOverlay{position:fixed;inset:0;z-index:60;background:rgba(11,42,91,.45);display:none;align-items:center;justify-content:center;padding:16px}
+#imgOverlay.show{display:flex}
+.preview-card{background:var(--card);border-radius:16px;padding:16px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.preview-card img{width:100%;border-radius:10px;display:block;margin-bottom:10px;max-height:260px;object-fit:cover}
+.preview-card textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;color:var(--ink);resize:vertical;min-height:64px;background:var(--bg)}
+.preview-actions{display:flex;gap:8px;margin-top:10px}
+.preview-actions button{flex:1;border:0;border-radius:999px;padding:10px 0;font-weight:600}
+.preview-cancel{background:var(--line);color:var(--ink)}
+.preview-send{background:var(--accent);color:#fff}
+
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s ease, filter .6s ease, transform .6s ease}
+#intro.hide{opacity:0;filter:blur(8px);transform:scale(1.05);pointer-events:none}
+#intro svg{width:min(70vw,260px);height:auto;overflow:visible}
+#intro .n-glow{opacity:0;transform:scale(.3);transform-origin:center;transform-box:fill-box}
+#intro.go .n-glow{animation:glowPulse 1.7s ease-out forwards}
+#intro .n-line{stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+#intro.go .n-line{animation:drawLine .5s cubic-bezier(.4,0,.2,1) forwards}
+#intro .n-dot{opacity:0;transform:scale(0);transform-origin:center;transform-box:fill-box}
+#intro.go .n-dot{animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards}
+#intro .n-badge{opacity:0;transform:scale(.4);transform-origin:center;transform-box:fill-box}
+#intro.go .n-badge{animation:badgeIn .55s cubic-bezier(.34,1.56,.64,1) forwards}
+#intro .n-shine{opacity:0}
+#intro.go .n-shine{animation:shine .9s ease-out forwards}
+body.loading main,body.loading header{visibility:hidden}
+@keyframes glowPulse{0%{opacity:.5;transform:scale(.35)}65%{opacity:.18}100%{opacity:0;transform:scale(1.5)}}
+@keyframes drawLine{to{opacity:1;stroke-dashoffset:0}}
+@keyframes popIn{0%{opacity:0;transform:scale(0)}60%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}
+@keyframes badgeIn{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:scale(1)}}
+@keyframes shine{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(760px)}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<aside id="side" aria-label="Sidebar">
+<div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Uncle Pelex</div>
+<button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
+<button class="nav" data-go="library"><svg viewBox="0 0 24 24"><path d="M5 4v16M10 4v16M15 5l4 14"/></svg>Library</button>
+<button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled <span class="badge soon">Soon</span></button>
+<button class="nav" data-go="images"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 7"/></svg>Images <span class="badge soon">Soon</span></button>
+<button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
+<button class="nav" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg>Plugins</button>
+<button class="nav" data-go="plans"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Plans</button>
+<div class="spacer"></div>
+<button class="nav" data-go="settings" data-tab="privacy"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Privacy</button>
+<button class="nav" data-go="settings" data-tab="custom"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Settings</button>
+<button class="me nav" id="sbAccountBtn" style="border-radius:10px;border-top:1px solid var(--line)"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span><strong id="sbName">Sign in</strong><br><span class="badge" id="sbSub">Free plan</span></span></button>
+</aside>
+<div class="scrim" id="scrim"></div>
+<main>
+<div class="top"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><strong>Uncle Pelex</strong></div>
+
+<section class="view chat" id="v-chat">
+<div id="chat" aria-live="polite">
+<div class="chatbody">
+<h1>Uncle Pelex Agent 1.0</h1>
+<p class="hello" id="hello">Type, speak, or attach an image or document.</p>
+<div class="chips"><button class="chip-sugg" data-fill="Help me write a message to ">✉️ Write a message</button><button class="chip-sugg" data-fill="I need advice on ">💡 Get advice</button><button class="chip-sugg" data-sugg="Help me plan my week">📅 Plan my week</button><button class="chip-sugg" data-sugg="Teach me something new and useful for my business">📚 Learn something new</button><button class="chip-sugg" data-action="talk">🎙️ Start a voice chat</button><button class="chip-sugg" data-fill="Search the web for ">🔍 Search the web</button><button class="chip-sugg" disabled style="opacity:.55;cursor:default">🎨 Create an image <span class="badge soon">Soon</span></button></div>
+</div>
+</div>
+<div class="limit" id="limit" hidden><strong>You have reached today's free limit.</strong><span class="muted">It resets in 6 hours. Your earlier chats are still open in the sidebar.</span><div class="limitbtns"><button class="btn" data-go="plans">Upgrade to General Premium</button><button class="btn alt" data-go="plans">Start 14-day trial</button></div></div>
+<div class="chip" id="chip"></div>
+<div class="barwrap"><div class="bar"><div class="field">
+<label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" hidden></label>
+<input id="in" type="text" placeholder="Message Uncle Pelex" aria-label="Message">
+<button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+<button class="ic send" id="send" aria-label="Send">➤</button>
+</div><button class="talk" id="talk">Talk live</button></div>
+<div class="disclaimer">Uncle Pelex can make mistakes. Please check important info.</div>
+<button class="plugshortcut" data-go="plugins" aria-label="Open plugins"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Plugins</button></div>
+<div id="pulse" aria-hidden="true"></div>
+</section>
+
+<section class="view" id="v-library" hidden><div class="wrap">
+<h1>Library</h1><div class="muted">Images and documents you share with Uncle Pelex are kept here on this device.</div>
+<div class="grid" id="libGrid"></div>
+<p class="muted" id="libEmpty" style="margin-top:14px">Nothing saved yet. Attach an image or document in chat and it will appear here.</p>
+<div style="margin-top:16px"><button class="btn alt" id="libClear">Clear library</button></div>
+</div></section>
+
+<section class="view" id="v-scheduled" hidden><div class="wrap">
+<h1>Scheduled <span class="badge soon">Coming soon</span></h1><div class="muted">Reminders and repeating tasks, like "every Monday, summarise my week".</div>
+<div class="card" style="margin-top:18px"><h2>Launching with the Personal bot</h2><span class="muted">You will be able to ask Uncle Pelex to run a task at a set time and send you the result.</span></div>
+</div></section>
+
+<section class="view" id="v-images" hidden><div class="wrap">
+<h1>Images <span class="badge soon">Coming soon</span></h1><div class="muted">Create pictures, flyers and designs by describing them.</div>
+<div class="card" style="margin-top:18px"><h2>Image creation is on the way</h2><span class="muted">For now you can attach any image in chat and Uncle Pelex will explain what is in it.</span></div>
+</div></section>
+
+<section class="view" id="v-signin" hidden><div class="wrap">
+<div class="authcard">
+<h1 id="authTitle">Sign in</h1>
+<div class="muted" id="authSub">Sign in to save your chats, library and plan across devices.</div>
+<button class="oauthbtn" id="authGoogle"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.52 12.27c0-.85-.07-1.47-.22-2.12H12v3.85h6.6c-.13 1.1-.86 2.76-2.47 3.87l-.02.15 3.59 2.78.25.02c2.28-2.1 3.57-5.2 3.57-8.55"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.79-2.94c-1.02.7-2.4 1.2-4.16 1.2-3.18 0-5.88-2.1-6.84-5.02l-.14.01-3.73 2.88-.05.13C3.21 21.3 7.26 24 12 24"/><path fill="#FBBC05" d="M5.16 14.34A7.4 7.4 0 0 1 4.75 12c0-.81.14-1.6.4-2.34l-.01-.16-3.78-2.94-.12.06A12 12 0 0 0 0 12c0 1.93.46 3.76 1.24 5.38z"/><path fill="#EA4335" d="M12 4.74c2.25 0 3.77.97 4.64 1.78l3.38-3.3C17.94 1.2 15.24 0 12 0 7.26 0 3.21 2.7 1.24 6.62l3.9 3.04C6.12 6.84 8.82 4.74 12 4.74"/></svg>Continue with Google</button>
+<button class="oauthbtn" id="authGithub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.98 5.24.98 11.52c0 5.02 3.26 9.28 7.78 10.78.57.1.78-.25.78-.55v-2.17c-3.16.7-3.83-1.36-3.83-1.36-.52-1.3-1.26-1.65-1.26-1.65-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.65 1.24 3.3.95.1-.73.4-1.24.72-1.52-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.5-1.44.11-3 0 0 .96-.3 3.14 1.16a10.9 10.9 0 0 1 5.72 0c2.18-1.46 3.14-1.16 3.14-1.16.61 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.35-2.66 5.3-5.19 5.59.41.35.77 1.04.77 2.1v3.11c0 .3.2.66.79.55a11.03 11.03 0 0 0 7.76-10.78C23.02 5.24 18.27.5 12 .5"/></svg>Continue with GitHub</button>
+<div class="authsep">or</div>
+<label for="authEmail" class="muted" style="font-size:13px">Email</label>
+<input class="inp" id="authEmail" type="email" placeholder="you@email.com">
+<label for="authPass" class="muted" style="font-size:13px" id="authPassLabel">Password</label>
+<input class="inp" id="authPass" type="password" placeholder="••••••••">
+<div id="authMsg" class="muted" style="min-height:20px;font-size:13px;margin-bottom:8px" role="status"></div>
+<button class="btn" id="authSubmit">Sign in</button>
+<div class="authswitch" id="authSwitch">New here? <a id="authToggle">Create an account</a></div>
+</div>
+</div></section>
+
+<section class="view" id="v-projects" hidden><div class="wrap">
+<h1>Projects</h1><div class="muted">Each project keeps its own chats and conversation history.</div>
+<div style="margin-top:16px"><button class="btn">New project</button></div>
+<div class="grid" id="projectsGrid"></div>
+<p class="muted" id="projectsEmpty" style="margin-top:14px">No projects yet. Start one to keep related chats together.</p>
+</div></section>
+
+
+
+<section class="view" id="v-plugins" hidden><div class="wrap">
+<h1>Plugins</h1><div class="muted">Connect as many apps as you like. Each one stays under your own account.</div>
+<div class="grid" id="plugs">
+<div class="card"><div class="cardtop"><h2>Canva</h2><button class="plugbtn" data-plug aria-label="Connect Canva" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Edit flyers and designs in your own Canva.</span></div>
+<div class="card"><div class="cardtop"><h2>CapCut</h2><button class="plugbtn" data-plug aria-label="Connect CapCut" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Send clips and edits to your CapCut projects.</span></div>
+<div class="card"><div class="cardtop"><h2>Seedance 2.5</h2><button class="plugbtn" data-plug aria-label="Connect Seedance 2.5" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Realistic AI video generation.</span><span class="badge" style="align-self:flex-start">Paid plans</span></div>
+<div class="card"><div class="cardtop"><h2>Trello</h2><button class="plugbtn" data-plug aria-label="Connect Trello" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Boards and cards from chat.</span></div>
+<div class="card"><div class="cardtop"><h2>Google Drive</h2><button class="plugbtn" data-plug aria-label="Connect Google Drive" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Files and sheets you choose to share.</span></div>
+<div class="card" style="border-style:dashed"><h2>Browse more</h2><span class="muted">More plugins arrive here as they are added.</span><button class="btn alt">Browse</button></div>
+</div></div></section>
+
+<section class="view" id="v-plans" hidden><div class="wrap">
+<h1>Plans</h1><div class="muted">Every plan starts with a 14-day free trial. You are asked to activate only after the trial ends.</div>
+<div class="grid">
+<div class="card"><h2>General</h2><div class="price">Free</div><span class="muted">Chat, web search, voice and image upload with a daily limit. No login needed.</span><span class="muted">General Premium: <span data-ngn="&#8358;6,500" data-usd="$5"></span> monthly, <span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year. Unlimited chat (fair use) and live walkthroughs.</span><button class="btn alt">Start free</button></div>
+<div class="card pick"><div class="cardtop"><h2>Personal Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;17,500" data-usd="$13"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year.</span><span class="muted">Your own Gmail, Calendar and Sheets, on website and Telegram.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
+<div class="card"><div class="cardtop"><h2>Business Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;20,000" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year.</span><span class="muted">Customer-support bot on your website and Telegram, set to your brand and tone.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
+<div class="card"><h2>WhatsApp Add-on</h2><div class="price"><span data-ngn="&#8358;9,500" data-usd="$7"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;5,500" data-usd="$4"></span> biweekly or <span data-ngn="&#8358;95,000" data-usd="$70"></span> per year.</span><span class="muted">Adds WhatsApp access on top of any Personal or Business plan.</span><button class="btn">Add to my plan</button></div>
+</div>
+<div class="note">Prices switch automatically by location: naira for visitors in Nigeria, dollars everywhere else. There is no manual switch. This preview guesses from your device time zone; the live site detects the country on the server.</div>
+<div class="note">After activation this page shows your status (for example "Premium Member") instead of plans.</div>
+</div></section>
+
+<section class="view" id="v-settings" hidden><div class="wrap">
+<h1>Settings</h1>
+<div class="tabs" role="tablist">
+<button class="tab" role="tab" data-t="account">Account</button>
+<button class="tab" role="tab" data-t="custom">Custom instructions</button>
+<button class="tab" role="tab" data-t="privacy">Privacy</button>
+</div>
+<div class="pane" id="p-account">
+<div class="two"><div><label for="n">Name</label><input class="inp" id="n" value="" placeholder="Your name"></div><div><label for="e">Email</label><input class="inp" id="e" value="" placeholder="you@email.com"></div></div>
+<div class="list"><div class="row"><span>Current plan<br><span class="muted">Free plan</span></span><button class="btn alt" data-go="plans">View plans</button></div></div>
+<div style="margin-top:16px"><button class="btn alt" id="logoutBtn" hidden>Log out</button></div>
+</div>
+<div class="pane" id="p-custom" hidden>
+<label for="ci">How should Uncle Pelex respond to you?</label>
+<textarea id="ci" placeholder="Example: Keep replies short. Call me [Name]. I run a small business."></textarea>
+<div class="two"><div><label for="tn">Tone</label><select id="tn"><option>Professional</option><option>Friendly</option><option>Direct</option></select></div><div><label for="ln">Reply length</label><select id="ln"><option>Short</option><option>Balanced</option><option>Detailed</option></select></div></div>
+<div style="margin-top:16px"><button class="btn">Save</button></div>
+<div class="note">Plugin connections and keys are managed in Plugins, not here.</div>
+</div>
+<div class="pane" id="p-privacy" hidden>
+<div class="list">
+<div class="row"><span>Save chat history</span><input type="checkbox" checked aria-label="Save chat history"></div>
+<div class="row"><span>Use my chats to personalise replies</span><input type="checkbox" checked aria-label="Personalise replies"></div>
+<div class="row"><span>Download my data</span><button class="btn alt">Request</button></div>
+<div class="row"><span>Delete all chats</span><button class="btn alt">Delete</button></div>
+<div class="row"><span>Delete my account</span><button class="btn alt">Delete</button></div>
+</div></div>
+</div></section>
+</main>
+</div>
+<div id="imgOverlay">
+  <div class="preview-card">
+    <img id="previewImg" alt="Selected image">
+    <textarea id="previewCaption" placeholder="Add a description (optional)"></textarea>
+    <div class="preview-actions">
+      <button class="preview-cancel" id="previewCancel" type="button">Cancel</button>
+      <button class="preview-send" id="previewSend" type="button">Send</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// ====== SET THIS ======
+var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
+// ======================
+var $ = function(i){return document.getElementById(i)};
+var chat=$('chat'), input=$('in'), chip=$('chip');
+
+var sid; try{sid=localStorage.getItem('pelex_sid')}catch(e){}
+if(!sid){sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem('pelex_sid',sid)}catch(e){}}
+var h=new Date().getHours();
+$('hello').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+'. Type, speak, or attach an image or document.';
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function add(t,cls,img,retryFn){var d=document.createElement('div');d.className='msg '+(cls||'');
+  if(img){var i=document.createElement('img');i.src=img;i.alt='Uploaded image';d.appendChild(i)}
+  var textNode=document.createElement('span');textNode.textContent=t;d.appendChild(textNode);
+  if(!cls){ // bot reply: add copy / thumbs / retry row
+    var row=document.createElement('div');row.className='msgactions';
+    var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='⧉';
+    cp.onclick=function(){
+      var text=textNode.textContent;
+      (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject())
+        .catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()})
+        .then(function(){var o=cp.textContent;cp.textContent='✓';setTimeout(function(){cp.textContent=o},1200)});
+    };
+    row.appendChild(cp);
+    var up=document.createElement('button');up.setAttribute('aria-label','Good response');up.setAttribute('aria-pressed','false');up.textContent='👍';
+    var down=document.createElement('button');down.setAttribute('aria-label','Bad response');down.setAttribute('aria-pressed','false');down.textContent='👎';
+    var fb=document.createElement('span');fb.className='fb';
+    up.onclick=function(){up.setAttribute('aria-pressed','true');down.setAttribute('aria-pressed','false');fb.textContent='Thanks for the feedback.'};
+    down.onclick=function(){down.setAttribute('aria-pressed','true');up.setAttribute('aria-pressed','false');fb.textContent='Thanks, noted.'};
+    row.appendChild(up);row.appendChild(down);
+    if(retryFn){var rt=document.createElement('button');rt.setAttribute('aria-label','Retry');rt.textContent='⟳';
+      rt.onclick=function(){rt.disabled=true;retryFn().finally(function(){rt.disabled=false})};
+      row.appendChild(rt)}
+    row.appendChild(fb);
+    d.appendChild(row);
+  }
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
+
+async function post(path,body){
+  var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  var j=await r.json().catch(function(){return{}});
+  if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')'));
+  return j;
+}
+
+async function askAgent(text){
+  if(WEBHOOK_URL.indexOf('PASTE_')===0) throw new Error('The chat backend is not connected yet. Add your n8n webhook URL in index.html.');
+  var r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:sid,chatInput:text})});
+  var raw=await r.text(), out=raw;
+  try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.response||o.reply||o.text||o.message||raw}catch(e){}
+  if(!r.ok) throw new Error('The agent could not reply ('+r.status+').');
+  return String(out);
+}
+
+// ---- audio state + one reusable player (unlocked on a tap so phones keep allowing playback) ----
+var live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
+var player=new Audio();player.preload='auto';player.setAttribute('playsinline','');
+var SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',unlocked=false;
+function unlockAudio(){
+  if(!unlocked){try{player.src=SILENT;var p=player.play();if(p&&p.catch)p.catch(function(){});unlocked=true}catch(e){}}
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}}
+
+// ---- microphone: one stream, reused; released when the call ends or after 20s idle ----
+async function openMic(){
+  clearTimeout(idleT);
+  if(!stream||stream.getTracks().every(function(t){return t.readyState==='ended'})){
+    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});an=null}
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended'){try{await actx.resume()}catch(e){}}
+  if(!an){var s=actx.createMediaStreamSource(stream);an=actx.createAnalyser();an.fftSize=1024;s.connect(an);abuf=new Uint8Array(an.fftSize)}
+  return stream}
+function level(){an.getByteTimeDomainData(abuf);var s=0;for(var i=0;i<abuf.length;i++){var v=(abuf[i]-128)/128;s+=v*v}return Math.sqrt(s/abuf.length)}
+function closeMic(){clearTimeout(idleT);if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}an=null;if(actx){try{actx.close()}catch(e){}actx=null}}
+function releaseSoon(){clearTimeout(idleT);idleT=setTimeout(closeMic,20000)}
+
+// ---- speaking: reply is split into sentences; sentence 2 is fetched while sentence 1 plays ----
+var curRes=null,speakTok=0,bargeTimer=null;
+function chunk(t){
+  var x=t.replace(/[*_#`>]/g,'').replace(/\s+/g,' ').trim().slice(0,2500);
+  var parts=x.match(/[^.!?\n]+[.!?]*\s*/g)||[x],out=[],cur='';
+  parts.forEach(function(p){if(cur&&(cur+p).length>260){out.push(cur);cur=p}else cur+=p});
+  if(cur.trim())out.push(cur);return out}
+function fetchAudio(c){return post('/.netlify/functions/speak',{text:c}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
+function playUrl(u){return new Promise(function(res){
+  curRes=res;
+  player.onended=player.onerror=function(){player.onended=player.onerror=null;curRes=null;res(true)};
+  player.src=u;
+  var p=player.play();
+  if(p&&p.catch)p.catch(function(){player.onended=player.onerror=null;curRes=null;res(false)})})}
+function fallbackSpeak(clean){return new Promise(function(res){
+  if(!window.speechSynthesis){res();return}
+  var u=new SpeechSynthesisUtterance(clean);u.onend=u.onerror=function(){res()};speechSynthesis.speak(u)})}
+function stopSpeaking(){
+  speakTok++;clearInterval(bargeTimer);bargeTimer=null;
+  player.onended=player.onerror=null;try{player.pause()}catch(e){}
+  if(curRes){var r=curRes;curRes=null;r(true)}
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  document.body.classList.remove('speaking')}
+// barge-in: while Uncle Pelex talks in live mode, ~0.4s of your voice cuts him off
+async function startBargeIn(tok){
+  if(!live)return;
+  try{await openMic()}catch(e){return}
+  if(tok!==speakTok)return;
+  var n=0;clearInterval(bargeTimer);
+  bargeTimer=setInterval(function(){
+    if(!an)return;
+    n=level()>0.045?n+1:0;
+    if(n>=4)stopSpeaking()},100)}
+async function speak(t){
+  stopSpeaking();var tok=speakTok,cs=chunk(t);if(!cs.length)return;
+  document.body.classList.add('speaking');startBargeIn(tok);
+  var next=fetchAudio(cs[0]);
+  for(var i=0;i<cs.length;i++){
+    var u=await next;if(tok!==speakTok)return;
+    if(i+1<cs.length)next=fetchAudio(cs[i+1]);
+    var ok=u?await playUrl(u):false;if(tok!==speakTok)return;
+    if(!ok)await fallbackSpeak(cs[i]);
+    if(tok!==speakTok)return}
+  clearInterval(bargeTimer);bargeTimer=null;
+  document.body.classList.remove('speaking')}
+
+// ---- typed / spoken turn ----
+var pendingDoc=null;
+async function turn(text,shown,img,el){
+  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
+  var wait=add('Thinking...','sys');
+  try{
+    var reply=await askAgent(text);wait.remove();
+    var node;
+    var retryFn=function(){
+      node.remove();
+      var w2=add('Thinking...','sys');
+      return askAgent(text).then(function(r2){w2.remove();node=add(r2,null,null,retryFn)})
+        .catch(function(e2){w2.remove();node=add(e2.message,'sys')});
+    };
+    node=add(reply,null,null,retryFn);
+    return reply}
+  catch(e){wait.remove();add(e.message,'sys');return ''}
+}
+async function sendTyped(){
+  var q=input.value.trim();
+  if(!q&&!pendingDoc) return;
+  input.value='';
+  if(pendingDoc){
+    var d=pendingDoc;pendingDoc=null;chip.style.display='none';
+    q=q||'Summarize this document.';
+    await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+q,'📄 '+d.name+'\n'+q);
+  } else await turn(q);
+}
+$('send').onclick=sendTyped;
+input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
+
+// ---- voice recording ----
+function setLive(on){live=on;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
+  if(!on){stopSpeaking();clearInterval(timer);heard=false;
+    if(rec&&rec.state==='recording')rec.stop();
+    $('mic').classList.remove('recording');busy=false;closeMic()}}
+function listen(){return listenRec()}
+async function listenRec(){
+  if(busy) return;
+  stopSpeaking();
+  try{await openMic()}
+  catch(e){add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false);return}
+  var mime=(window.MediaRecorder&&MediaRecorder.isTypeSupported('audio/webm'))?'audio/webm':'audio/mp4';
+  var chunks=[];rec=new MediaRecorder(stream,{mimeType:mime});
+  rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
+  rec.onstop=async function(){
+    clearInterval(timer);$('mic').classList.remove('recording');
+    if(!heard){if(live){add('I did not hear anything, so live mode stopped.','sys');setLive(false)}else releaseSoon();return}
+    await handleAudio(new Blob(chunks,{type:mime}),mime)};
+  heard=false;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02;
+  rec.start();$('mic').classList.add('recording');
+  timer=setInterval(function(){
+    if(!an)return;
+    var now=Date.now(),l=level();
+    if(now-t0<400){samples.push(l);return}
+    if(!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.04,Math.max(0.015,m*3));calibrated=true}
+    if(l>thr){heard=true;last=now}
+    if((heard&&now-last>1500)||now-t0>60000||(!heard&&now-t0>12000)){if(rec.state==='recording')rec.stop()}
+  },100)}
+async function handleAudio(blob,mime){
+  busy=true;
+  var note=add('Listening...','sys');
+  try{
+    var b64=await new Promise(function(res){var f=new FileReader();f.onload=function(){res(String(f.result).split(',')[1])};f.readAsDataURL(blob)});
+    var r=await post('/.netlify/functions/transcribe',{audio:b64,mime:mime});
+    note.remove();
+    if(!r.text){add('I could not make out that recording. Try again.','sys');busy=false;if(live)listen();else releaseSoon();return}
+    if(live&&r.text.split(/\s+/).length<=8&&/\b(talk (to you )?later|goodbye|bye bye|bye|end (the )?call|stop listening)\b/i.test(r.text)){
+      add(r.text,'me');add('Talk later! I am here whenever you need me.');busy=false;setLive(false);return}
+    var reply=await turn(r.text);busy=false;
+    if(reply&&live){await speak(reply)}
+  }catch(e){note.remove();add(e.message,'sys')}
+  busy=false;
+  if(live) listen();else releaseSoon();
+}
+$('mic').onclick=function(){unlockAudio();if(rec&&rec.state==='recording'){rec.stop();return}listen()};
+$('talk').onclick=function(){unlockAudio();if(live){setLive(false)}else{setLive(true);listen()}};
+
+// ---- images and documents ----
+function shrink(file){return new Promise(function(res,rej){
+  var img=new Image(),u=URL.createObjectURL(file);
+  img.onload=function(){var m=1280,s=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82))};
+  img.onerror=function(){rej(new Error('That image could not be opened.'))};img.src=u})}
+async function readPdf(file){
+  if(!window.pdfjsLib) throw new Error('The PDF reader did not load. Check your connection and try again.');
+  var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out='';
+  for(var p=1;p<=Math.min(pdf.numPages,30);p++){var c=await(await pdf.getPage(p)).getTextContent();out+=c.items.map(function(i){return i.str}).join(' ')+'\n'}
+  return out}
+var overlay=$('imgOverlay'),previewImg=$('previewImg'),previewCaption=$('previewCaption'),pendingImg=null;
+function closeOverlay(){overlay.classList.remove('show');previewImg.src='';previewCaption.value='';pendingImg=null}
+$('previewCancel').onclick=closeOverlay;
+$('previewSend').onclick=async function(){
+  if(!pendingImg) return;
+  var data=pendingImg,q=previewCaption.value.trim()||'Describe this image and explain what matters in it.';
+  closeOverlay();
+  thumb(data).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})});
+  add(q,'me',data);var w=add('Looking at the image...','sys');
+  try{var r=await post('/.netlify/functions/vision',{image:data,prompt:q});w.remove();add(r.text)}
+  catch(err){w.remove();add(err.message,'sys')}
+};
+$('file').onchange=async function(e){
+  var f=e.target.files[0];e.target.value='';if(!f) return;
+  try{
+    if(f.type.indexOf('image/')===0){
+      var q=input.value.trim();input.value='';
+      var data=await shrink(f);
+      pendingImg=data;previewImg.src=data;previewCaption.value=q;
+      overlay.classList.add('show');previewCaption.focus();
+    } else {
+      var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
+      text=text.trim().slice(0,12000);
+      if(!text) throw new Error('No readable text was found in that file.');
+      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});chip.textContent='📄 '+f.name+' is attached. Type your question and press send.';chip.style.display='block';
+    }
+  }catch(err){add(err.message,'sys')}
+};
+
+
+var app=document.getElementById('app');
+function tab(t){document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.id!=='p-'+t});document.querySelectorAll('.tab').forEach(function(b){b.setAttribute('aria-selected',b.dataset.t===t)})}
+function go(v,t){document.querySelectorAll('.view').forEach(function(e){e.hidden=e.id!=='v-'+v});
+document.querySelectorAll('aside .nav').forEach(function(b){b.removeAttribute('aria-current')});
+var m={project:'projects'}[v]||v;
+document.querySelectorAll('aside .nav[data-go="'+m+'"]').forEach(function(b){if(!t||b.dataset.tab===t)b.setAttribute('aria-current','true')});
+if(v==='settings')tab(t||'account');app.classList.remove('open')}
+document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go,b.dataset.tab)})});
+
+// ---- Sign in (Supabase) ----
+var SB_URL='https://lmqcbiiggcgppwfonlpn.supabase.co';
+var SB_KEY='sb_publishable_qeB6BYPzhFGfo695cucUJg_dQsl_7QR';
+var sb=null;try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+var signedIn=false, authMode='in';
+function authMsg(t,bad){var m=document.getElementById('authMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
+function setAuthMode(m){
+  authMode=m;authMsg('');
+  document.getElementById('authTitle').textContent=m==='in'?'Sign in':'Create your account';
+  document.getElementById('authSub').textContent=m==='in'?'Sign in to save your chats, library and plan across devices.':'Takes a minute. You can also use Google or GitHub above.';
+  document.getElementById('authPassLabel').textContent=m==='in'?'Password':'Create a password';
+  document.getElementById('authSubmit').textContent=m==='in'?'Sign in':'Create account';
+  document.getElementById('authSwitch').innerHTML=m==='in'?'New here? <a id="authToggle">Create an account</a>':'Already have an account? <a id="authToggle">Sign in</a>';
+  document.getElementById('authToggle').addEventListener('click',function(){setAuthMode(m==='in'?'up':'in')});
+}
+function friendly(e){
+  var t=(e&&e.message)||'Something went wrong. Please try again.';
+  if(/provider is not enabled|Unsupported provider/i.test(t))return 'That sign-in option is not switched on yet.';
+  if(/Invalid login credentials/i.test(t))return 'Wrong email or password.';
+  if(/already registered/i.test(t))return 'That email already has an account. Try signing in.';
+  if(/Password should be/i.test(t))return 'Choose a password with at least 6 characters.';
+  if(/rate limit/i.test(t))return 'Too many attempts. Please wait a few minutes and try again.';
+  return t}
+function applyUser(u){
+  signedIn=!!u;
+  var nm=u?((u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name||u.user_metadata.user_name))||(u.email||'').split('@')[0]||'Account'):'Sign in';
+  document.getElementById('sbName').textContent=nm;
+  document.getElementById('sbSub').textContent=u?(u.email||'Signed in'):'Free plan';
+  var n=document.getElementById('n'),e=document.getElementById('e');
+  if(n)n.value=u?nm:'';if(e)e.value=u?(u.email||''):'';
+  var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
+}
+async function oauth(provider){
+  if(!sb){authMsg('Sign-in is unavailable right now. Check your connection.',true);return}
+  authMsg('Opening '+provider+'...');
+  var r=await sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:location.origin+'/'}});
+  if(r.error)authMsg(friendly(r.error),true)}
+document.getElementById('authGoogle').addEventListener('click',function(){oauth('google')});
+document.getElementById('authGithub').addEventListener('click',function(){oauth('github')});
+document.getElementById('authSubmit').addEventListener('click',async function(){
+  if(!sb){authMsg('Sign-in is unavailable right now. Check your connection.',true);return}
+  var em=document.getElementById('authEmail').value.trim(),pw=document.getElementById('authPass').value;
+  if(!em||!pw){authMsg('Enter your email and password.',true);return}
+  var btn=this;btn.disabled=true;authMsg(authMode==='in'?'Signing in...':'Creating your account...');
+  try{
+    if(authMode==='in'){
+      var r=await sb.auth.signInWithPassword({email:em,password:pw});
+      if(r.error)authMsg(friendly(r.error),true);else{authMsg('');document.getElementById('authPass').value=''}
+    }else{
+      var r2=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.origin+'/'}});
+      if(r2.error)authMsg(friendly(r2.error),true);
+      else if(!r2.data.session)authMsg('Check your email to confirm your account, then sign in.');
+      else{authMsg('');document.getElementById('authPass').value=''}
+    }
+  }catch(e){authMsg(friendly(e),true)}
+  btn.disabled=false});
+document.getElementById('authPass').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('authSubmit').click()});
+document.getElementById('sbAccountBtn').addEventListener('click',function(){
+  if(signedIn){go('settings','account')}else{setAuthMode('in');go('signin')}
+});
+var lo=document.getElementById('logoutBtn');
+if(lo)lo.addEventListener('click',async function(){if(sb)await sb.auth.signOut();go('chat')});
+if(sb){
+  sb.auth.getSession().then(function(r){applyUser(r.data&&r.data.session?r.data.session.user:null)});
+  sb.auth.onAuthStateChange(function(ev,session){
+    applyUser(session?session.user:null);
+    if(session&&(ev==='SIGNED_IN')&&!document.getElementById('v-signin').hidden)go('chat');
+  });
+}
+setAuthMode('in');
+document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
+document.querySelectorAll('[data-plug]').forEach(function(b){b.addEventListener('click',function(){var now=b.getAttribute('aria-pressed')==='true';b.setAttribute('aria-pressed',(!now).toString())})});
+document.getElementById('menu').addEventListener('click',function(){app.classList.add('open')});
+document.getElementById('scrim').addEventListener('click',function(){app.classList.remove('open')});
+var ng=false;try{ng=Intl.DateTimeFormat().resolvedOptions().timeZone==='Africa/Lagos'}catch(e){}
+document.querySelectorAll('[data-ngn]').forEach(function(el){el.innerHTML=ng?el.dataset.ngn:el.dataset.usd});
+document.querySelectorAll('[data-lim]').forEach(function(b){b.addEventListener('click',function(){var on=b.dataset.lim==='1';document.getElementById('limit').hidden=!on;var i=document.getElementById('msg');i.disabled=on;i.placeholder=on?'Daily limit reached':'Message Uncle Pelex';document.querySelectorAll('[data-lim]').forEach(function(x){x.setAttribute('aria-pressed',x===b)})})});
+go('chat');
+
+document.querySelectorAll('.chip-sugg:not([disabled])').forEach(function(b){b.addEventListener('click',function(){
+  if(b.dataset.action==='talk'){$('talk').click();return}
+  if(b.dataset.fill){input.value=b.dataset.fill;input.focus();return}
+  input.value=b.dataset.sugg;sendTyped()})});
+
+// ---- Library (kept on this device) ----
+var LIB_KEY='pelex_library';
+function libGet(){try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]')}catch(e){return[]}}
+function libSet(a){try{localStorage.setItem(LIB_KEY,JSON.stringify(a.slice(0,40)))}catch(e){}}
+function libAdd(item){var a=libGet();a.unshift(item);libSet(a);libRender()}
+function thumb(dataUrl){return new Promise(function(res){var im=new Image();im.onload=function(){var s=Math.min(1,160/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.6))};im.onerror=function(){res('')};im.src=dataUrl})}
+function libRender(){
+  var a=libGet(),g=$('libGrid');g.innerHTML='';$('libEmpty').hidden=a.length>0;
+  a.forEach(function(it){
+    var c=document.createElement('div');c.className='card';
+    if(it.thumb){var im=document.createElement('img');im.src=it.thumb;im.alt=it.name;im.style.cssText='width:100%;border-radius:10px;max-height:140px;object-fit:cover';c.appendChild(im)}
+    var t=document.createElement('strong');t.textContent=(it.thumb?'':'📄 ')+it.name;c.appendChild(t);
+    var d=document.createElement('span');d.className='muted';d.textContent=new Date(it.at).toLocaleDateString();c.appendChild(d);
+    g.appendChild(c)})}
+$('libClear').onclick=function(){libSet([]);libRender()};
+libRender();
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}</script>
+</body>
+</html>
