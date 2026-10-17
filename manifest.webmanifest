@@ -1,13 +1,12 @@
 {
-  "name": "Uncle Pelex Agent 1.0",
-  "short_name": "Uncle Pelex",
+  "name": "Pelex",
+  "short_name": "Pelex",
   "description": "AI assistant for entrepreneurs and small businesses.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#F4F5F7",
-  "theme_color": "#0B2A5B",
+  "background_color": "#ffffff",
+  "theme_color": "#6495ED",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -27,5 +26,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "/"
 }

@@ -3,39 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Uncle Pelex Agent 1.0</title>
-<meta name="description" content="Uncle Pelex is an AI assistant for entrepreneurs and small businesses. Chat, voice and smart admin help on web and Telegram, built by PelexSkillHub.">
-<meta name="keywords" content="Uncle Pelex, Unclepelex, Uncle Pelex AI Agent, PelexSkillHub, AI assistant Nigeria, small business AI chatbot">
+<title>Pelex</title>
+<meta name="description" content="Pelex is an AI assistant for entrepreneurs and small businesses. Chat, voice and smart admin help on web and Telegram, built by PelexSkillHub.">
+<meta name="keywords" content="Pelex, Pelex AI Agent, PelexSkillHub, AI assistant Nigeria, small business AI chatbot">
 <meta name="author" content="PelexSkillHub">
 <link rel="canonical" href="https://unclepelexai.netlify.app/">
-<meta property="og:title" content="Uncle Pelex Agent 1.0">
+<meta property="og:title" content="Pelex">
 <meta property="og:description" content="An AI assistant for entrepreneurs and small businesses, by PelexSkillHub.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://unclepelexai.netlify.app/">
 <meta property="og:image" content="https://unclepelexai.netlify.app/icons/icon-512.png">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Uncle Pelex Agent 1.0">
+<meta name="twitter:title" content="Pelex">
 <meta name="twitter:description" content="An AI assistant for entrepreneurs and small businesses, by PelexSkillHub.">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Uncle Pelex","alternateName":"Unclepelex","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://unclepelexai.netlify.app/","publisher":{"@type":"Organization","name":"PelexSkillHub"}}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pelex","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://unclepelexai.netlify.app/","publisher":{"@type":"Organization","name":"PelexSkillHub"}}
 </script>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0B2A5B">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="color-scheme" content="light dark">
+<script>try{var _t=localStorage.getItem("pelex_theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Uncle Pelex">
+<meta name="apple-mobile-web-app-title" content="Pelex">
 
 <style>
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--panel:#171d2b;--ink:#eef1f8;--muted:#9aa6c4;--line:#2a3347;--soft:#1f2840;--sel:#232d47;--teal:#3a4f7d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1420;--panel:#171d2b;--ink:#eef1f8;--muted:#9aa6c4;--line:#2a3347;--soft:#1f2840;--sel:#232d47;--teal:#3a4f7d;color-scheme:dark}
 :root{--bg:#ffffff;--panel:#fff;--ink:#111111;--muted:#55617f;--line:#dfe4ee;--soft:#e8eefb;--btn:#6495ED;--btnink:#0b1b4a;--teal:#a9c4f5;--sel:#e3eafb;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45}
 button,input,textarea,select{font:inherit;color:inherit}
-.app{display:grid;grid-template-columns:272px 1fr;height:100%}
-aside{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:4px;overflow-y:auto}
-.brand{display:flex;align-items:center;gap:8px;padding:2px 8px 12px;font-weight:700;font-size:17px}
+.app{display:grid;grid-template-columns:272px 1fr;height:100%;transition:grid-template-columns .22s ease}
+@media(min-width:821px){.app.collapsed{grid-template-columns:0 1fr}.app.collapsed aside{margin-left:-272px;opacity:0;pointer-events:none}.reopen{position:fixed;left:10px;top:14px;z-index:5;display:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}.app.collapsed .reopen{display:grid}}
+@media(max-width:820px){.reopen{display:none!important}}
+aside{background:linear-gradient(180deg,var(--panel),var(--soft));border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:4px;overflow-y:auto;box-shadow:1px 0 0 rgba(0,0,0,.02);transition:margin-left .22s ease,opacity .18s ease}
+.brand{white-space:nowrap;display:flex;align-items:center;gap:8px;padding:2px 8px 12px;font-weight:700;font-size:17px}
 .logo{width:30px;height:30px;border-radius:9px;background:var(--btn);color:var(--btnink);display:grid;place-items:center;font-weight:800}
 .nav{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:10px;background:none;text-align:left;cursor:pointer}
 .nav:hover{background:var(--soft)}
@@ -47,9 +53,14 @@ aside{background:var(--panel);border-right:1px solid var(--line);display:flex;fl
 .sub{display:block;padding:8px 10px 8px 38px;font-size:14px;color:var(--muted);border:0;background:none;text-align:left;width:100%;cursor:pointer;border-radius:8px;min-height:36px}
 .sub:hover{background:var(--soft);color:var(--ink)}
 .spacer{flex:1;min-height:12px}
+.sidefoot{position:sticky;bottom:0;margin-top:auto;padding-top:4px;background:var(--soft);z-index:2}
+#recents{flex:1 1 auto;min-height:90px;overflow-y:auto}
+
 .me{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);margin-top:6px}
 .av{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;color:var(--btnink)}
 .badge{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--btnink);font-weight:600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .badge{color:#cfdcff}}
+:root[data-theme="dark"] .badge{color:#cfdcff}
 main{display:flex;flex-direction:column;min-width:0;height:100%}
 .top{display:none;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
 .iconbtn{min-width:44px;min-height:44px;border:0;background:none;border-radius:10px;cursor:pointer;display:grid;place-items:center}
@@ -81,18 +92,18 @@ h2{font-size:20px;margin:0 0 4px}
 .authcard .muted{margin-bottom:20px}
 .oauthbtn{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--bg,#fff);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;cursor:pointer;margin-bottom:10px}
 .oauthbtn svg{width:18px;height:18px}
-.authsep{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12px;margin:16px 0}
+.authsep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}
 .authsep::before,.authsep::after{content:"";flex:1;height:1px;background:var(--line)}
 .authcard .inp{width:100%;box-sizing:border-box;margin-bottom:10px}
 .authcard .btn{width:100%}
-.authswitch{text-align:center;margin-top:14px;font-size:14px;color:var(--mute)}
+.authswitch{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
 .authswitch a{color:var(--btn);cursor:pointer;font-weight:600;text-decoration:none}
-.disclaimer{text-align:center;font-size:12px;color:var(--mute);padding:0 clamp(12px,4vw,48px) 4px}
+.disclaimer{text-align:center;font-size:12px;color:var(--muted);padding:0 clamp(12px,4vw,48px) 4px}
 .msgactions{display:flex;gap:4px;margin-top:4px}
-.msgactions button{border:none;background:transparent;color:var(--mute);cursor:pointer;padding:4px 6px;border-radius:8px;font-size:14px;line-height:1}
+.msgactions button{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:8px;font-size:14px;line-height:1}
 .msgactions button:hover{background:var(--panel);color:inherit}
 .msgactions button[aria-pressed="true"]{color:var(--btn)}
-.msgactions .fb{font-size:11px;color:var(--mute);margin-left:4px;align-self:center}
+.msgactions .fb{font-size:11px;color:var(--muted);margin-left:4px;align-self:center}
 .chip-sugg{border:1px solid var(--line);background:var(--panel);color:inherit;border-radius:99px;padding:8px 14px;min-height:40px;cursor:pointer;font:inherit;font-size:14px}
 .chip-sugg:not([disabled]):hover{border-color:var(--btn)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
@@ -129,14 +140,14 @@ textarea{min-height:120px;resize:vertical}
 .scrim{display:none}
 @media (max-width:820px){
 .app{grid-template-columns:1fr}
-aside{position:fixed;z-index:20;left:0;top:0;bottom:0;width:min(86vw,300px);transform:translateX(-102%);transition:transform .2s;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+aside{position:fixed;z-index:20;left:0;top:0;height:100%;height:100dvh;overflow-y:auto;width:min(86vw,300px);transform:translateX(-102%);transition:transform .2s;padding-top:calc(14px + env(safe-area-inset-top,0px))}
 .open aside{transform:none}
 .open .scrim{display:block;position:fixed;inset:0;background:rgba(10,15,40,.45);z-index:10}
 .top{display:flex}
 .two{grid-template-columns:1fr}
 }
 .msg{max-width:85%;padding:12px 14px;border-radius:16px;margin:10px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
-.msg.me{margin-left:auto;background:var(--ink);color:#fff;border-color:transparent}
+.msg.me{margin-left:auto;background:var(--ink);color:var(--bg);border-color:transparent}
 .msg.live{border-color:#0A89F4;box-shadow:0 0 0 3px rgba(10,137,244,.22),0 0 24px rgba(10,137,244,.45);animation:breathe 1.4s ease-in-out infinite}
 @keyframes breathe{50%{box-shadow:0 0 0 5px rgba(10,137,244,.3),0 0 34px rgba(10,137,244,.6)}}
 #pulse{position:fixed;left:0;right:0;bottom:0;height:42vh;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1;background:radial-gradient(70% 100% at 50% 100%,rgba(10,137,244,.38),transparent 70%);animation:breatheG 1.8s ease-in-out infinite}
@@ -144,13 +155,13 @@ body:has(#mic.recording) #pulse{opacity:1}
 body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,rgba(255,138,43,.38),transparent 70%)}
 @keyframes breatheG{50%{transform:scaleY(1.18)}}
 @media(prefers-reduced-motion:reduce){#pulse,.msg.live{animation:none}}
-.msg.sys{background:none;border:0;color:var(--mute);font-size:14px;padding:4px 0}
+.msg.sys{background:none;border:0;color:var(--muted);font-size:14px;padding:4px 0}
 .msg img{max-width:220px;border-radius:10px;display:block;margin-bottom:6px}
 .bar{position:relative;z-index:2;max-width:760px;width:100%;margin:0 auto;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0));display:flex;gap:8px;align-items:center}
 .field{flex:1;display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 8px 5px 6px}
 .field input[type=text]{flex:1;border:0;background:none;color:var(--ink);font:inherit;min-width:0;padding:6px 4px}
 .field input[type=text]:focus-visible{outline:none}
-.ic{width:38px;height:38px;border-radius:50%;border:0;background:none;color:var(--mute);font-size:18px;flex-shrink:0;display:grid;place-items:center;transition:background .15s,color .15s}.ic:hover{background:rgba(11,42,91,.06)}.ic svg{width:18px;height:18px}#mic{width:44px;height:44px;color:#fff;background:linear-gradient(145deg,#1B8CF5,#0A5BD3);box-shadow:0 4px 14px rgba(10,110,230,.35)}
+.ic{width:38px;height:38px;border-radius:50%;border:0;background:none;color:var(--muted);font-size:18px;flex-shrink:0;display:grid;place-items:center;transition:background .15s,color .15s}.ic:hover{background:rgba(11,42,91,.06)}.ic svg{width:18px;height:18px}#mic{width:44px;height:44px;color:#fff;background:linear-gradient(145deg,#1B8CF5,#0A5BD3);box-shadow:0 4px 14px rgba(10,110,230,.35)}
 #mic:hover{background:linear-gradient(145deg,#2A96FA,#0F66E0)}
 #mic svg{width:20px;height:20px}
 #mic .wv{display:none;align-items:center;gap:3px;height:20px}
@@ -162,9 +173,31 @@ body.speaking #pulse{opacity:1;background:radial-gradient(70% 100% at 50% 100%,r
 @keyframes ripple{0%{box-shadow:0 0 0 0 rgba(10,137,244,.55)}100%{box-shadow:0 0 0 16px rgba(10,137,244,0)}}
 @media(prefers-reduced-motion:reduce){#mic.recording,#mic .wv i{animation:none}}@keyframes pulseMic{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 .send{background:var(--accent);color:#fff}
-.talk{border:0;border-radius:999px;padding:10px 16px;background:var(--ink);color:#fff;font-weight:600;flex-shrink:0}
+.talk{border:0;border-radius:999px;padding:10px 16px;background:var(--ink);color:var(--bg);font-weight:600;flex-shrink:0}
 .talk.on{background:#D6453D}
-.chip{max-width:760px;margin:0 auto;padding:0 16px;color:var(--mute);font-size:14px;display:none}
+.talk.sec{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+#stopSpeak{display:none}body.speaking #stopSpeak{display:inline-block}
+.wrap.narrow{max-width:560px}
+.voiceCards{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory}
+.voiceCard{scroll-snap-align:start;flex:0 0 150px;height:170px;border-radius:26px;border:1px solid var(--line,#e3e6ee);background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-weight:600;color:var(--ink);cursor:pointer}
+.voiceCard.sel{border:2px solid var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.vcDot{width:72px;height:72px;border-radius:50%}
+.vc-female{background:radial-gradient(circle at 35% 30%,#ffd7c2,#ff9466)}
+.vc-male{background:radial-gradient(circle at 35% 30%,#cfe3ff,#6fa3ef)}
+.srowVal{margin-left:auto;margin-right:8px;color:var(--muted)}
+.modeRow{width:100%;text-align:left;background:none;border:0;cursor:pointer}
+.modeRow .tick{width:20px;height:20px;stroke:var(--teal);stroke-width:2.4;fill:none;visibility:hidden;flex-shrink:0;margin-left:8px}
+.modeRow.sel .tick{visibility:visible}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
+.sheet[hidden]{display:none!important}
+.sheetCard{max-height:82vh;overflow-y:auto}
+.sheetOpt.sel::after{content:"\2713";float:right;color:var(--teal);font-weight:700}
+#mic{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.sheetCard{background:var(--panel);width:100%;border-radius:20px 20px 0 0;padding:14px 16px 24px;max-width:560px;margin:0 auto}
+.sheetHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sheetOpt{display:block;width:100%;text-align:left;padding:14px 4px;border:0;border-top:1px solid var(--line,#e3e6ee);background:none;color:var(--ink);font-size:16px;cursor:pointer}
+.sheetOpt:first-of-type{border-top:0}
+.chip{max-width:760px;margin:0 auto;padding:0 16px;color:var(--muted);font-size:14px;display:none}
 
 
 #intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s ease, filter .6s ease, transform .6s ease}
@@ -189,6 +222,13 @@ body.loading main,body.loading header{visibility:hidden}
 
 /* ---- v2 fixes: pinned composer, blue send, in-bar attachment tray ---- */
 .view.chat{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.view.chat[hidden]{display:none}
+.plugstat{display:block;margin-top:8px;font-size:12px;color:var(--muted,#5b6785)}
+.plugbtn[aria-pressed="true"]~.plugstat{color:#1b6ef3}
+.qchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.qchip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:99px;padding:8px 14px;min-height:40px;cursor:pointer;font:inherit;font-size:14px}
+.qchip:hover,.qchip.on{background:var(--soft);border-color:var(--btn)}
+.plugnote{margin:14px 0 4px;padding:10px 14px;border-radius:12px;background:var(--soft);font-size:13px}
 #chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:0 clamp(12px,4vw,48px)}
 #chat .chatbody{flex:1;min-height:0}
 .barwrap{flex:none;padding-top:6px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));align-items:center;background:var(--bg)}
@@ -211,34 +251,129 @@ body.loading main,body.loading header{visibility:hidden}
 .attach .x{width:28px;height:28px;border-radius:50%;border:0;background:#111;color:#fff;font-size:16px;line-height:1;cursor:pointer;flex:none}
 .field:has(.attach:not([hidden])){border-radius:22px}
 @media(max-width:820px){.barwrap .talk{padding:10px 14px}}
-</style>
+
+.navlabel{font-size:12px;color:var(--muted);padding:12px 10px 4px;font-weight:600}
+.recrow{display:flex;align-items:center;gap:2px}
+.recrow .rec{min-height:38px;font-size:14px;flex:1;min-width:0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:38px}
+.recx{border:0;background:none;color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;opacity:0;font-size:16px;flex:none}
+.recrow:hover .recx,.recrow:focus-within .recx{opacity:1}
+@media(hover:none){.recx{opacity:.55}}
+.recx:hover{background:var(--soft);color:var(--ink)}
+.plink{border:0;background:none;text-align:left;color:var(--ink);padding:6px 0;cursor:pointer;font-size:14px;text-decoration:underline;text-decoration-color:var(--line)}
+.prow{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.prow .btn{min-height:36px;padding:0 14px;font-size:13px}
+.schedform label{font-size:13px}
+.schedform .inp{width:100%;box-sizing:border-box;margin:4px 0 10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;background:var(--panel);color:inherit}
+.schedform textarea.inp{resize:vertical;min-height:76px}
+.srow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 10px}
+.slist{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.stask{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.stask.off{opacity:.65}
+.stask .meta{font-size:13px;color:var(--muted)}
+.stask .res{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.stask .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.stask .acts .btn{min-height:36px;padding:0 14px;font-size:13px}
+
+.adlogo{box-sizing:border-box;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none}
+.adlogo svg{width:26px;height:26px}
+.adcard{cursor:pointer;transition:border-color .15s}
+.adcard:hover{border-color:var(--teal)}
+.adcard:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.adcard h2{margin:6px 0 0}
+.sw{position:relative;width:46px;height:26px;flex:none;border-radius:99px;border:0;cursor:pointer;background:#cfd7e6;transition:background .15s;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.sw[aria-checked="true"]{background:var(--btn)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.sw:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.adcard .sw[aria-checked="true"]~.plugstat,.adcard[data-on="1"] .plugstat{color:#1b6ef3}
+dialog.adsheet{margin:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:18px;padding:22px;width:min(440px,92vw);color:var(--ink);background:var(--panel)}
+dialog.adsheet::backdrop{background:rgba(11,27,74,.35)}
+.adsheet .sheethead{display:flex;align-items:center;gap:12px}
+.adsheet h2{margin:0;font-size:18px}
+.adsheet .xbtn{margin-left:auto;width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);cursor:pointer;display:grid;place-items:center}
+.adsheet .xbtn svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:2.2;stroke-linecap:round}
+#instNav[hidden],#instNavDesk[hidden]{display:none!important}
+.adsheet ol{margin:14px 0 6px;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.adsheet .signs{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.adsheet .signs button{height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.adsheet .signs button:disabled{opacity:.55;cursor:not-allowed}
+.adsheet .signs button:not(:disabled){border-color:var(--btn)}
+.adsheet .sheetnote{margin-top:10px;font-size:13px}
+.adsheet .sheetfoot{margin-top:14px;display:flex;gap:10px}
+.adsheet .sheetfoot .btn{flex:1}
+
+#plugs .cardtop{gap:12px}#plugs .cardtop h2{flex:1;margin:0;text-align:left}
+.addplug{display:flex;flex-direction:column;gap:8px}
+.addplug .inp{height:40px}
+.addplug .hint{font-size:12px}
+.addplug .err{color:#b3261e;font-size:12px;min-height:14px}
+.plugreqlogo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--soft);font-weight:800;color:var(--btnink);font-size:18px}
+
+.sgroup{color:var(--muted);font-size:15px;margin:22px 6px 8px}
+.scard{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.scard.pad{padding:14px}
+.srow{box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:0 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left;cursor:pointer;font-size:16px}
+.scard>.srow:first-child{border-top:0}
+.srow:hover{background:var(--soft)}
+.srow span{flex:1}
+.srow svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.srow .chev{width:18px;height:18px}
+.sback{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px 0 6px;margin:4px 0 8px -6px;border:0;background:none;color:var(--btn);font-weight:600;cursor:pointer;font-size:15px}
+.sback svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tog{position:relative;display:inline-block;width:50px;height:30px;flex:none;margin:0}
+.tog input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer;z-index:1}
+.tog i{position:absolute;inset:0;border-radius:99px;background:#b9c0cf;transition:background .18s}
+.tog i::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.tog input:checked+i{background:#2f6fd0}
+.tog input:checked+i::after{transform:translateX(20px)}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tcard{border:2px solid var(--line);border-radius:16px;background:transparent;padding:8px 8px 6px;cursor:pointer;text-align:center}
+.tcard em{display:block;font-style:normal;font-size:13px;margin-top:6px;color:var(--muted)}
+.tcard[aria-pressed="true"]{border-color:#2f6fd0}
+.tp{display:block;height:58px;border-radius:10px;border:1px solid rgba(0,0,0,.08);position:relative}
+.tp::after{content:"";position:absolute;right:8px;bottom:8px;width:10px;height:10px;border-radius:50%;background:#d1623f}
+.tl{background:#fff}.td{background:#1f1f1f}.ts{background:linear-gradient(135deg,#fff 50%,#1f1f1f 50%)}
+
+.crow{display:flex;align-items:center;gap:14px;padding:12px 16px;min-height:64px;box-sizing:border-box;border-top:1px solid var(--line)}
+.clist>.crow:first-child{border-top:0}
+.crow .adlogo{width:40px;height:40px;border-radius:10px}
+.crow .adlogo svg{width:26px;height:26px}
+.ctext{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ctext h2{margin:0;font-size:16px;font-weight:600}
+.cstat{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.cstat::before{content:"";width:8px;height:8px;border-radius:50%;background:#b9c0cf;flex:none}
+.cstat.on{color:#1a7f37}.cstat.on::before{background:#1fa64a}
+.crowtitle{display:flex;align-items:center;gap:8px}
+.ctier{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em}
+#plugs .sgroup:first-child{margin-top:18px}
+#plugs>.card{margin-top:22px}
+.plugreq{margin-top:10px}
+.hdrmark{flex:none;opacity:.9}</style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app" id="app"><button class="iconbtn reopen" id="sideReopen" aria-label="Show sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button>
 <aside id="side" aria-label="Sidebar">
-<div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Uncle Pelex</div>
+<div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Pelex<span style="margin-left:auto;display:flex;gap:14px"><button class="iconbtn" id="instNavDesk" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button><button class="iconbtn" id="sideCollapse" aria-label="Hide sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button></span></div>
 <button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
 <button class="nav" data-go="library"><svg viewBox="0 0 24 24"><path d="M5 4v16M10 4v16M15 5l4 14"/></svg>Library</button>
-<button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled <span class="badge soon">Soon</span></button>
+<button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled</button>
 <button class="nav" data-go="images"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 7"/></svg>Images <span class="badge soon">Soon</span></button>
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
-<button class="nav" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg>Plugins</button>
-<button class="nav" data-go="plans"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Plans</button>
-<div class="spacer"></div>
-<button class="nav" data-go="settings" data-tab="privacy"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Privacy</button>
-<button class="nav" data-go="settings" data-tab="custom"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Settings</button>
-<button class="me nav" id="sbAccountBtn" style="border-radius:10px;border-top:1px solid var(--line)"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span><strong id="sbName">Sign in</strong><br><span class="badge" id="sbSub">Free plan</span></span></button>
+<button class="nav" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg>Connectors</button>
+<button class="nav" data-go="ads"><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1zM18 9a4 4 0 0 1 0 6"/></svg>Run ads <span class="badge soon">Soon</span></button>
+<div class="navlabel" id="recLabel" hidden>Recent chats</div><div id="recents"></div>
+<div class="sidefoot"><button class="nav" data-go="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Settings</button>
+<button class="me nav" id="sbAccountBtn" style="border-radius:10px;border-top:1px solid var(--line)"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span><strong id="sbName">Sign in</strong><br><span class="badge" id="sbSub">Free plan</span></span></button></div>
 </aside>
 <div class="scrim" id="scrim"></div>
 <main>
-<div class="top"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><strong>Uncle Pelex</strong></div>
+<div class="top"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button><span style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 40 40" width="22" height="22" class="hdrmark" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg><strong>Pelex</strong></span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><button class="iconbtn" id="instNav" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button></span></div>
 
 <section class="view chat" id="v-chat">
 <div id="chat" aria-live="polite">
 <div class="chatbody">
-<h1>Uncle Pelex Agent 1.0</h1>
-<p class="hello" id="hello">Type, speak, or attach an image or document.</p>
-<div class="chips"><button class="chip-sugg" data-fill="Help me write a message to ">✉️ Write a message</button><button class="chip-sugg" data-fill="I need advice on ">💡 Get advice</button><button class="chip-sugg" data-sugg="Help me plan my week">📅 Plan my week</button><button class="chip-sugg" data-sugg="Teach me something new and useful for my business">📚 Learn something new</button><button class="chip-sugg" data-action="talk">🎙️ Start a voice chat</button><button class="chip-sugg" data-fill="Search the web for ">🔍 Search the web</button><button class="chip-sugg" disabled style="opacity:.55;cursor:default">🎨 Create an image <span class="badge soon">Soon</span></button></div>
+<h1 class="hello" id="hello">&nbsp;</h1>
+<div class="chips"><button class="chip-sugg" data-fill="Help me write a message to ">✉️ Write a message</button><button class="chip-sugg" data-fill="I need advice on ">💡 Get advice</button><button class="chip-sugg" data-sugg="Help me plan my week">📅 Plan my week</button><button class="chip-sugg" data-sugg="Teach me something new and useful for my business">📚 Learn something new</button><button class="chip-sugg" data-action="talk">🎙️ Start a voice chat</button><button class="chip-sugg" data-fill="Search the web for ">🔍 Search the web</button><button class="chip-sugg" disabled style="opacity:.55;cursor:default">🎨 Create an image <span class="badge soon">Soon</span></button><button class="chip-sugg" disabled style="opacity:.55;cursor:default">📄 Document <span class="badge soon">Soon</span></button></div>
 </div>
 </div>
 <div class="limit" id="limit" hidden><strong>You have reached today's free limit.</strong><span class="muted">It resets in 6 hours. Your earlier chats are still open in the sidebar.</span><div class="limitbtns"><button class="btn" data-go="plans">Upgrade to General Premium</button><button class="btn alt" data-go="plans">Start 14-day trial</button></div></div>
@@ -249,27 +384,51 @@ body.loading main,body.loading header{visibility:hidden}
 <input id="in" type="text" placeholder="Ask anything" aria-label="Message">
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
 <button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-</div><button class="talk" id="talk">Talk live</button></div>
-<div class="disclaimer">Uncle Pelex can make mistakes. Please check important info.</div>
-<button class="plugshortcut" data-go="plugins" aria-label="Open plugins"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Plugins</button></div>
+</div><button class="talk" id="talk">Talk live</button><button class="talk sec" id="muteBtn" hidden>Mute</button><button class="talk sec" id="stopSpeak">Stop reply</button></div>
+<div class="disclaimer">Pelex can make mistakes. Please check important info.</div>
+<button class="plugshortcut" data-go="plugins" aria-label="Open connectors"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Connectors</button></div>
 <div id="pulse" aria-hidden="true"></div>
 </section>
 
 <section class="view" id="v-library" hidden><div class="wrap">
-<h1>Library</h1><div class="muted">Images and documents you share with Uncle Pelex are kept here on this device.</div>
+<h1>Library</h1><div class="muted">Images and documents you share with Pelex are kept here on this device.</div>
 <div class="grid" id="libGrid"></div>
 <p class="muted" id="libEmpty" style="margin-top:14px">Nothing saved yet. Attach an image or document in chat and it will appear here.</p>
 <div style="margin-top:16px"><button class="btn alt" id="libClear">Clear library</button></div>
 </div></section>
 
 <section class="view" id="v-scheduled" hidden><div class="wrap">
-<h1>Scheduled <span class="badge soon">Coming soon</span></h1><div class="muted">Reminders and repeating tasks, like "every Monday, summarise my week".</div>
-<div class="card" style="margin-top:18px"><h2>Launching with the Personal bot</h2><span class="muted">You will be able to ask Uncle Pelex to run a task at a set time and send you the result.</span></div>
+<button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Scheduled</h1><div class="muted">Tell Pelex what to do and how often.</div>
+<div class="qchips" id="sChips">
+<button type="button" class="qchip" data-ins="Give me the latest Netflix movies and shows, and what is trending on Netflix right now." data-freq="weekly">&#127916; Latest on Netflix</button>
+<button type="button" class="qchip" data-ins="Give me the latest Prime Video movies and shows, and what is trending on Prime Video right now." data-freq="weekly">&#127871; Latest on Prime Video</button>
+<button type="button" class="qchip" data-ins="Suggest one good movie I can watch tonight, with a short reason why." data-freq="daily">&#127871; Movie for tonight</button>
+<button type="button" class="qchip" data-ins="Find new fashion styles that celebrities and influencers wore recently, and send me 3 to 5 pictures with a short note on each." data-freq="every2days">&#128090; Fresh fashion styles</button>
+<button type="button" class="qchip" data-ins="Find five authentic visual styles that are trending right now, and send me 3 to 5 example pictures." data-freq="weekly" data-src="">&#127912; Trending visual styles</button>
+<button type="button" class="qchip" data-ins="Find five authentic cinematic styles that are trending right now, and send me 3 to 5 example pictures." data-freq="weekly" data-src="">&#127909; Cinematic styles</button>
+</div>
+<div class="card schedform" style="margin-top:14px">
+<label for="sInstr" class="muted">What should I do?</label>
+<textarea class="inp" id="sInstr" rows="3" placeholder="For example: every morning, check the weather and tell me what to wear"></textarea>
+<div class="srow">
+<div><label for="sFreq" class="muted">How often</label><select class="inp" id="sFreq"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option><option value="every2days">Every 2 days</option><option value="every3days">Every 3 days</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every month</option><option value="once">Just once</option></select></div>
+<div id="sDayWrap" hidden><label for="sDay" class="muted">On</label><select class="inp" id="sDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></div>
+<div><label for="sTime" class="muted">At</label><input class="inp" id="sTime" type="time" value="08:00"></div>
+<div><label for="sChan" class="muted">Send to</label><select class="inp" id="sChan"><option value="website">This app</option><option value="telegram" disabled>Telegram (linking soon)</option><option value="whatsapp" disabled>WhatsApp (soon)</option></select></div>
+<div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="personal">Personal assistant</option><option value="business">Business assistant</option></select></div>
+</div>
+<div style="margin-bottom:12px"><label for="sSrc" class="muted">Website to pull from (optional)</label><input class="inp" id="sSrc" type="url" inputmode="url" placeholder="Paste a website link"></div>
+<div id="sMsg" class="muted" style="min-height:20px;font-size:13px;margin-bottom:8px" role="status"></div>
+<button class="btn" id="sAdd">Add to schedule</button>
+</div>
+<h2 style="margin-top:26px">Your schedule</h2>
+<div class="slist" id="sList"></div>
+<p class="muted" id="sEmpty" style="margin-top:14px">Nothing scheduled yet.</p>
 </div></section>
 
 <section class="view" id="v-images" hidden><div class="wrap">
 <h1>Images <span class="badge soon">Coming soon</span></h1><div class="muted">Create pictures, flyers and designs by describing them.</div>
-<div class="card" style="margin-top:18px"><h2>Image creation is on the way</h2><span class="muted">For now you can attach any image in chat and Uncle Pelex will explain what is in it.</span></div>
+<div class="card" style="margin-top:18px"><h2>Image creation is on the way</h2><span class="muted">For now you can attach any image in chat and Pelex will explain what is in it.</span></div>
 </div></section>
 
 <section class="view" id="v-signin" hidden><div class="wrap">
@@ -291,7 +450,7 @@ body.loading main,body.loading header{visibility:hidden}
 
 <section class="view" id="v-projects" hidden><div class="wrap">
 <h1>Projects</h1><div class="muted">Each project keeps its own chats and conversation history.</div>
-<div style="margin-top:16px"><button class="btn">New project</button></div>
+<div style="margin-top:16px"><button class="btn" id="newProjectBtn">New project</button></div>
 <div class="grid" id="projectsGrid"></div>
 <p class="muted" id="projectsEmpty" style="margin-top:14px">No projects yet. Start one to keep related chats together.</p>
 </div></section>
@@ -299,59 +458,154 @@ body.loading main,body.loading header{visibility:hidden}
 
 
 <section class="view" id="v-plugins" hidden><div class="wrap">
-<h1>Plugins</h1><div class="muted">Connect as many apps as you like. Each one stays under your own account.</div>
-<div class="grid" id="plugs">
-<div class="card"><div class="cardtop"><h2>Canva</h2><button class="plugbtn" data-plug aria-label="Connect Canva" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Edit flyers and designs in your own Canva.</span></div>
-<div class="card"><div class="cardtop"><h2>CapCut</h2><button class="plugbtn" data-plug aria-label="Connect CapCut" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Send clips and edits to your CapCut projects.</span></div>
-<div class="card"><div class="cardtop"><h2>Seedance 2.5</h2><button class="plugbtn" data-plug aria-label="Connect Seedance 2.5" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Realistic AI video generation.</span><span class="badge" style="align-self:flex-start">Paid plans</span></div>
-<div class="card"><div class="cardtop"><h2>Trello</h2><button class="plugbtn" data-plug aria-label="Connect Trello" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Boards and cards from chat.</span></div>
-<div class="card"><div class="cardtop"><h2>Google Drive</h2><button class="plugbtn" data-plug aria-label="Connect Google Drive" aria-pressed="false"><svg viewBox="0 0 24 24" class="ic-plus"><path d="M12 5v14M5 12h14"/></svg><svg viewBox="0 0 24 24" class="ic-minus"><path d="M5 12h14"/></svg></button></div><span class="muted">Files and sheets you choose to share.</span></div>
-<div class="card" style="border-style:dashed"><h2>Browse more</h2><span class="muted">More plugins arrive here as they are added.</span><button class="btn alt">Browse</button></div>
+<button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Connectors</h1><div id="plugs">
+<div class="card" style="border-style:dashed">
+<h2>Add a connector</h2>
+<div class="addplug">
+<input class="inp" id="plugUrl" placeholder="e.g. notion.so" inputmode="url">
+<div class="err" id="plugUrlErr"></div>
+<button class="btn" id="plugUrlAdd">Add to connectors</button>
+<span class="hint muted" id="plugUrlNote"></span>
+</div>
+</div>
 </div></div></section>
 
+<section class="view" id="v-ads" hidden><div class="wrap">
+<h1>Run ads</h1><div class="muted">Create and manage ad campaigns from your chat. Each platform connects to your own ad account.</div>
+<div class="grid" id="adgrid">
+<div class="card adcard" role="button" tabindex="0" data-ad="meta" aria-label="Run ads through Meta"><div class="cardtop"><span class="adlogo" style="background:#0866FF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 16c-2 0-3-2-3-4s1-4 3-4c3.5 0 7 8 11 8 2 0 3-2 3-4s-1-4-3-4c-4 0-7.500 8-11 8z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="meta" aria-label="Add Meta ads to my list"></button></div><h2>Run ads through Meta</h2><span class="muted">Facebook, Instagram and WhatsApp</span><span class="plugstat">Coming soon.</span></div>
+<div class="card adcard" role="button" tabindex="0" data-ad="google" aria-label="Run ads through Google"><div class="cardtop"><span class="adlogo" style="background:#fff;border:1px solid #dfe4ee"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="18" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#4285F4">G</text></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="google" aria-label="Add Google ads to my list"></button></div><h2>Run ads through Google</h2><span class="muted">Search and display ads</span><span class="plugstat">Coming soon.</span></div>
+<div class="card adcard" role="button" tabindex="0" data-ad="linkedin" aria-label="Run ads through LinkedIn"><div class="cardtop"><span class="adlogo" style="background:#0A66C2"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.500" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#fff">in</text></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="linkedin" aria-label="Add LinkedIn ads to my list"></button></div><h2>Run ads through LinkedIn</h2><span class="muted">Ads for business audiences</span><span class="plugstat">Coming soon.</span></div>
+<div class="card adcard" role="button" tabindex="0" data-ad="youtube" aria-label="Run ads through YouTube"><div class="cardtop"><span class="adlogo" style="background:#FF0000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 8.500v7l6-3.500z" fill="#fff"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="youtube" aria-label="Add YouTube ads to my list"></button></div><h2>Run ads through YouTube</h2><span class="muted">Video ads</span><span class="plugstat">Coming soon.</span></div>
+<div class="card adcard" role="button" tabindex="0" data-ad="tiktok" aria-label="Run ads through TikTok"><div class="cardtop"><span class="adlogo" style="background:#000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.500 5v9.500a3 3 0 1 1-3-3M13.500 5c.4 2.200 1.800 3.500 4 3.700" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="tiktok" aria-label="Add TikTok ads to my list"></button></div><h2>Run ads through TikTok</h2><span class="muted">Short video ads</span><span class="plugstat">Coming soon.</span></div>
+</div>
+<dialog class="adsheet" id="adSheet" aria-labelledby="adTitle">
+<div class="sheethead"><span id="adSheetLogo"></span><h2 id="adTitle"></h2><button class="xbtn" id="adClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<ol id="adSteps"></ol>
+<div class="signs" id="adSigns"></div>
+<div class="muted sheetnote" id="adNote"></div>
+<div class="sheetfoot"><button class="btn" id="adList">Add to my list</button></div>
+</dialog>
+</div></section>
+
 <section class="view" id="v-plans" hidden><div class="wrap">
-<h1>Plans</h1><div class="muted">Every plan starts with a 14-day free trial. You are asked to activate only after the trial ends.</div>
+<button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Plans</h1><div class="muted">Every plan starts with a 14-day free trial. You are asked to activate only after the trial ends.</div>
 <div class="grid">
 <div class="card"><h2>General</h2><div class="price">Free</div><span class="muted">Chat, web search, voice and image upload with a daily limit. No login needed.</span><span class="muted">General Premium: <span data-ngn="&#8358;6,500" data-usd="$5"></span> monthly, <span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year. Unlimited chat (fair use) and live walkthroughs.</span><button class="btn alt">Start free</button></div>
 <div class="card pick"><div class="cardtop"><h2>Personal Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;17,500" data-usd="$13"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year.</span><span class="muted">Your own Gmail, Calendar and Sheets, on website and Telegram.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
 <div class="card"><div class="cardtop"><h2>Business Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;20,000" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year.</span><span class="muted">Customer-support bot on your website and Telegram, set to your brand and tone.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
 <div class="card"><h2>WhatsApp Add-on</h2><div class="price"><span data-ngn="&#8358;9,500" data-usd="$7"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;5,500" data-usd="$4"></span> biweekly or <span data-ngn="&#8358;95,000" data-usd="$70"></span> per year.</span><span class="muted">Adds WhatsApp access on top of any Personal or Business plan.</span><button class="btn">Add to my plan</button></div>
 </div>
-<div class="note">Prices switch automatically by location: naira for visitors in Nigeria, dollars everywhere else. There is no manual switch. This preview guesses from your device time zone; the live site detects the country on the server.</div>
-<div class="note">After activation this page shows your status (for example "Premium Member") instead of plans.</div>
 </div></section>
+
+<section class="view" id="v-voice" hidden><div class="wrap narrow">
+<button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button>
+<h1>Voice settings</h1>
+<div class="voiceCards" id="voiceCards">
+<button type="button" class="voiceCard" data-v="female"><span class="vcDot vc-female"></span><span>Warm</span></button>
+<button type="button" class="voiceCard" data-v="male"><span class="vcDot vc-male"></span><span>Steady</span></button>
+</div>
+<div class="scard" style="margin-top:18px">
+<div class="srow" data-open="langSheet"><span>Language</span><span class="badge soon">Beta</span><span class="srowVal" id="langVal">English</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+<div class="srow" data-open="speedSheet"><span>Speed</span><span class="srowVal" id="speedVal">Normal</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="sgroup" style="margin-top:18px">Mode</div>
+<div class="scard">
+<button type="button" class="srow modeRow" data-mode="handsfree"><span class="ctext"><span class="crowtitle"><h2>Hands-free</h2></span><span class="cstat">Best for quiet environments</span></span><svg class="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>
+<button type="button" class="srow modeRow" data-mode="pushtotalk"><span class="ctext"><span class="crowtitle"><h2>Push to talk</h2></span><span class="cstat">Hold to speak, release to send</span></span><svg class="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>
+</div>
+<div class="scard" style="margin-top:18px">
+<div class="srow"><span>Interrupt by speaking</span><label class="tog"><input type="checkbox" id="pvBarge" checked aria-label="Interrupt by speaking"><i></i></label></div>
+</div>
+<p class="muted" style="margin:10px 0 14px;font-size:13px">These apply during Talk live. Push to talk means you hold the mic button while speaking; hands-free keeps listening after each reply.</p>
+</div></section>
+<div class="sheet" id="langSheet" hidden><div class="sheetCard">
+<div class="sheetHead"><h2>Language</h2><button class="iconbtn" data-close="langSheet" aria-label="Close">&#10005;</button></div>
+<div id="langList"></div>
+<p class="muted" style="font-size:13px;margin:10px 4px 0">Beta languages may sound less natural, and some fall back to the phone's own voice. Pelex still replies in the language you write or speak in.</p>
+</div></div>
+<div class="sheet" id="speedSheet" hidden><div class="sheetCard">
+<div class="sheetHead"><h2>Speed</h2><button class="iconbtn" data-close="speedSheet" aria-label="Close">&#10005;</button></div>
+<button type="button" class="sheetOpt" data-speed="slower">Slower</button>
+<button type="button" class="sheetOpt" data-speed="normal">Normal</button>
+<button type="button" class="sheetOpt" data-speed="faster">Faster</button>
+</div></div>
 
 <section class="view" id="v-settings" hidden><div class="wrap">
 <h1>Settings</h1>
-<div class="tabs" role="tablist">
-<button class="tab" role="tab" data-t="account">Account</button>
-<button class="tab" role="tab" data-t="custom">Custom instructions</button>
-<button class="tab" role="tab" data-t="privacy">Privacy</button>
+<div class="pane" id="p-home">
+<div class="sgroup">Account</div>
+<div class="scard"><button class="srow" data-t="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20c1-4 4-5.500 7-5.500s6 1.500 7 5.500"/></svg><span>Profile</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="plans"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.500 9.500c-.5-1-1.500-1.500-2.500-1.500-1.500 0-2.500.8-2.500 2s1 1.700 2.500 2 2.500.8 2.500 2-1 2-2.500 2c-1 0-2-.5-2.500-1.500M12 6.500v1.500M12 16v1.500"/></svg><span>Plans &amp; billing</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-t="privacy"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><rect x="9.500" y="10.500" width="5" height="4" rx="1"/></svg><span>Privacy</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+<div class="sgroup">App</div>
+<div class="scard"><button class="srow" data-t="custom"><svg viewBox="0 0 24 24"><path d="M5 8h9M18 8h1M5 16h1M10 16h9"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg><span>Personalisation</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg><span>Connectors</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Scheduled tasks</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="voice"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4"/></svg><span>Voice</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><div class="srow"><svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 9v6M20 9v6"/></svg><span>Haptic feedback</span><label class="tog"><input type="checkbox" id="pvHaptic" aria-label="Haptic feedback"><i></i></label></div>
+</div>
+<div class="sgroup">Notifications</div>
+<p class="muted" style="margin:0 0 8px;font-size:13px">Your choices are saved to your account. Each alert starts arriving once that feature goes live.</p>
+<div class="scard">
+<div class="srow"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Push notifications</span><label class="tog"><input type="checkbox" id="pvPush" aria-label="Push notifications"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Scheduled task reminders</span><label class="tog"><input type="checkbox" id="pvNotifTasks" checked aria-label="Scheduled task reminders"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Agent reply alerts</span><label class="tog"><input type="checkbox" id="pvNotifReply" checked aria-label="Agent reply alerts"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Weekly activity summary</span><label class="tog"><input type="checkbox" id="pvNotifWeekly" aria-label="Weekly activity summary"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Security alerts</span><label class="tog"><input type="checkbox" id="pvNotifSecurity" checked disabled aria-label="Security alerts"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Product news and tips</span><label class="tog"><input type="checkbox" id="pvNotifNews" aria-label="Product news and tips"><i></i></label></div>
+</div>
+<div class="sgroup">Shared links</div>
+<div class="scard"><div class="row" style="padding:10px"><span class="muted">Chats you have shared will appear here.</span></div>
+<div id="sharedLinksList"></div>
+</div>
+<div class="sgroup">Data &amp; storage</div>
+<div class="scard">
+<div class="row" style="padding:10px"><span>Generated images and videos<br><span class="muted">Automatically deleted 2 days after creation</span></span></div>
+<div class="srow" data-go="library"><svg viewBox="0 0 24 24"><path d="M5 4v16M10 4v16M15 5l4 14"/></svg><span>Manage saved chats</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="sgroup">About</div>
+<div class="scard">
+<div class="row" style="padding:10px"><span>Version<br><span class="muted">Pelex 1.0</span></span></div>
+<div class="srow" data-t="privacy"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/></svg><span>Privacy and policies</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+<div class="srow" id="contactSupportRow"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Contact support</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="sgroup">Appearance</div>
+<div class="scard pad"><div class="themes" id="themeCards">
+<button class="tcard" data-th="light" aria-label="Light"><b class="tp tl"></b><em>Light</em></button>
+<button class="tcard" data-th="dark" aria-label="Dark"><b class="tp td"></b><em>Dark</em></button>
+<button class="tcard" data-th="system" aria-label="Match my device"><b class="tp ts"></b><em>System</em></button>
+</div></div>
 </div>
 <div class="pane" id="p-account">
 <div class="two"><div><label for="n">Name</label><input class="inp" id="n" value="" placeholder="Your name"></div><div><label for="e">Email</label><input class="inp" id="e" value="" placeholder="you@email.com"></div></div>
 <div class="list"><div class="row"><span>Current plan<br><span class="muted">Free plan</span></span><button class="btn alt" data-go="plans">View plans</button></div></div>
-<div style="margin-top:16px"><button class="btn alt" id="logoutBtn" hidden>Log out</button></div>
+<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="saveName">Save name</button><button class="btn alt" id="logoutBtn" hidden>Log out</button></div>
+<div class="note" id="acctNote" role="status"></div>
 </div>
 <div class="pane" id="p-custom" hidden>
-<label for="ci">How should Uncle Pelex respond to you?</label>
+<label for="ci">How should Pelex respond to you?</label>
 <textarea id="ci" placeholder="Example: Keep replies short. Call me [Name]. I run a small business."></textarea>
 <div class="two"><div><label for="tn">Tone</label><select id="tn"><option>Professional</option><option>Friendly</option><option>Direct</option></select></div><div><label for="ln">Reply length</label><select id="ln"><option>Short</option><option>Balanced</option><option>Detailed</option></select></div></div>
-<div style="margin-top:16px"><button class="btn">Save</button></div>
-<div class="note">Plugin connections and keys are managed in Plugins, not here.</div>
+<div class="two"><div><label for="vgen">Voice</label><select id="vgen"><option value="female">Female</option><option value="male">Male</option></select></div><div><label for="vspd">Voice reply speed</label><select id="vspd"><option value="0.85">Slower</option><option value="1" selected>Normal</option><option value="1.15">Faster</option></select></div></div>
+<div style="margin-top:16px"><button class="btn" id="saveCustom">Save</button></div>
+<div class="note" id="customNote" role="status"></div>
+</div>
+<div class="pane" id="p-look" hidden>
+<select id="themeSel" style="display:none"><option value="system">Match my device</option><option value="light">Light</option><option value="dark">Dark</option></select>
 </div>
 <div class="pane" id="p-privacy" hidden>
 <div class="list">
-<div class="row"><span>Save chat history</span><input type="checkbox" checked aria-label="Save chat history"></div>
-<div class="row"><span>Use my chats to personalise replies</span><input type="checkbox" checked aria-label="Personalise replies"></div>
-<div class="row"><span>Download my data</span><button class="btn alt">Request</button></div>
-<div class="row"><span>Delete all chats</span><button class="btn alt">Delete</button></div>
-<div class="row"><span>Delete my account</span><button class="btn alt">Delete</button></div>
-</div></div>
+<div class="row"><span>Privacy policy</span><a class="btn alt" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
+<div class="row"><span>Terms of service</span><a class="btn alt" href="/terms.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
+<div class="row"><span>Save chat history</span><input type="checkbox" id="pvHist" checked aria-label="Save chat history"></div>
+<div class="row"><span>Use my chats to personalise replies</span><input type="checkbox" id="pvPers" checked aria-label="Personalise replies"></div>
+<div class="row"><span>Download my data</span><button class="btn alt" id="pvDl">Download</button></div>
+<div class="row"><span>Delete all chats</span><button class="btn alt" id="pvDelChats">Delete</button></div>
+<div class="row"><span>Delete my account</span><button class="btn alt" id="pvDelAcct">Delete</button></div>
+</div><div class="note" id="privNote" role="status"></div></div>
 </div></section>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<dialog class="adsheet" id="instSheet" aria-labelledby="instTitle">
+<div class="sheethead"><h2 id="instTitle">Install Pelex</h2><button class="xbtn" id="instClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<ol id="instSteps"></ol>
+</dialog>
 <script>
 // ====== SET THIS ======
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
@@ -362,7 +616,6 @@ var chat=$('chat'), input=$('in'), chip=$('chip');
 var sid; try{sid=localStorage.getItem('pelex_sid')}catch(e){}
 if(!sid){sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem('pelex_sid',sid)}catch(e){}}
 var h=new Date().getHours();
-$('hello').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+'. Type, speak, or attach an image or document.';
 if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 function add(t,cls,img,retryFn){var d=document.createElement('div');d.className='msg '+(cls||'');
@@ -392,26 +645,48 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
   }
   chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
 
+var NET_MSG='Connection failed. Check your internet and try again.';
+async function netDown(){
+  if(navigator.onLine===false)return true;
+  try{var c=new AbortController(),t=setTimeout(function(){c.abort()},4000);
+    await fetch(location.origin+'/?ping='+Date.now(),{method:'HEAD',cache:'no-store',signal:c.signal});clearTimeout(t);return false}
+  catch(e){return true}}
+// backend trouble stays silent; only a real internet problem is shown; deliberate user-facing messages still show
+async function showErr(e){
+  if(e&&e.backend)return;
+  if(e&&e.name==='TypeError'){if(await netDown())add(NET_MSG,'sys');return}
+  if(e&&e.message)add(e.message,'sys')}
+async function askAgentRetry(text){
+  try{return await askAgent(text)}
+  catch(e){
+    if((e&&(e.backend||e.name==='TypeError'))&&navigator.onLine!==false){
+      await new Promise(function(r){setTimeout(r,1500)});
+      return await askAgent(text)}
+    throw e}}
 async function post(path,body){
   var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   var j=await r.json().catch(function(){return{}});
-  if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')'));
+  if(!r.ok){var pe=new Error(j.error||('Request failed ('+r.status+')'));pe.backend=true;throw pe}
   return j;
 }
 
 async function askAgent(text){
-  if(WEBHOOK_URL.indexOf('PASTE_')===0) throw new Error('The chat backend is not connected yet. Add your n8n webhook URL in index.html.');
-  var r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:sid,chatInput:text})});
+  if(WEBHOOK_URL.indexOf('PASTE_')===0){var ne=new Error('The chat backend is not connected yet.');ne.backend=true;throw ne}
+  var r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:agentMeta()})});
   var raw=await r.text(), out=raw;
   try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.response||o.reply||o.text||o.message||raw}catch(e){}
-  if(!r.ok) throw new Error('The agent could not reply ('+r.status+').');
+  if(!r.ok){var ae=new Error('The agent could not reply ('+r.status+').');ae.backend=true;throw ae}
   return String(out);
 }
 
 // ---- audio state + one reusable player (unlocked on a tap so phones keep allowing playback) ----
-var silent=0,live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
+var ptt=false,pttHeld=false,muted=false,silent=0,live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
 var player=new Audio();player.preload='auto';player.setAttribute('playsinline','');
 var SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',unlocked=false;
+function vpref(k,d){try{var v=localStorage.getItem('pelex_voice_'+k);return v===null?d:v==='1'}catch(e){return d}}
+var LANGS=[{k:'en',n:'English',c:'en'},{k:'pcm',n:'Nigerian Pidgin',c:'en',b:1},{k:'yo',n:'Yoruba',c:'yo',b:1},{k:'ig',n:'Igbo',c:'ig',b:1},{k:'ha',n:'Hausa',c:'ha'},{k:'sw',n:'Swahili',c:'sw'},{k:'de',n:'German',c:'de'},{k:'fr',n:'French',c:'fr'},{k:'es',n:'Spanish',c:'es'},{k:'pt',n:'Portuguese',c:'pt'},{k:'it',n:'Italian',c:'it'},{k:'ar',n:'Arabic',c:'ar'},{k:'hi',n:'Hindi',c:'hi'},{k:'zh',n:'Chinese',c:'zh'},{k:'ja',n:'Japanese',c:'ja'},{k:'ko',n:'Korean',c:'ko'}];
+function voiceLang(){try{return localStorage.getItem('pelex_voice_lang')||'en'}catch(e){return 'en'}}
+function langCode(){var k=voiceLang();for(var i=0;i<LANGS.length;i++)if(LANGS[i].k===k)return LANGS[i].c;return 'en'}
 function unlockAudio(){
   if(!unlocked){try{player.src=SILENT;var p=player.play();if(p&&p.catch)p.catch(function(){});unlocked=true}catch(e){}}
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}}
@@ -436,7 +711,8 @@ function chunk(t){
   var parts=x.match(/[^.!?\n]+[.!?]*\s*/g)||[x],out=[],cur='';
   parts.forEach(function(p){if(cur&&(cur+p).length>260){out.push(cur);cur=p}else cur+=p});
   if(cur.trim())out.push(cur);return out}
-function fetchAudio(c){return post('/.netlify/functions/speak',{text:c}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
+function voicePrefs(){var c=null;try{c=JSON.parse(localStorage.getItem('pelex_custom')||'null')}catch(e){}return{voice:(c&&c.voice)||'female',speed:(c&&c.speed)||'1'}}
+function fetchAudio(c){var vp=voicePrefs();return post('/.netlify/functions/speak',{text:c,voice:vp.voice,speed:vp.speed,language:langCode()}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
 function playUrl(u){return new Promise(function(res){
   curRes=res;
   player.onended=player.onerror=function(){player.onended=player.onerror=null;curRes=null;res(true)};
@@ -445,16 +721,19 @@ function playUrl(u){return new Promise(function(res){
   if(p&&p.catch)p.catch(function(){player.onended=player.onerror=null;curRes=null;res(false)})})}
 function fallbackSpeak(clean){return new Promise(function(res){
   if(!window.speechSynthesis){res();return}
-  var u=new SpeechSynthesisUtterance(clean);u.onend=u.onerror=function(){res()};speechSynthesis.speak(u)})}
+  var vp=voicePrefs();var u=new SpeechSynthesisUtterance(clean);u.rate=parseFloat(vp.speed)||1;
+  try{var vs=speechSynthesis.getVoices()||[];var want=vp.voice==='male'?'male':'female';
+    var m=vs.find(function(v){return new RegExp(want,'i').test(v.name)});if(m)u.voice=m}catch(e){}
+  u.onend=u.onerror=function(){res()};speechSynthesis.speak(u)})}
 function stopSpeaking(){
   speakTok++;clearInterval(bargeTimer);bargeTimer=null;
   player.onended=player.onerror=null;try{player.pause()}catch(e){}
   if(curRes){var r=curRes;curRes=null;r(true)}
   if(window.speechSynthesis)speechSynthesis.cancel();
   document.body.classList.remove('speaking')}
-// barge-in: while Uncle Pelex talks in live mode, ~0.4s of your voice cuts him off
+// barge-in: while Pelex talks in live mode, ~0.4s of your voice cuts him off
 async function startBargeIn(tok){
-  if(!live)return;
+  if(!live||muted||!vpref('barge',true))return;
   try{await openMic()}catch(e){return}
   if(tok!==speakTok)return;
   var n=0;clearInterval(bargeTimer);
@@ -480,18 +759,19 @@ var pendingDoc=null;
 async function turn(text,shown,img,el){
   if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
   var wait=add('Thinking...','sys');
+  var _ct=shown||text;try{await ensureChat(_ct)}catch(e){}
+  saveMsg('user',_ct);
   try{
-    var reply=await askAgent(text);wait.remove();
+    var reply=await askAgentRetry(text);wait.remove();saveMsg('assistant',reply);
     var node;
     var retryFn=function(){
-      node.remove();
       var w2=add('Thinking...','sys');
-      return askAgent(text).then(function(r2){w2.remove();node=add(r2,null,null,retryFn)})
-        .catch(function(e2){w2.remove();node=add(e2.message,'sys')});
+      return askAgentRetry(text).then(function(r2){w2.remove();node.remove();node=add(r2,null,null,retryFn)})
+        .catch(function(e2){w2.remove();return showErr(e2)});
     };
     node=add(reply,null,null,retryFn);
     return reply}
-  catch(e){wait.remove();add(e.message,'sys');return ''}
+  catch(e){wait.remove();await showErr(e);return ''}
 }
 async function sendTyped(){
   if(pendingImg){await sendImage();return}
@@ -508,13 +788,13 @@ $('send').onclick=sendTyped;
 input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
 
 // ---- voice recording ----
-function setLive(on){live=on;silent=0;$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
+function setLive(on){live=on;silent=0;$('muteBtn').hidden=!on;if(!on){muted=false;$('muteBtn').textContent='Mute'}$('talk').classList.toggle('on',on);$('talk').textContent=on?'Stop':'Talk live';
   if(!on){stopSpeaking();clearInterval(timer);heard=false;
     if(rec&&rec.state==='recording')rec.stop();
     $('mic').classList.remove('recording');busy=false;closeMic()}}
 function listen(){return listenRec()}
 async function listenRec(){
-  if(busy) return;
+  if(busy||muted) return;
   stopSpeaking();
   try{await openMic()}
   catch(e){add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false);return}
@@ -523,36 +803,49 @@ async function listenRec(){
   rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
   rec.onstop=async function(){
     clearInterval(timer);$('mic').classList.remove('recording');
-    if(!heard){if(live){silent++;if(silent>=6){add('Live mode stopped after a while with no speech. Tap Talk live to continue.','sys');setLive(false)}else{listen()}}else releaseSoon();return}
-    silent=0;
+    if(ptt&&Date.now()-t0<400){ptt=false;releaseSoon();return}
+    if(!heard){if(live){silent++;if(silent>=6){add('Live mode stopped after a while with no speech. Tap Talk live to continue.','sys');setLive(false)}else{if(vpref('handsfree',true))listen();else releaseSoon()}}else releaseSoon();return}
+    silent=0;ptt=false;
     await handleAudio(new Blob(chunks,{type:mime}),mime)};
-  heard=false;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02;
+  heard=ptt;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02;
   rec.start();$('mic').classList.add('recording');
+  if(ptt&&!pttHeld){rec.stop();return}
   timer=setInterval(function(){
     if(!an)return;
     var now=Date.now(),l=level();
     if(now-t0<400){samples.push(l);return}
     if(!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.04,Math.max(0.015,m*3));calibrated=true}
     if(l>thr){heard=true;last=now}
-    if((heard&&now-last>1500)||now-t0>60000||(!heard&&now-t0>12000)){if(rec.state==='recording')rec.stop()}
+    if((!ptt&&((heard&&now-last>1500)||(!heard&&now-t0>12000)))||now-t0>60000){if(rec.state==='recording')rec.stop()}
   },100)}
 async function handleAudio(blob,mime){
   busy=true;
   var note=add('Listening...','sys');
   try{
     var b64=await new Promise(function(res){var f=new FileReader();f.onload=function(){res(String(f.result).split(',')[1])};f.readAsDataURL(blob)});
-    var r=await post('/.netlify/functions/transcribe',{audio:b64,mime:mime});
+    var r=await post('/.netlify/functions/transcribe',{audio:b64,mime:mime,language:langCode()});
     note.remove();
-    if(!r.text){add('I could not make out that recording. Try again.','sys');busy=false;if(live)listen();else releaseSoon();return}
+    if(!r.text){add('I could not make out that recording. Try again.','sys');busy=false;if(live&&vpref('handsfree',true))listen();else releaseSoon();return}
     if(live&&r.text.split(/\s+/).length<=8&&/\b(talk (to you )?later|goodbye|bye bye|bye|end (the )?call|stop listening)\b/i.test(r.text)){
       add(r.text,'me');add('Talk later! I am here whenever you need me.');busy=false;setLive(false);return}
     var reply=await turn(r.text);busy=false;
     if(reply&&live){await speak(reply)}
-  }catch(e){note.remove();add(e.message,'sys')}
+  }catch(e){note.remove();await showErr(e)}
   busy=false;
-  if(live) listen();else releaseSoon();
+  if(live&&vpref('handsfree',true)) listen();else releaseSoon();
 }
-$('mic').onclick=function(){unlockAudio();if(rec&&rec.state==='recording'){rec.stop();return}listen()};
+$('mic').onclick=function(){if(!vpref('handsfree',true))return;unlockAudio();if(rec&&rec.state==='recording'){rec.stop();return}listen()};
+/* push to talk: hold the mic to speak, release to send (used when Hands-free is off) */
+$('mic').addEventListener('pointerdown',function(e){if(vpref('handsfree',true))return;e.preventDefault();unlockAudio();ptt=true;pttHeld=true;listen()});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){$('mic').addEventListener(ev,function(){
+  if(!ptt||!pttHeld)return;pttHeld=false;
+  if(rec&&rec.state==='recording')rec.stop();
+  else setTimeout(function(){if(!rec||rec.state!=='recording')ptt=false},1500)})});
+$('mic').addEventListener('contextmenu',function(e){e.preventDefault()});
+$('muteBtn').onclick=function(){muted=!muted;this.textContent=muted?'Unmute':'Mute';
+  if(muted){clearInterval(bargeTimer);bargeTimer=null;if(rec&&rec.state==='recording'){heard=false;rec.stop()}}
+  else if(live&&!busy){unlockAudio();listen()}};
+$('stopSpeak').onclick=function(){stopSpeaking()};
 $('talk').onclick=function(){unlockAudio();if(live){setLive(false)}else{setLive(true);listen()}};
 
 // ---- images and documents ----
@@ -578,9 +871,12 @@ async function sendImage(){
   var data=pendingImg,q=input.value.trim()||'Describe this image and explain what matters in it.';
   input.value='';clearAttach();
   thumb(data).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})});
+  var visionPrompt=typed||'Describe this image and explain what matters in it.';
   add(q,'me',data);var w=add('Looking at the image...','sys');
-  try{var r=await post('/.netlify/functions/vision',{image:data,prompt:q});w.remove();add(r.text)}
-  catch(err){w.remove();add(err.message,'sys')}
+  try{await ensureChat(visionPrompt)}catch(e){}
+  saveMsg('user', typed ? ('[Image] '+typed) : '[Image]');
+  try{var r=await post('/.netlify/functions/vision',{image:data,prompt:visionPrompt});w.remove();add(r.text);saveMsg('assistant',r.text)}
+  catch(err){w.remove();await showErr(err)}
 }
 $('file').onchange=async function(e){
   var f=e.target.files[0];e.target.value='';if(!f) return;
@@ -595,7 +891,7 @@ $('file').onchange=async function(e){
       if(!text) throw new Error('No readable text was found in that file.');
       pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();
     }
-  }catch(err){add(err.message,'sys')}
+  }catch(err){await showErr(err)}
 };
 
 
@@ -605,7 +901,7 @@ function go(v,t){document.querySelectorAll('.view').forEach(function(e){e.hidden
 document.querySelectorAll('aside .nav').forEach(function(b){b.removeAttribute('aria-current')});
 var m={project:'projects'}[v]||v;
 document.querySelectorAll('aside .nav[data-go="'+m+'"]').forEach(function(b){if(!t||b.dataset.tab===t)b.setAttribute('aria-current','true')});
-if(v==='settings')tab(t||'account');app.classList.remove('open')}
+if(v==='settings')tab(t||'home');app.classList.remove('open')}
 document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go,b.dataset.tab)})});
 
 // ---- Sign in (Supabase) ----
@@ -632,13 +928,14 @@ function friendly(e){
   if(/rate limit/i.test(t))return 'Too many attempts. Please wait a few minutes and try again.';
   return t}
 function applyUser(u){
-  signedIn=!!u;
+  signedIn=!!u;curUser=u||null;
   var nm=u?((u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name||u.user_metadata.user_name))||(u.email||'').split('@')[0]||'Account'):'Sign in';
   document.getElementById('sbName').textContent=nm;
   document.getElementById('sbSub').textContent=u?(u.email||'Signed in'):'Free plan';
   var n=document.getElementById('n'),e=document.getElementById('e');
   if(n)n.value=u?nm:'';if(e)e.value=u?(u.email||''):'';
   var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
+  if(window.onUserChange)window.onUserChange(u);
 }
 async function oauth(provider){
   if(!sb){authMsg('Sign-in is unavailable right now. Check your connection.',true);return}
@@ -679,12 +976,160 @@ if(sb){
 }
 setAuthMode('in');
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
-document.querySelectorAll('[data-plug]').forEach(function(b){b.addEventListener('click',function(){var now=b.getAttribute('aria-pressed')==='true';b.setAttribute('aria-pressed',(!now).toString())})});
-document.getElementById('menu').addEventListener('click',function(){app.classList.add('open')});
+(function(){
+  /* Connectors list. To switch one on later, change its "on" to true: that is the only edit needed. */
+  var ROWS=[{"g": "Google", "n": "Gmail", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#4caf50\" d=\"M45 16.2l-5 2.75-5 4.75L35 40h7a3 3 0 0 0 3-3z\"/><path fill=\"#1e88e5\" d=\"M3 16.2l3.6 1.7L13 23.7V40H6a3 3 0 0 1-3-3z\"/><path fill=\"#e53935\" d=\"M35 11.2L24 19.45 13 11.2 12 17l1 6.7 11 8.25 11-8.25 1-6.7z\"/><path fill=\"#c62828\" d=\"M3 12.3V16.2l10 7.5V11.2L9.9 8.9A4.3 4.3 0 0 0 7.3 8 4.3 4.3 0 0 0 3 12.3z\"/><path fill=\"#fbc02d\" d=\"M45 12.3V16.2l-10 7.5V11.2l3.1-2.3A4.3 4.3 0 0 1 40.7 8 4.3 4.3 0 0 1 45 12.3z\"/></svg>", "on": false, "tier": "", "id": "gmail"}, {"g": "Google", "n": "Google Calendar", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"6\" y=\"6\" width=\"36\" height=\"36\" rx=\"4\" fill=\"#fff\" stroke=\"#dadce0\" stroke-width=\"1.5\"/><path d=\"M6 10a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v7H6z\" fill=\"#4285F4\"/><path d=\"M6 32v6a4 4 0 0 0 4 4h8z\" fill=\"#34A853\"/><path d=\"M42 32v6a4 4 0 0 1-4 4h-8z\" fill=\"#FBBC04\"/><text x=\"24\" y=\"35\" text-anchor=\"middle\" font-family=\"Arial,Helvetica,sans-serif\" font-weight=\"700\" font-size=\"17\" fill=\"#4285F4\">31</text></svg>", "on": false, "tier": "", "id": "gcalendar"}, {"g": "Google", "n": "Google Drive", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#34A853\" d=\"M17 6L3 30l7 12 14-24z\"/><path fill=\"#FBBC04\" d=\"M17 6h14l14 24H31z\"/><path fill=\"#4285F4\" d=\"M3 30h42l-7 12H10z\"/></svg>", "on": false, "tier": "", "id": "gdrive"}, {"g": "Google", "n": "Google Docs", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#4285F4\" d=\"M12 4h17l9 9v29a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path fill=\"#A1C2FA\" d=\"M29 4l9 9h-7a2 2 0 0 1-2-2z\"/><path fill=\"#fff\" d=\"M15 24h18v2.4H15zm0 5h18v2.4H15zm0 5h12v2.4H15z\"/></svg>", "on": false, "tier": "", "id": "gdocs"}, {"g": "Google", "n": "Google Sheets", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#0F9D58\" d=\"M12 4h17l9 9v29a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path fill=\"#87CEAC\" d=\"M29 4l9 9h-7a2 2 0 0 1-2-2z\"/><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M15 21h18v15H15zm2 2v3h5v-3zm7 0v3h7v-3zm-7 5v3h5v-3zm7 0v3h7v-3zm-7 5v1.5h5V33zm7 0v1.5h7V33z\"/></svg>", "on": false, "tier": "", "id": "gsheets"}, {"g": "Google", "n": "Google Slides", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#F4B400\" d=\"M12 4h17l9 9v29a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path fill=\"#FADA80\" d=\"M29 4l9 9h-7a2 2 0 0 1-2-2z\"/><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M15 22h18v14H15zm2 2v10h14V24z\"/></svg>", "on": false, "tier": "", "id": "gslides"}, {"g": "Google", "n": "Google Forms", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#7248B9\" d=\"M12 4h17l9 9v29a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path fill=\"#B79CDB\" d=\"M29 4l9 9h-7a2 2 0 0 1-2-2z\"/><path fill=\"#fff\" d=\"M15 22h3v3h-3zm6 .3h12v2.4H21zM15 28h3v3h-3zm6 .3h12v2.4H21zM15 34h3v3h-3zm6 .3h12v2.4H21z\"/></svg>", "on": false, "tier": "", "id": "gforms"}, {"g": "Google", "n": "Google Meet", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#00832D\" d=\"M29 20l13-9v26l-13-9z\"/><path fill=\"#2684FC\" d=\"M5 20h12v8H5z\"/><path fill=\"#00AC47\" d=\"M17 20h12v8H17z\"/><path fill=\"#FFBA00\" d=\"M5 15a3 3 0 0 1 3-3h9v8H5z\"/><path fill=\"#0066DA\" d=\"M5 28h12v8H8a3 3 0 0 1-3-3z\"/><path fill=\"#00AC47\" d=\"M17 28h12v5a3 3 0 0 1-3 3h-9z\"/></svg>", "on": false, "tier": "", "id": "gmeet"}, {"g": "Google", "n": "Google Tasks", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><circle cx=\"24\" cy=\"24\" r=\"19\" fill=\"#4285F4\"/><path d=\"M15 25l6 6 12-13\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"35\" cy=\"13\" r=\"4.4\" fill=\"#FBBC04\"/></svg>", "on": false, "tier": "", "id": "gtasks"}, {"g": "Google", "n": "Google Keep", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#FBBC04\" d=\"M12 4h24a2 2 0 0 1 2 2v30l-8 8H12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path fill=\"#F29900\" d=\"M38 36l-8 8v-6a2 2 0 0 1 2-2z\"/><circle cx=\"24\" cy=\"20\" r=\"6.5\" fill=\"#fff\"/><path fill=\"#fff\" d=\"M21 28h6v3h-6z\"/></svg>", "on": false, "tier": "", "id": "gkeep"}, {"g": "Google", "n": "Google Contacts", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><circle cx=\"24\" cy=\"24\" r=\"19\" fill=\"#4285F4\"/><circle cx=\"24\" cy=\"19\" r=\"5.5\" fill=\"#fff\"/><path fill=\"#fff\" d=\"M13 35c1.5-5 6-7.500 11-7.500S33.500 30 35 35z\"/></svg>", "on": false, "tier": "", "id": "gcontacts"}, {"g": "Google", "n": "Google Maps", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><path fill=\"#34A853\" d=\"M6 14l12-4v28L6 42z\"/><path fill=\"#FBBC04\" d=\"M30 14l12-4v28l-12 4z\"/><path fill=\"#4285F4\" d=\"M18 10l12 4v28l-12-4z\"/><path fill=\"#EA4335\" d=\"M24 4a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.500a2.500 2.500 0 1 1 0-5 2.500 2.500 0 0 1 0 5z\"/></svg>", "on": false, "tier": "", "id": "gmaps"}, {"g": "Google", "n": "YouTube", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"3\" y=\"10\" width=\"42\" height=\"28\" rx=\"9\" fill=\"#FF0000\"/><path fill=\"#fff\" d=\"M20 17l11 7-11 7z\"/></svg>", "on": false, "tier": "", "id": "youtube"}, {"g": "Task and project tools", "n": "Trello", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"4\" y=\"4\" width=\"40\" height=\"40\" rx=\"7\" fill=\"#0052CC\"/><rect x=\"11\" y=\"10\" width=\"11\" height=\"22\" rx=\"2.2\" fill=\"#fff\"/><rect x=\"26\" y=\"10\" width=\"11\" height=\"14\" rx=\"2.2\" fill=\"#fff\"/></svg>", "on": false, "tier": "", "id": "trello"}, {"id": "asana", "g": "Task and project tools", "n": "Asana", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><circle cx=\"24\" cy=\"15\" r=\"8\" fill=\"#F06A6A\"/><circle cx=\"13\" cy=\"32\" r=\"8\" fill=\"#F06A6A\"/><circle cx=\"35\" cy=\"32\" r=\"8\" fill=\"#F06A6A\"/></svg>", "on": false, "tier": ""}, {"id": "wordcraft", "g": "ArtCraft suite", "n": "WordCraft", "bg": "background:#2b579a", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">W</text></svg>", "on": false, "tier": ""}, {"id": "gridcraft", "g": "ArtCraft suite", "n": "GridCraft", "bg": "background:#1d7a46", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">G</text></svg>", "on": false, "tier": ""}, {"id": "pdfcraft", "g": "ArtCraft suite", "n": "PdfCraft", "bg": "background:#c0392b", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">P</text></svg>", "on": false, "tier": ""}, {"id": "deckcraft", "g": "ArtCraft suite", "n": "DeckCraft", "bg": "background:#d35400", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">D</text></svg>", "on": false, "tier": ""}, {"id": "filmcraft", "g": "ArtCraft suite", "n": "FilmCraft", "bg": "background:#6c3fc4", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">F</text></svg>", "on": false, "tier": ""}, {"id": "effectcraft", "g": "ArtCraft suite", "n": "EffectCraft", "bg": "background:#0e7c86", "svg": "<svg viewBox=\"0 0 48 48\"><text x=\"24\" y=\"34\" text-anchor=\"middle\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"28\" font-weight=\"800\" fill=\"#fff\">E</text></svg>", "on": false, "tier": ""}, {"g": "Other apps", "n": "Canva", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><image href=\"data:image/jpeg;base64,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\" x=\"0\" y=\"0\" width=\"48\" height=\"48\" preserveAspectRatio=\"xMidYMid meet\"/></svg>", "on": false, "tier": "", "id": "canva"}, {"g": "Other apps", "n": "CapCut", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><image href=\"data:image/png;base64,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\" x=\"0\" y=\"0\" width=\"48\" height=\"48\" preserveAspectRatio=\"xMidYMid meet\"/></svg>", "on": false, "tier": "", "id": "capcut"}, {"g": "Other apps", "n": "Seedance 2.5", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"3\" y=\"3\" width=\"42\" height=\"42\" rx=\"12\" fill=\"#111827\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"2.6\" stroke-linecap=\"round\" d=\"M14 30c3-9 8-14 10-14s7 5 10 14\"/><circle cx=\"24\" cy=\"18\" r=\"3\" fill=\"#fff\"/></svg>", "on": false, "tier": "", "id": "seedance"}, {"g": "Creative tools", "n": "Image generation", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"4\" y=\"4\" width=\"40\" height=\"40\" rx=\"10\" fill=\"#fff\" stroke=\"#dadce0\" stroke-width=\"1.5\"/><circle cx=\"17\" cy=\"18\" r=\"4.5\" fill=\"#FBBC04\"/><path fill=\"#4285F4\" d=\"M8 36l10-13 7 9 5-6 10 10z\"/></svg>", "on": false, "tier": "Free", "id": "imagegen"}, {"g": "Creative tools", "n": "ArtCraft", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 48 48\"><rect x=\"3\" y=\"3\" width=\"42\" height=\"42\" rx=\"11\" fill=\"#141414\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"2.8\" stroke-linejoin=\"round\" stroke-linecap=\"round\" d=\"M24 8l13 7.500v17L24 40l-13-7.500v-17z\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" d=\"M11 15.5L24 23l13-7.500M24 23v17\"/></svg>", "on": false, "tier": "Premium", "id": "artcraft"}, {"g": "Built in", "n": "Web search", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#2f6fd0\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c2.5 2.7 3.7 5.7 3.7 9S14.5 18.3 12 21c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z\"/></svg>", "on": true, "tier": "", "id": "websearch"}, {"g": "Built in", "n": "Weather", "bg": "background:#fff;border:1px solid #dfe4ee", "svg": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#d98a00\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"9\" r=\"3.5\"/><path d=\"M9 2.5v1.5M2.5 9H4M4.5 4.5l1 1M13.5 4.5l-1 1\"/><path d=\"M8 20h9.5a3.5 3.5 0 0 0 .3-7 5 5 0 0 0-9.5 1.3A3 3 0 0 0 8 20z\"/></svg>", "on": true, "tier": "", "id": "weather"}];
+  var BTN="<svg viewBox=\"0 0 24 24\" class=\"ic-plus\"><path d=\"M12 5v14M5 12h14\"/></svg><svg viewBox=\"0 0 24 24\" class=\"ic-minus\"><path d=\"M5 12h14\"/></svg>";
+  var KEY='pelex_plugin_wishlist',saved=[];
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){saved=[]}
+  var host=document.getElementById('plugs'),addCard=document.getElementById('plugUrl').closest('.card');
+  function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+  function paint(row){
+    var b=row.querySelector('[data-plug]');if(!b)return;
+    var on=saved.indexOf(b.dataset.pname)>-1;
+    b.setAttribute('aria-pressed',on?'true':'false');
+    b.setAttribute('aria-label',(on?'Remove ':'Add ')+b.dataset.pname+(on?' from':' to')+' my list');
+    row.querySelector('.cstat').textContent=on?'Inactive \u00b7 On your list':'Inactive';
+  }
+  var groups=[];ROWS.forEach(function(r){if(groups.indexOf(r.g)<0)groups.push(r.g)});
+  groups.forEach(function(g){
+    var lab=document.createElement('div');lab.className='sgroup';lab.textContent=g;
+    var box=document.createElement('div');box.className='scard clist';
+    ROWS.filter(function(r){return r.g===g}).forEach(function(r){
+      var row=document.createElement('div');row.className='crow';row.dataset.cid=r.id;
+      var tierTag=r.tier?'<span class="ctier">'+esc(r.tier)+'</span>':'';
+      row.innerHTML='<span class="adlogo" style="'+r.bg+'">'+r.svg+'</span><div class="ctext"><span class="crowtitle"><h2>'+esc(r.n)+'</h2>'+tierTag+'</span><span class="cstat'+(r.on?' on':'')+'">'+(r.on?'Active':'Inactive')+'</span></div>'+
+        (r.on?'':'<button class="plugbtn" data-plug data-pname="'+esc(r.n)+'" aria-pressed="false">'+BTN+'</button>');
+      box.appendChild(row)});
+    host.insertBefore(lab,addCard);host.insertBefore(box,addCard)});
+  document.querySelectorAll('#plugs .crow').forEach(function(row){
+    var b=row.querySelector('[data-plug]');paint(row);
+    if(b)b.addEventListener('click',function(){
+      var i=saved.indexOf(b.dataset.pname);
+      if(i>-1)saved.splice(i,1);else saved.push(b.dataset.pname);
+      try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
+      paint(row)})});
+  /* Live status: the connector_status table in Supabase (id, active) decides what shows Active.
+     Flip active to true there when a connector's backend is wired. No redeploy needed. */
+  function applyStatus(map){
+    document.querySelectorAll('#plugs .crow').forEach(function(row){
+      if(!map[row.dataset.cid])return;
+      var st=row.querySelector('.cstat');st.textContent='Active';st.classList.add('on');
+      var b=row.querySelector('[data-plug]');if(b)b.remove()});
+  }
+  try{if(typeof sb!=='undefined'&&sb&&sb.from){sb.from('connector_status').select('id,active').then(function(r){
+    if(!r||!r.data)return;var m={};r.data.forEach(function(x){if(x.active)m[x.id]=1});applyStatus(m)}).catch(function(){})}}catch(e){}
+})();
+(function(){
+  /* Run ads. Each platform's "start" is the URL of the server-side sign-in step.
+     Leave it null until the platform's developer app is approved. When set, the
+     sign-in buttons turn on and send the person there, then the page can show Connected. */
+  var ADS={
+    meta:{name:'Meta',logo:'meta',signs:[{label:'Continue with Facebook',start:null},{label:'Continue with Instagram',start:null}],steps:['Sign in with Facebook or Instagram.','Choose the ad account to use.','Allow Pelex to create and manage campaigns for you.']},
+    google:{name:'Google',logo:'google',signs:[{label:'Continue with Google',start:null}],steps:['Sign in with your Google account.','Choose your Google Ads account.','Allow Pelex to create and manage campaigns for you.']},
+    linkedin:{name:'LinkedIn',logo:'linkedin',signs:[{label:'Continue with LinkedIn',start:null}],steps:['Sign in with LinkedIn.','Choose your Campaign Manager account.','Allow Pelex to create and manage campaigns for you.']},
+    youtube:{name:'YouTube',logo:'youtube',signs:[{label:'Continue with Google',start:null}],steps:['Sign in with the Google account that owns your channel.','Choose your Google Ads account.','Allow Pelex to create and manage video campaigns for you.']},
+    tiktok:{name:'TikTok',logo:'tiktok',signs:[{label:'Continue with TikTok',start:null}],steps:['Sign in with TikTok.','Choose your TikTok Ads account.','Allow Pelex to create and manage campaigns for you.']}
+  };
+  var KEY='pelex_ads_wishlist',saved=[],cur=null;
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){saved=[]}
+  var sheet=document.getElementById('adSheet');
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}}
+  function paint(k){
+    var on=saved.indexOf(k)>-1,card=document.querySelector('.adcard[data-ad="'+k+'"]');
+    var sw=card.querySelector('.sw');
+    sw.setAttribute('aria-checked',on?'true':'false');
+    sw.setAttribute('aria-label',(on?'Remove ':'Add ')+ADS[k].name+' ads '+(on?'from':'to')+' my list');
+    card.dataset.on=on?'1':'0';
+    card.querySelector('.plugstat').textContent=on?'On your list. Connects when live.':'Coming soon.';
+    if(cur===k)document.getElementById('adList').textContent=on?'Remove from my list':'Add to my list';
+  }
+  function toggle(k){var i=saved.indexOf(k);if(i>-1)saved.splice(i,1);else saved.push(k);persist();paint(k)}
+  function open(k){
+    cur=k;var a=ADS[k],live=a.signs.some(function(x){return !!x.start});
+    document.getElementById('adSheetLogo').innerHTML=document.querySelector('.adcard[data-ad="'+k+'"] .adlogo').outerHTML;
+    document.getElementById('adTitle').textContent='Run ads through '+a.name;
+    document.getElementById('adSteps').innerHTML=a.steps.map(function(t){return '<li>'+t+'</li>'}).join('');
+    var box=document.getElementById('adSigns');box.innerHTML='';
+    a.signs.forEach(function(x){
+      var b=document.createElement('button');b.type='button';b.textContent=x.label;b.disabled=!x.start;
+      if(x.start)b.addEventListener('click',function(){location.href=x.start});
+      box.appendChild(b)});
+    document.getElementById('adNote').textContent=live?'You will sign in on '+a.name+' and come straight back here.':'Sign-in opens once ads go live. Add this to your list and it will connect as soon as it does.';
+    paint(k);
+    if(typeof sheet.showModal==='function')sheet.showModal();else sheet.setAttribute('open','')}
+  function close(){if(typeof sheet.close==='function')sheet.close();else sheet.removeAttribute('open');cur=null}
+  Object.keys(ADS).forEach(function(k){
+    paint(k);
+    var card=document.querySelector('.adcard[data-ad="'+k+'"]');
+    card.addEventListener('click',function(e){if(e.target.closest('.sw'))return;open(k)});
+    card.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&!e.target.closest('.sw')){e.preventDefault();open(k)}});
+    card.querySelector('.sw').addEventListener('click',function(e){e.stopPropagation();toggle(k)})});
+  document.getElementById('adList').addEventListener('click',function(){if(cur)toggle(cur)});
+  document.getElementById('adClose').addEventListener('click',close);
+  sheet.addEventListener('click',function(e){if(e.target===sheet)close()});
+})();
+(function(){
+  /* Add a plugin by website address. Saved on this device right away and shown as Coming soon;
+     when signed in it is also saved to the plugin_requests table so we can see what people want. */
+  var KEY='pelex_plugin_requests',list=[];
+  try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){list=[]}
+  var grid=document.getElementById('plugs'),addCard=document.getElementById('plugUrl').closest('.card');
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(list))}catch(e){}}
+  function parse(raw){
+    var t=String(raw||'').trim();if(!t)return null;
+    if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(t))t='https://'+t;
+    var u;try{u=new URL(t)}catch(e){return null}
+    if(u.protocol!=='https:'&&u.protocol!=='http:')return null;
+    var host=u.hostname.toLowerCase().replace(/^www\./,'');
+    if(!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host))return null;
+    var label=host.split('.')[0];
+    return {url:u.origin,host:host,name:label.charAt(0).toUpperCase()+label.slice(1)};
+  }
+  function render(){
+    grid.querySelectorAll('.plugreq').forEach(function(n){n.remove()});
+    list.forEach(function(it){
+      var c=document.createElement('div');c.className='card plugreq';
+      var top=document.createElement('div');top.className='cardtop';
+      var lg=document.createElement('span');lg.className='plugreqlogo';lg.textContent=it.name.charAt(0);
+      var h=document.createElement('h2');h.textContent=it.name;
+      var rm=document.createElement('button');rm.className='plugbtn';rm.setAttribute('aria-label','Remove '+it.name);rm.setAttribute('aria-pressed','true');
+      rm.innerHTML='<svg viewBox="0 0 24 24" class="ic-minus" style="display:block"><path d="M5 12h14"/></svg>';
+      rm.addEventListener('click',function(){list=list.filter(function(x){return x.host!==it.host});save();render()});
+      top.appendChild(lg);top.appendChild(h);top.appendChild(rm);
+      var m=document.createElement('span');m.className='muted';m.textContent=it.host;
+      var st=document.createElement('span');st.className='plugstat';st.textContent='Coming soon. We are looking into connecting it.';
+      c.appendChild(top);c.appendChild(m);c.appendChild(st);
+      grid.insertBefore(c,addCard)});
+  }
+  async function send(it){
+    try{
+      if(!sb||typeof curUser==='undefined'||!curUser)return false;
+      var r=await sb.from('plugin_requests').insert({url:it.url,host:it.host,name:it.name});
+      return !r.error;
+    }catch(e){return false}
+  }
+  var inp=document.getElementById('plugUrl'),err=document.getElementById('plugUrlErr'),btn=document.getElementById('plugUrlAdd'),note=document.getElementById('plugUrlNote');
+  async function add(){
+    err.textContent='';
+    var it=parse(inp.value);
+    if(!it){err.textContent='Enter a website address like notion.so';return}
+    if(list.some(function(x){return x.host===it.host})){err.textContent='That one is already on your list.';return}
+    btn.disabled=true;
+    list.push({url:it.url,host:it.host,name:it.name});save();render();inp.value='';
+    var ok=await send(it);
+    note.textContent=ok?'Added. It shows as Coming soon, and we have been told you want it.':'Added on this device as Coming soon. Sign in so we can see your request too.';
+    btn.disabled=false;
+  }
+  btn.addEventListener('click',add);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();add()}});
+  render();
+})();
+document.getElementById('menu').addEventListener('click',function(){app.classList.toggle('open');var sd=document.getElementById('side');if(sd)sd.scrollTop=0});
 document.getElementById('scrim').addEventListener('click',function(){app.classList.remove('open')});
 var ng=false;try{ng=Intl.DateTimeFormat().resolvedOptions().timeZone==='Africa/Lagos'}catch(e){}
 document.querySelectorAll('[data-ngn]').forEach(function(el){el.innerHTML=ng?el.dataset.ngn:el.dataset.usd});
-document.querySelectorAll('[data-lim]').forEach(function(b){b.addEventListener('click',function(){var on=b.dataset.lim==='1';document.getElementById('limit').hidden=!on;var i=document.getElementById('msg');i.disabled=on;i.placeholder=on?'Daily limit reached':'Message Uncle Pelex';document.querySelectorAll('[data-lim]').forEach(function(x){x.setAttribute('aria-pressed',x===b)})})});
+document.querySelectorAll('[data-lim]').forEach(function(b){b.addEventListener('click',function(){var on=b.dataset.lim==='1';document.getElementById('limit').hidden=!on;var i=document.getElementById('msg');i.disabled=on;i.placeholder=on?'Daily limit reached':'Message Pelex';document.querySelectorAll('[data-lim]').forEach(function(x){x.setAttribute('aria-pressed',x===b)})})});
 go('chat');
 
 document.querySelectorAll('.chip-sugg:not([disabled])').forEach(function(b){b.addEventListener('click',function(){
@@ -708,7 +1153,499 @@ function libRender(){
     g.appendChild(c)})}
 $('libClear').onclick=function(){libSet([]);libRender()};
 libRender();
+
+// ---- Supabase: saved chats, Projects and the Scheduled board ----
+var curUser=null,curChatId=null,curProjectId=null,chatsCache=[],lastUid=null;
+function userDisplay(u){return u?((u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name||u.user_metadata.user_name))||(u.email||'').split('@')[0]||'there'):''}
+function agentSid(){return(signedIn&&curChatId)?'public-'+curChatId:sid}
+function agentMeta(){var m=curUser?{userId:curUser.id,userName:userDisplay(curUser)}:{};if(window.customPrefs)m.custom=window.customPrefs();return m}
+function dbOk(){return !!(sb&&signedIn&&curUser)}
+function syncWelcome(){var cb=chat.querySelector('.chatbody');if(cb)cb.style.display=chat.querySelector('.msg')?'none':''}
+(function(){
+  var app=document.querySelector('.app');
+  var mq=window.matchMedia('(min-width:821px)');
+  var manual=null; // null = no manual override yet, true/false = user chose
+  function setCollapsed(c){app.classList.toggle('collapsed',c)}
+  function onMq(){if(!mq.matches){app.classList.remove('collapsed')}}
+  if(mq.addEventListener)mq.addEventListener('change',onMq);else if(mq.addListener)mq.addListener(onMq);
+  onMq();
+  document.getElementById('sideCollapse').addEventListener('click',function(){manual=true;setCollapsed(true)});
+  document.getElementById('sideReopen').addEventListener('click',function(){manual=false;setCollapsed(false)});
+  var _sw=syncWelcome;
+  syncWelcome=function(){
+    _sw();
+    if(!mq.matches)return; // mobile keeps its own overlay behaviour, untouched
+    if(manual!==null)return; // user already took control this session
+    var hasMsgs=!!chat.querySelector('.msg');
+    setCollapsed(hasMsgs);
+  };
+})();
+
+var _add=add;add=function(){var r=_add.apply(this,arguments);syncWelcome();return r};
+var _go=go;go=function(v,t){_go(v,t);if(v==='projects')loadProjects();if(v==='scheduled')loadTasks()};
+
+async function ensureChat(firstText){
+  if(!dbOk()||curChatId||!window.histOn())return;
+  var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
+  var r=await sb.from('chats').insert({title:title,project_id:curProjectId||null}).select('id').single();
+  if(r.error||!r.data)return;
+  curChatId=r.data.id;loadRecents();
+}
+function saveMsg(role,content){
+  if(!dbOk()||!curChatId||!content||!window.histOn())return;
+  var cid=curChatId;
+  sb.from('messages').insert({chat_id:cid,role:role,content:String(content).slice(0,20000)})
+    .then(function(){return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
+    .catch(function(){});
+}
+function resetChatView(){chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
+function newChat(projectId){
+  curChatId=null;curProjectId=projectId||null;pendingDoc=null;
+  try{clearAttach()}catch(e){}
+  if(!signedIn){sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem('pelex_sid',sid)}catch(e){}}
+  resetChatView();loadRecents();
+}
+var ncb=document.querySelector('.newchat');if(ncb)ncb.addEventListener('click',function(){newChat()});
+
+var recSortMode='activity';var recQuery='';
+function pinKey(id){return 'pelex_pin_'+id}
+function isPinned(id){try{return localStorage.getItem(pinKey(id))==='1'}catch(e){return false}}
+function setPinned(id,v){try{if(v)localStorage.setItem(pinKey(id),'1');else localStorage.removeItem(pinKey(id))}catch(e){}}
+function renderRecents(){
+  var box=$('recents'),lab=$('recLabel'),wrap=$('recSearchWrap');
+  var list=(chatsCache||[]).filter(function(c){
+    if(!recQuery)return true;
+    return (c.title||'New chat').toLowerCase().indexOf(recQuery.toLowerCase())!==-1;
+  });
+  list=list.slice().sort(function(a,b){
+    var pa=isPinned(a.id)?1:0,pb=isPinned(b.id)?1:0;
+    if(pa!==pb)return pb-pa;
+    if(recSortMode==='name')return (a.title||'New chat').localeCompare(b.title||'New chat');
+    return new Date(b.updated_at)-new Date(a.updated_at);
+  });
+  box.innerHTML='';lab.hidden=!(chatsCache||[]).length;wrap.hidden=!(chatsCache||[]).length;
+  list.forEach(function(c){
+    var row=document.createElement('div');row.className='recrow';
+    var p=document.createElement('button');p.className='recx';p.setAttribute('aria-label',isPinned(c.id)?'Unpin chat':'Pin chat');
+    p.textContent=isPinned(c.id)?'\u2605':'\u2606';p.title=isPinned(c.id)?'Unpin':'Pin';
+    p.onclick=function(){setPinned(c.id,!isPinned(c.id));renderRecents()};
+    var b=document.createElement('button');b.className='nav rec';b.textContent=c.title||'New chat';b.title=c.title||'';
+    if(c.id===curChatId)b.setAttribute('aria-current','true');
+    b.onclick=function(){openChat(c.id)};
+    var x=document.createElement('button');x.className='recx';x.textContent='\u00d7';x.setAttribute('aria-label','Delete chat');
+    x.onclick=function(){delChat(c.id)};
+    row.appendChild(p);row.appendChild(b);row.appendChild(x);box.appendChild(row)})
+}
+async function loadRecents(){
+  var box=$('recents'),lab=$('recLabel');
+  if(!dbOk()){box.innerHTML='';lab.hidden=true;$('recSearchWrap').hidden=true;return}
+  var r=await sb.from('chats').select('id,title,project_id,updated_at').order('updated_at',{ascending:false}).limit(30);
+  if(r.error)return;
+  chatsCache=r.data||[];
+  renderRecents();
+}
+(function(){
+  var s=document.getElementById('recSearch'),sb2=document.getElementById('recSortBtn');
+  if(s)s.addEventListener('input',function(){recQuery=s.value;renderRecents()});
+  if(sb2)sb2.addEventListener('click',function(){recSortMode=recSortMode==='activity'?'name':'activity';sb2.title=recSortMode==='activity'?'Sort: Last activity':'Sort: Name';renderRecents()});
+})();
+async function openChat(id){
+  if(!dbOk())return;
+  go('chat');
+  var r=await sb.from('messages').select('role,content').eq('chat_id',id).order('created_at',{ascending:true}).limit(500);
+  if(r.error)return;
+  var c=chatsCache.filter(function(x){return x.id===id})[0];
+  curChatId=id;curProjectId=c?c.project_id:null;pendingDoc=null;
+  resetChatView();
+  (r.data||[]).forEach(function(m){if(m.role==='user')add(m.content,'me');else add(m.content)});
+  chat.scrollTop=chat.scrollHeight;loadRecents();
+}
+async function delChat(id){
+  if(!dbOk()||!confirm('Delete this chat?'))return;
+  var r=await sb.from('chats').delete().eq('id',id);
+  if(r.error)return;
+  if(id===curChatId)newChat();else loadRecents();
+  loadProjects();
+}
+
+// ---- Projects ----
+async function loadProjects(){
+  var g=$('projectsGrid'),em=$('projectsEmpty');
+  if(!dbOk()){g.innerHTML='';em.hidden=false;em.textContent='Sign in to create projects and keep related chats together.';return}
+  var pr=await sb.from('projects').select('id,name').order('created_at',{ascending:false});
+  var cr=await sb.from('chats').select('id,title,project_id,updated_at').not('project_id','is',null).order('updated_at',{ascending:false});
+  if(pr.error)return;
+  var list=pr.data||[],chats=cr.data||[];
+  g.innerHTML='';em.hidden=list.length>0;em.textContent='No projects yet. Start one to keep related chats together.';
+  list.forEach(function(p){
+    var c=document.createElement('div');c.className='card';
+    var h=document.createElement('strong');h.textContent=p.name;c.appendChild(h);
+    var mine=chats.filter(function(x){return x.project_id===p.id});
+    if(!mine.length){var e=document.createElement('span');e.className='muted';e.textContent='No chats yet.';c.appendChild(e)}
+    mine.slice(0,6).forEach(function(ch){var a=document.createElement('button');a.className='plink';a.textContent=ch.title;a.onclick=function(){openChat(ch.id)};c.appendChild(a)});
+    var row=document.createElement('div');row.className='prow';
+    var nb=document.createElement('button');nb.className='btn alt';nb.textContent='New chat here';nb.onclick=function(){newChat(p.id);go('chat');input.focus()};
+    var db=document.createElement('button');db.className='btn alt';db.textContent='Delete';db.onclick=function(){delProject(p)};
+    row.appendChild(nb);row.appendChild(db);c.appendChild(row);g.appendChild(c)})
+}
+async function delProject(p){
+  if(!dbOk()||!confirm('Delete the project "'+p.name+'"? Its chats are kept.'))return;
+  var r=await sb.from('projects').delete().eq('id',p.id);
+  if(!r.error){if(curProjectId===p.id)curProjectId=null;loadProjects();loadRecents()}
+}
+$('newProjectBtn').onclick=async function(){
+  if(!dbOk()){setAuthMode('in');go('signin');return}
+  var n=prompt('Name your project');if(!n||!n.trim())return;
+  var r=await sb.from('projects').insert({name:n.trim().slice(0,60)});
+  if(!r.error)loadProjects();
+};
+
+// ---- Scheduled board ----
+var FREQ={daily:'Every day',weekdays:'Weekdays',weekly:'Every week',every2days:'Every 2 days',every3days:'Every 3 days',biweekly:'Every 2 weeks',monthly:'Every month',once:'Once'};
+function sMsg(t,bad){var m=$('sMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
+function nextRunFrom(freq,time,day){
+  var p=String(time||'08:00').split(':'),d=new Date();d.setHours(+p[0]||0,+p[1]||0,0,0);
+  var wk=(freq==='weekly'||freq==='biweekly');
+  if(wk)d.setDate(d.getDate()+((+day-d.getDay()+7)%7));
+  if(d<=new Date())d.setDate(d.getDate()+(wk?7:1));
+  if(freq==='weekdays'){while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1)}
+  return d.toISOString();
+}
+document.querySelectorAll('#sChips .qchip').forEach(function(b){b.addEventListener('click',function(){
+  $('sInstr').value=b.getAttribute('data-ins');
+  var f=b.getAttribute('data-freq');if(f){$('sFreq').value=f;$('sFreq').dispatchEvent(new Event('change'))}
+  $('sSrc').value=b.getAttribute('data-src')||'';
+  document.querySelectorAll('#sChips .qchip').forEach(function(x){x.classList.toggle('on',x===b)});
+  $('sInstr').focus()})});
+$('sFreq').addEventListener('change',function(){var f=this.value;$('sDayWrap').hidden=!(f==='weekly'||f==='biweekly')});
+async function loadTasks(){
+  var box=$('sList'),em=$('sEmpty');
+  if(!dbOk()){box.innerHTML='';em.hidden=false;em.textContent='Sign in to schedule tasks.';return}
+  var r=await sb.from('scheduled_tasks').select('*').order('created_at',{ascending:false});
+  if(r.error)return;
+  var list=r.data||[];box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
+  list.forEach(function(t){
+    var c=document.createElement('div');c.className='stask'+(t.active?'':' off');
+    var h=document.createElement('strong');h.textContent=t.instruction;c.appendChild(h);
+    var nx=t.next_run?new Date(t.next_run):null;
+    var when=(FREQ[t.frequency]||t.frequency)+(nx?' at '+nx.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'');
+    var meta=document.createElement('div');meta.className='meta';
+    meta.textContent=when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
+    c.appendChild(meta);
+    if(t.last_result){
+      var lr=document.createElement('div');lr.className='res';lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
+      var ld=document.createElement('div');ld.className='meta';ld.textContent='Last sent '+(t.delivered_at?new Date(t.delivered_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');c.appendChild(ld)}
+    var a=document.createElement('div');a.className='acts';
+    var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
+    pb.onclick=async function(){pb.disabled=true;await sb.from('scheduled_tasks').update({active:!t.active}).eq('id',t.id);loadTasks()};
+    var db=document.createElement('button');db.className='btn alt';db.textContent='Delete';
+    db.onclick=async function(){if(!confirm('Delete this scheduled task?'))return;await sb.from('scheduled_tasks').delete().eq('id',t.id);loadTasks()};
+    a.appendChild(pb);a.appendChild(db);c.appendChild(a);box.appendChild(c)})
+}
+$('sAdd').onclick=async function(){
+  if(!dbOk()){setAuthMode('in');go('signin');return}
+  var ins=$('sInstr').value.trim();if(!ins){sMsg('Describe what you want me to do.',true);return}
+  var src=$('sSrc').value.trim();
+  if(src){if(!/^https?:\/\//i.test(src))src='https://'+src;try{var uu=new URL(src);if(!uu.hostname.includes('.'))throw 0;src=uu.href}catch(e){sMsg('That website link does not look right.',true);return}ins+='\nSource website: '+src}
+  var f=$('sFreq').value,tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(e){}
+  var btn=this;btn.disabled=true;sMsg('Saving...');
+  var r=await sb.from('scheduled_tasks').insert({bot:$('sBot').value,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
+  btn.disabled=false;
+  if(r.error){sMsg('Could not save that. Please try again.',true);return}
+  $('sInstr').value='';$('sSrc').value='';document.querySelectorAll('#sChips .qchip').forEach(function(x){x.classList.remove('on')});sMsg('Added to your schedule.');loadTasks();
+};
+
+window.onUserChange=function(u){
+  var uid=u?u.id:null;if(uid===lastUid)return;lastUid=uid;
+  if(u){loadRecents();loadProjects();loadTasks()}
+  else{curChatId=null;curProjectId=null;chatsCache=[];resetChatView();loadRecents();loadProjects();loadTasks()}
+};
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}
+/* ===== Theme, greeting, Settings that really work ===== */
+(function(){
+  var root=document.documentElement;
+  function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function note(id,t,bad){var n=document.getElementById(id);if(n){n.textContent=t;n.style.color=bad?'#b3261e':''}}
+  /* theme */
+  var ts=document.getElementById('themeSel');
+  var cur=lsGet('pelex_theme');ts.value=(cur==='light'||cur==='dark')?cur:'system';
+  ts.addEventListener('change',function(){
+    if(ts.value==='system'){root.removeAttribute('data-theme');try{localStorage.removeItem('pelex_theme')}catch(e){}}
+    else{root.setAttribute('data-theme',ts.value);lsSet('pelex_theme',ts.value)}
+  });
+  /* greeting */
+  function firstName(u){var n=u?userDisplay(u):'';return n?String(n).split(/\s+/)[0]:''}
+  function renderGreeting(){
+    var el=document.getElementById('hello');if(!el)return;
+    var hr=new Date().getHours(),part=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+    var n=firstName(curUser),back=!!lsGet('pelex_seen'),out;
+    if(!n){out=part}
+    else if(!back){out=part+', '+n}
+    else{
+      var pool=['Back at it again, '+n,'What\u2019s new, '+n+'?','Let\u2019s get this done, '+n,part+', '+n+'. What are we working on?','Welcome back, '+n,'Good to see you, '+n+'. What\u2019s next?','Ready when you are, '+n];
+      out=pool[Math.floor(Math.random()*pool.length)];
+    }
+    el.textContent=out;
+    if(curUser)lsSet('pelex_seen','1');
+  }
+  /* custom instructions */
+  var ciEl=document.getElementById('ci'),tnEl=document.getElementById('tn'),lnEl=document.getElementById('ln'),vgEl=document.getElementById('vgen'),vsEl=document.getElementById('vspd');
+  function loadCustom(u){
+    var c=null;try{c=JSON.parse(lsGet('pelex_custom')||'null')}catch(e){}
+    if(u&&u.user_metadata&&u.user_metadata.custom)c=u.user_metadata.custom;
+    if(c){ciEl.value=c.instructions||'';if(c.tone)tnEl.value=c.tone;if(c.length)lnEl.value=c.length;if(c.voice)vgEl.value=c.voice;if(c.speed)vsEl.value=c.speed}
+    if(window.mirrorVoice)window.mirrorVoice();
+  }
+  window.customPrefs=function(){var t=(ciEl.value||'').trim();return{instructions:t.slice(0,1500),tone:tnEl.value,length:lnEl.value,voice:vgEl.value,speed:vsEl.value}};
+  document.getElementById('saveCustom').addEventListener('click',async function(){
+    var c=window.customPrefs();lsSet('pelex_custom',JSON.stringify(c));
+    if(sb&&curUser){
+      try{var r=await sb.auth.updateUser({data:{custom:c}});
+        if(r&&r.error){note('customNote','Saved on this device. Could not save to your account right now.',true);return}
+      }catch(e){note('customNote','Saved on this device. Could not save to your account right now.',true);return}
+      note('customNote','Saved. Pelex will use this from your next message.');
+    }else note('customNote','Saved on this device. Sign in to keep it on your account.');
+  });
+  /* name */
+  document.getElementById('saveName').addEventListener('click',async function(){
+    var v=(document.getElementById('n').value||'').trim().slice(0,60);
+    if(!v){note('acctNote','Enter the name you would like to be called.',true);return}
+    if(!(sb&&curUser)){note('acctNote','Sign in first so your name can be saved.',true);return}
+    try{
+      var r=await sb.auth.updateUser({data:{full_name:v}});
+      if(r&&r.error){note('acctNote','Could not save your name right now.',true);return}
+      var u=(r&&r.data&&r.data.user)||curUser;if(u===curUser)u.user_metadata=Object.assign({},u.user_metadata,{full_name:v});
+      applyUser(u);note('acctNote','Saved. Pelex will call you '+v+'.');
+    }catch(e){note('acctNote','Could not save your name right now.',true)}
+  });
+  /* privacy */
+  var pvH=document.getElementById('pvHist'),pvP=document.getElementById('pvPers');
+  pvH.checked=lsGet('pelex_hist')!=='off';pvP.checked=lsGet('pelex_pers')!=='off';
+  pvH.addEventListener('change',function(){lsSet('pelex_hist',pvH.checked?'on':'off');note('privNote',pvH.checked?'New chats will be saved.':'New chats will not be saved to your account.')});
+  pvP.addEventListener('change',function(){lsSet('pelex_pers',pvP.checked?'on':'off');note('privNote',pvP.checked?'Replies can use your earlier chats.':'Replies will not use your earlier chats.')});
+  window.histOn=function(){return lsGet('pelex_hist')!=='off'};
+  document.getElementById('pvDl').addEventListener('click',async function(){
+    if(!(sb&&curUser)){note('privNote','Sign in to download your data.',true);return}
+    try{
+      var out={exported_at:new Date().toISOString(),account:{email:curUser.email,name:userDisplay(curUser)}};
+      var c=await sb.from('chats').select('*'),m=await sb.from('messages').select('*'),t=await sb.from('scheduled_tasks').select('*'),pr=await sb.from('projects').select('*');
+      out.chats=c.data||[];out.messages=m.data||[];out.scheduled_tasks=t.data||[];out.projects=pr.data||[];
+      var b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');
+      a.href=URL.createObjectURL(b);a.download='uncle-pelex-my-data.json';document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(a.href)},2000);note('privNote','Your data has been downloaded.');
+    }catch(e){note('privNote','Could not prepare your data right now.',true)}
+  });
+  document.getElementById('pvDelChats').addEventListener('click',async function(){
+    if(!(sb&&curUser)){note('privNote','Sign in to manage your chats.',true);return}
+    if(!confirm('Delete all your chats and messages? This cannot be undone.'))return;
+    try{
+      var a=await sb.from('messages').delete().not('id','is',null);
+      var b=await sb.from('chats').delete().not('id','is',null);
+      if((a&&a.error)||(b&&b.error)){note('privNote','Could not delete everything. Try again.',true);return}
+      newChat();loadRecents();loadProjects();note('privNote','All your chats were deleted.');
+    }catch(e){note('privNote','Could not delete everything. Try again.',true)}
+  });
+  document.getElementById('pvDelAcct').addEventListener('click',async function(){
+    if(!(sb&&curUser)){note('privNote','Sign in first.',true);return}
+    var t=prompt('This permanently deletes your account and everything in it. Type DELETE to confirm.');
+    if(t!=='DELETE'){if(t!==null)note('privNote','Nothing was deleted. You must type DELETE exactly.',true);return}
+    try{
+      var r=await sb.rpc('delete_my_account');
+      if(r&&r.error){note('privNote','Could not delete your account right now. Please contact support.',true);return}
+      ['pelex_custom','pelex_seen','pelex_hist','pelex_pers','pelex_plugin_requests','pelex_ads_wishlist'].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});
+      try{await sb.auth.signOut()}catch(e){}
+      location.reload();
+    }catch(e){note('privNote','Could not delete your account right now. Please contact support.',true)}
+  });
+  /* react to sign in / out */
+  var prev=window.onUserChange;
+  window.onUserChange=function(u){if(prev)prev(u);loadCustom(u);if(window.loadNotifPrefs)window.loadNotifPrefs(u);renderGreeting()};
+  loadCustom(null);renderGreeting();
+})();
+
+/* ===== Install as an app ===== */
+(function(){
+  var navs=[document.getElementById('instNav'),document.getElementById('instNavDesk')].filter(Boolean);
+  var sheet=document.getElementById('instSheet'),steps=document.getElementById('instSteps');
+  var deferred=null;
+  var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+  var ua=navigator.userAgent||'';
+  var isSafari=/^((?!chrome|chromium|crios|fxios|edg|opr|android).)*safari/i.test(ua);
+  var ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(standalone)return;
+  function setHidden(h){navs.forEach(function(n){n.hidden=h})}
+  setHidden(false);
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;setHidden(false)});
+  window.addEventListener('appinstalled',function(){setHidden(true);deferred=null});
+  function showSteps(){
+    var l=ios?['Tap the Share button.','Scroll down and tap Add to Home Screen, then Add.']:['Open the File menu.','Choose Add to Dock.'];
+    steps.innerHTML='';l.forEach(function(t){var li=document.createElement('li');li.textContent=t;steps.appendChild(li)});
+    sheet.showModal();
+  }
+  async function install(){
+    if(deferred){deferred.prompt();try{await deferred.userChoice}catch(e){}deferred=null;return}
+    if(isSafari){showSteps();return}
+    // No native prompt available and not Safari: nothing reliable to trigger, stay silent rather than show odd instructions.
+  }
+  navs.forEach(function(n){n.addEventListener('click',install)});
+  document.getElementById('instClose').addEventListener('click',function(){sheet.close()});
+})();
+
+(function(){
+  var ts=document.getElementById('themeSel');
+  function lsg(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lss(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  /* drill-in rows and back buttons */
+  document.querySelectorAll('.srow[data-t]').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
+  var back='<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Settings';
+  document.querySelectorAll('#v-settings .pane').forEach(function(p){
+    if(p.id==='p-home')return;
+    var bt=document.createElement('button');bt.className='sback';bt.type='button';bt.innerHTML=back;
+    bt.addEventListener('click',function(){tab('home')});
+    p.insertBefore(bt,p.firstChild);
+  });
+  /* theme cards drive the existing theme switch */
+  var cards=document.querySelectorAll('#themeCards .tcard');
+  function syncCards(){cards.forEach(function(c){c.setAttribute('aria-pressed',c.dataset.th===ts.value)})}
+  cards.forEach(function(c){c.addEventListener('click',function(){ts.value=c.dataset.th;ts.dispatchEvent(new Event('change'));syncCards()})});
+  syncCards();
+  /* haptic feedback (works on devices that support vibration) */
+  var hp=document.getElementById('pvHaptic');
+  hp.checked=lsg('pelex_haptic')==='1';
+  hp.addEventListener('change',function(){lss('pelex_haptic',hp.checked?'1':'0');if(hp.checked&&navigator.vibrate)navigator.vibrate(15)});
+  document.addEventListener('click',function(e){
+    if(lsg('pelex_haptic')!=='1'||!navigator.vibrate)return;
+    if(e.target.closest('button,.chip-sugg,.srow'))navigator.vibrate(8);
+  },true);
+  /* notification toggles - saved locally + synced to account when signed in */
+  var NOTIF_IDS=['pvPush:0','pvNotifTasks:1','pvNotifReply:1','pvNotifWeekly:0','pvNotifNews:0'];
+  function notifPrefs(){
+    var out={};NOTIF_IDS.forEach(function(spec){
+      var id=spec.split(':')[0],el=document.getElementById(id);if(el)out[id]=el.checked});
+    return out;
+  }
+  function syncNotifPrefs(){
+    if(sb&&curUser){try{sb.auth.updateUser({data:{notifications:notifPrefs()}})}catch(e){}}
+  }
+  function loadNotifPrefs(u){
+    var acct=(u&&u.user_metadata&&u.user_metadata.notifications)||null;
+    NOTIF_IDS.forEach(function(spec){
+      var parts=spec.split(':'),id=parts[0],def=parts[1];
+      var el=document.getElementById(id);if(!el)return;
+      var key='pelex_notif_'+id;
+      var val;
+      if(acct&&Object.prototype.hasOwnProperty.call(acct,id))val=!!acct[id];
+      else{var saved=lsg(key);val=saved===null?def==='1':saved==='1'}
+      el.checked=val;
+    });
+  }
+  window.loadNotifPrefs=loadNotifPrefs;
+  NOTIF_IDS.forEach(function(spec){
+    var id=spec.split(':')[0];
+    var el=document.getElementById(id);if(!el)return;
+    var key='pelex_notif_'+id;
+    el.addEventListener('change',function(){lss(key,el.checked?'1':'0');syncNotifPrefs()});
+  });
+  loadNotifPrefs(null);
+  var supportRow=document.getElementById('contactSupportRow');
+  if(supportRow)supportRow.addEventListener('click',function(){window.location.href='mailto:pelumiephraim@outlook.com?subject=Pelex support'});
+  /* Voice group in Settings mirrors the Personalisation voice + speed, which playback already reads */
+  var vgenEl=document.getElementById('vgen'),vspdEl=document.getElementById('vspd');
+  var SPEED_LABEL={slower:'Slower',normal:'Normal',faster:'Faster'};
+  var SPEED_VAL={slower:'0.85',normal:'1',faster:'1.15'};
+  var VAL_SPEED={'0.85':'slower','1':'normal','1.15':'faster'};
+  var SAMPLE_TXT='Hello, how are you?';
+  function speedKey(){return VAL_SPEED[vspdEl?vspdEl.value:'1']||'normal'}
+  function paintVoicePage(){
+    document.querySelectorAll('.voiceCard').forEach(function(c){c.classList.toggle('sel',c.dataset.v===(vgenEl?vgenEl.value:'female'))});
+    var sv=speedKey();
+    var sp=document.getElementById('speedVal');if(sp)sp.textContent=SPEED_LABEL[sv];
+    document.querySelectorAll('.sheetOpt[data-speed]').forEach(function(b){b.classList.toggle('sel',b.dataset.speed===sv)});
+    paintLang();
+    var hf=document.getElementById('pvHandsFree');
+    var micB=document.getElementById('mic');if(micB)micB.setAttribute('aria-label',(hf&&!hf.checked)?'Hold to speak, release to send':'Record a voice message');
+    document.querySelectorAll('.modeRow').forEach(function(b){
+      var on=hf?hf.checked:true;
+      b.classList.toggle('sel',(b.dataset.mode==='handsfree')===on)});
+  }
+  function paintLang(){
+    var k=(typeof voiceLang==='function')?voiceLang():'en',name='English';
+    (window.LANGS||LANGS).forEach(function(l){if(l.k===k)name=l.n});
+    var lv=document.getElementById('langVal');if(lv)lv.textContent=name;
+    document.querySelectorAll('#langList .sheetOpt').forEach(function(b){b.classList.toggle('sel',b.dataset.lang===k)});
+  }
+  var langList=document.getElementById('langList');
+  if(langList&&typeof LANGS!=='undefined'){
+    LANGS.forEach(function(l){
+      var b=document.createElement('button');b.type='button';b.className='sheetOpt';b.dataset.lang=l.k;
+      b.textContent=l.n+(l.b?'  (Beta)':'');
+      b.addEventListener('click',function(){
+        lss('pelex_voice_lang',l.k);
+        if(sb&&curUser){try{sb.auth.updateUser({data:{voice_lang:l.k}})}catch(e){}}
+        paintLang();
+        var sh=document.getElementById('langSheet');if(sh)sh.hidden=true;
+        if(typeof speak==='function'){if(typeof unlockAudio==='function')unlockAudio();speak('Hello, how are you?')}
+      });
+      langList.appendChild(b)});
+  }
+  function saveVoice(){
+    var c=window.customPrefs();lss('pelex_custom',JSON.stringify(c));
+    if(sb&&curUser){try{sb.auth.updateUser({data:{custom:c}})}catch(e){}}
+  }
+  window.mirrorVoice=function(){paintVoicePage()};
+  if(vgenEl&&vspdEl){
+    document.querySelectorAll('.voiceCard').forEach(function(card){
+      card.addEventListener('click',function(){
+        vgenEl.value=card.dataset.v;saveVoice();paintVoicePage();
+        if(typeof speak==='function'){if(typeof unlockAudio==='function')unlockAudio();speak(SAMPLE_TXT)}
+      });
+    });
+    var speedSheet=document.getElementById('speedSheet');
+    document.querySelectorAll('[data-open]').forEach(function(b){
+      b.addEventListener('click',function(){var sh=document.getElementById(b.dataset.open);if(sh)sh.hidden=false});
+    });
+    document.querySelectorAll('[data-close]').forEach(function(b){
+      b.addEventListener('click',function(){var sh=document.getElementById(b.dataset.close);if(sh)sh.hidden=true});
+    });
+    if(speedSheet)speedSheet.addEventListener('click',function(e){if(e.target===speedSheet)speedSheet.hidden=true});
+    document.querySelectorAll('.sheetOpt[data-speed]').forEach(function(b){
+      b.addEventListener('click',function(){
+        vspdEl.value=SPEED_VAL[b.dataset.speed];saveVoice();paintVoicePage();
+        if(speedSheet)speedSheet.hidden=true;
+        if(typeof speak==='function'){if(typeof unlockAudio==='function')unlockAudio();speak(SAMPLE_TXT)}
+      });
+    });
+    paintVoicePage();
+  }
+  var VT=[['pvHandsFree','handsfree'],['pvBarge','barge']];
+  function vtPrefs(){var o={};VT.forEach(function(p){var e=document.getElementById(p[0]);if(e)o[p[1]]=e.checked});return o}
+  function loadVT(u){
+    var acct=(u&&u.user_metadata&&u.user_metadata.voice_toggles)||null;
+    if(u&&u.user_metadata&&u.user_metadata.voice_lang)lss('pelex_voice_lang',u.user_metadata.voice_lang);
+    VT.forEach(function(p){var e=document.getElementById(p[0]);if(!e)return;
+      var v;if(acct&&Object.prototype.hasOwnProperty.call(acct,p[1]))v=!!acct[p[1]];
+      else{var sv=lsg('pelex_voice_'+p[1]);v=sv===null?true:sv==='1'}
+      e.checked=v;lss('pelex_voice_'+p[1],v?'1':'0')});
+    paintVoicePage();
+  }
+  VT.forEach(function(p){var e=document.getElementById(p[0]);if(!e)return;
+    e.addEventListener('change',function(){lss('pelex_voice_'+p[1],e.checked?'1':'0');
+      if(sb&&curUser){try{sb.auth.updateUser({data:{voice_toggles:vtPrefs()}})}catch(x){}}
+      paintVoicePage();})});
+  document.querySelectorAll('.modeRow').forEach(function(b){
+    b.addEventListener('click',function(){
+      var hf=document.getElementById('pvHandsFree');if(!hf)return;
+      hf.checked=(b.dataset.mode==='handsfree');
+      lss('pelex_voice_handsfree',hf.checked?'1':'0');
+      if(sb&&curUser){try{sb.auth.updateUser({data:{voice_toggles:vtPrefs()}})}catch(x){}}
+      paintVoicePage();
+    });
+  });
+  var _lnp=window.loadNotifPrefs;window.loadNotifPrefs=function(u){if(_lnp)_lnp(u);loadVT(u)};
+  loadVT(null);
+})();
+</script>
 </body>
 </html>
