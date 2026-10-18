@@ -22,7 +22,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0B2A5B">
 <link rel="icon" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-180.png">
 <meta name="color-scheme" content="light dark">
 <script>try{var _t=localStorage.getItem("pelex_theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,14 +38,15 @@ html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45}
 button,input,textarea,select{font:inherit;color:inherit}
 .app{display:grid;grid-template-columns:272px 1fr;height:100%;transition:grid-template-columns .22s ease}
-@media(min-width:821px){.app.collapsed{grid-template-columns:0 1fr}.app.collapsed aside{margin-left:-272px;opacity:0;pointer-events:none}.reopen{position:fixed;left:10px;top:14px;z-index:5;display:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}.app.collapsed .reopen{display:grid}}
+@media(min-width:821px){#instNavDesk{display:none!important}.app>main{grid-column:2;min-width:0}.app.collapsed{grid-template-columns:0 1fr}.app.collapsed aside{margin-left:-272px;opacity:0;pointer-events:none}.reopen{position:fixed;left:10px;top:14px;z-index:5;display:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}.app.collapsed .reopen{display:grid}}
 @media(max-width:820px){.reopen{display:none!important}}
-aside{background:linear-gradient(180deg,var(--panel),var(--soft));border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:4px;overflow-y:auto;box-shadow:1px 0 0 rgba(0,0,0,.02);transition:margin-left .22s ease,opacity .18s ease}
+aside{position:fixed;left:0;top:0;width:272px;box-sizing:border-box;height:100vh;height:100dvh;background:linear-gradient(180deg,var(--panel),var(--soft));border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:4px;overflow-y:auto;box-shadow:1px 0 0 rgba(0,0,0,.02);transition:margin-left .22s ease,opacity .18s ease;z-index:5}
 .brand{white-space:nowrap;display:flex;align-items:center;gap:8px;padding:2px 8px 12px;font-weight:700;font-size:17px}
 .logo{width:30px;height:30px;border-radius:9px;background:var(--btn);color:var(--btnink);display:grid;place-items:center;font-weight:800}
 .nav{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:10px;background:none;text-align:left;cursor:pointer}
 .nav:hover{background:var(--soft)}
 .nav[aria-current="true"]{background:var(--sel);font-weight:600}
+.nbadge{margin-left:auto;min-width:18px;height:18px;padding:0 6px;border-radius:99px;background:#e5484d;color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center}.nbadge[hidden]{display:none}
 .nav svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .newchat{background:var(--btn);color:var(--btnink);font-weight:600;margin-bottom:6px}
 .newchat:hover{background:var(--btn);opacity:.92}
@@ -348,15 +349,57 @@ dialog.adsheet::backdrop{background:rgba(11,27,74,.35)}
 #plugs .sgroup:first-child{margin-top:18px}
 #plugs>.card{margin-top:22px}
 .plugreq{margin-top:10px}
-.hdrmark{flex:none;opacity:.9}</style>
+.hdrmark{flex:none;opacity:.9}
+/* entrance splash */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(60% 50% at 50% 42%,color-mix(in srgb,var(--btn,#0a89f4) 14%,var(--bg)),var(--bg) 70%);transition:opacity .55s ease,filter .55s ease,transform .55s ease}
+#splash.out{opacity:0;filter:blur(10px);transform:scale(1.06);pointer-events:none}
+#splash .sg{position:absolute;width:min(90vw,520px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--btn,#0a89f4) 22%,transparent),transparent 65%);opacity:0;transform:scale(.4);animation:spGlow 1.8s .1s ease-out forwards}
+#splash svg{position:relative;width:min(46vw,150px);height:auto;overflow:visible}
+#splash .hx{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:spDraw .9s .15s cubic-bezier(.4,0,.2,1) forwards}
+#splash .nd{opacity:0;transform:scale(0);transform-box:fill-box;transform-origin:center;animation:spPop .45s cubic-bezier(.34,1.56,.64,1) forwards}
+#splash .bd{opacity:0;transform:scale(.5);transform-box:fill-box;transform-origin:center;animation:spPop .6s .85s cubic-bezier(.34,1.56,.64,1) forwards}
+#splash .pl{opacity:0;animation:spFade .4s 1.15s ease forwards}
+#splash .wm{position:relative;font-weight:800;font-size:clamp(30px,8vw,44px);letter-spacing:.3em;color:var(--ink);opacity:0;transform:translateY(10px);animation:spWord .8s 1.2s cubic-bezier(.2,.8,.2,1) forwards}
+#splash .tg{position:relative;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);opacity:0;animation:spFade .6s 1.65s ease forwards}
+#splash .bar{position:relative;width:96px;height:3px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px;opacity:0;animation:spFade .3s 1.4s ease forwards}
+#splash .bar i{display:block;height:100%;width:100%;background:var(--btn,#0a89f4);transform:translateX(-100%);animation:spLoad 2.9s 1.4s ease-in-out forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+@keyframes spPop{to{opacity:1;transform:scale(1)}}
+@keyframes spFade{to{opacity:1}}
+@keyframes spWord{to{opacity:1;transform:none;letter-spacing:.12em}}
+@keyframes spGlow{to{opacity:1;transform:scale(1)}}
+@keyframes spLoad{to{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+
+/* splash sky: stars + slow 3D spaceship flight (theme-aware) */
+#splash .sky{position:absolute;inset:0;overflow:hidden;container-type:size;pointer-events:none}
+#splash .st{position:absolute;border-radius:50%;background:var(--muted);opacity:.25;animation:spTw 2.2s ease-in-out infinite alternate}
+#splash .ship3{position:absolute;left:0;top:0;width:min(56cqw,240px);opacity:0;transform:translate(-22cqw,100cqh) rotate(var(--ang,-45deg)) scale(.7);perspective:900px;animation:spFlight 4.2s .2s cubic-bezier(.4,.05,.55,.95) forwards}
+#splash .ship3 .body{transform-style:preserve-3d;animation:spSway 2.6s ease-in-out infinite alternate;filter:drop-shadow(0 18px 22px rgba(8,16,40,.35))}
+#splash .ship3 svg{display:block;width:100%;height:auto;overflow:visible}
+#splash .eg{transform-box:fill-box;transform-origin:right center;animation:spFlame .5s ease-in-out infinite alternate}
+@keyframes spTw{from{opacity:.15;transform:scale(.7)}to{opacity:.9;transform:scale(1.25)}}
+@keyframes spFlight{0%{opacity:0;transform:translate(-22cqw,100cqh) rotate(var(--ang,-45deg)) scale(.7)}12%{opacity:.95}88%{opacity:.95}100%{opacity:0;transform:translate(74cqw,-4cqh) rotate(var(--ang,-45deg)) scale(1.15)}}
+@keyframes spSway{from{transform:rotateY(-26deg) rotateX(4deg) rotateZ(-2deg)}to{transform:rotateY(-6deg) rotateX(12deg) rotateZ(2deg)}}
+@keyframes spFlame{from{transform:scaleX(.8);opacity:.75}to{transform:scaleX(1.2);opacity:1}}
+@media(prefers-reduced-motion:reduce){#splash .ship3{display:none}#splash .st{animation:none!important;opacity:.25}}
+</style>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><div class="sky"><i class="st" style="left:33.4%;top:17.2%;width:2px;height:2px;animation-delay:1.64s"></i><i class="st" style="left:11.8%;top:57.8%;width:2px;height:2px;animation-delay:0.17s"></i><i class="st" style="left:42.3%;top:25.6%;width:4px;height:2px;animation-delay:1.65s"></i><i class="st" style="left:14.6%;top:24.0%;width:2px;height:4px;animation-delay:0.10s"></i><i class="st" style="left:23.8%;top:55.3%;width:2px;height:3px;animation-delay:0.84s"></i><i class="st" style="left:53.8%;top:56.7%;width:2px;height:2px;animation-delay:1.16s"></i><i class="st" style="left:63.1%;top:38.0%;width:2px;height:2px;animation-delay:1.24s"></i><i class="st" style="left:49.7%;top:53.0%;width:3px;height:4px;animation-delay:1.17s"></i><i class="st" style="left:45.6%;top:31.2%;width:2px;height:2px;animation-delay:0.16s"></i><i class="st" style="left:31.2%;top:49.5%;width:3px;height:4px;animation-delay:0.58s"></i><i class="st" style="left:95.1%;top:14.1%;width:4px;height:2px;animation-delay:1.51s"></i><i class="st" style="left:17.3%;top:49.0%;width:2px;height:2px;animation-delay:1.53s"></i><i class="st" style="left:56.9%;top:85.3%;width:3px;height:3px;animation-delay:1.39s"></i><i class="st" style="left:58.9%;top:57.5%;width:4px;height:2px;animation-delay:1.68s"></i><i class="st" style="left:91.8%;top:47.6%;width:2px;height:2px;animation-delay:1.46s"></i><i class="st" style="left:32.1%;top:57.3%;width:4px;height:3px;animation-delay:1.43s"></i><i class="st" style="left:86.4%;top:35.6%;width:4px;height:3px;animation-delay:0.34s"></i><i class="st" style="left:14.0%;top:8.5%;width:3px;height:2px;animation-delay:1.48s"></i><i class="st" style="left:40.4%;top:89.2%;width:4px;height:2px;animation-delay:0.33s"></i><i class="st" style="left:40.8%;top:29.1%;width:2px;height:4px;animation-delay:1.73s"></i><i class="st" style="left:29.2%;top:42.0%;width:3px;height:4px;animation-delay:1.92s"></i><i class="st" style="left:17.2%;top:19.6%;width:2px;height:2px;animation-delay:0.02s"></i><i class="st" style="left:81.1%;top:20.1%;width:3px;height:2px;animation-delay:0.29s"></i><i class="st" style="left:53.3%;top:60.3%;width:3px;height:2px;animation-delay:1.38s"></i><i class="st" style="left:51.5%;top:61.1%;width:2px;height:4px;animation-delay:1.80s"></i><i class="st" style="left:76.3%;top:85.2%;width:4px;height:4px;animation-delay:0.80s"></i><i class="st" style="left:12.7%;top:62.6%;width:2px;height:2px;animation-delay:0.13s"></i><i class="st" style="left:22.6%;top:18.3%;width:3px;height:2px;animation-delay:0.20s"></i><i class="st" style="left:56.3%;top:53.4%;width:3px;height:2px;animation-delay:0.14s"></i><i class="st" style="left:22.5%;top:38.4%;width:3px;height:3px;animation-delay:1.20s"></i><i class="st" style="left:47.6%;top:13.8%;width:4px;height:4px;animation-delay:0.96s"></i><i class="st" style="left:32.3%;top:16.5%;width:3px;height:3px;animation-delay:0.96s"></i><i class="st" style="left:68.1%;top:51.5%;width:2px;height:3px;animation-delay:0.29s"></i><i class="st" style="left:54.1%;top:5.5%;width:3px;height:2px;animation-delay:1.39s"></i><div class="ship3"><div class="body"><svg viewBox="-60 -10 500 190" aria-hidden="true"><defs><linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#c9d6ee"/><stop offset=".7" stop-color="#7f93bd"/><stop offset="1" stop-color="#34436b"/></linearGradient><linearGradient id="wf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6eeff"/><stop offset="1" stop-color="#5d73a6"/></linearGradient><linearGradient id="wn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9db3e0"/><stop offset="1" stop-color="#27345a"/></linearGradient><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9f2ff"/><stop offset=".55" stop-color="#4fb6e8"/><stop offset="1" stop-color="#17406e"/></linearGradient><radialGradient id="eg"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".35" stop-color="#8fe3ff" stop-opacity=".9"/><stop offset="1" stop-color="#2f7bff" stop-opacity="0"/></radialGradient><linearGradient id="tr3" x1="0" x2="1"><stop offset="0" stop-color="#4fb6e8" stop-opacity="0"/><stop offset="1" stop-color="#8fe3ff" stop-opacity=".7"/></linearGradient></defs><rect class="eg" x="-60" y="73" width="110" height="14" rx="7" fill="url(#tr3)"/><path d="M215 52 L150 4 L98 6 L152 56Z" fill="url(#wf)" stroke="#27345a" stroke-opacity=".35"/><path d="M152 56 L98 6 L104 3 L160 54Z" fill="url(#wn)"/><path d="M392 82 C350 54 280 42 172 46 L62 56 L28 82 L62 108 L172 118 C280 122 350 110 392 82Z" fill="url(#hl)" stroke="#27345a" stroke-opacity=".4"/><path d="M392 82 C350 54 280 42 172 46 L62 56 C150 60 290 64 392 82Z" fill="#fff" opacity=".55"/><path d="M30 84 L62 108 L172 118 C280 122 350 110 392 84 C300 100 150 104 30 84Z" fill="#1c2748" opacity=".38"/><path d="M120 52 L112 112 M200 47 L196 117 M262 46 L260 118" stroke="#27345a" stroke-opacity=".28" stroke-width="1.5"/><path d="M296 64 C330 58 356 68 372 80 C346 80 318 80 292 78Z" fill="url(#gl)" stroke="#17406e" stroke-opacity=".6"/><path d="M306 64 C322 62 336 64 346 69 C330 68 316 69 304 71Z" fill="#fff" opacity=".6"/><path d="M222 112 L146 172 L90 174 L160 108Z" fill="url(#wf)" stroke="#27345a" stroke-opacity=".4"/><path d="M160 108 L90 174 L84 168 L152 106Z" fill="url(#wn)"/><path d="M200 118 L150 160" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><ellipse cx="34" cy="68" rx="13" ry="9" fill="#34436b"/><ellipse cx="34" cy="96" rx="13" ry="9" fill="#34436b"/><ellipse class="eg" cx="26" cy="68" rx="26" ry="11" fill="url(#eg)"/><ellipse class="eg" cx="26" cy="96" rx="26" ry="11" fill="url(#eg)"/></svg></div></div></div><div class="sg"></div><svg viewBox="0 0 40 40"><polygon class="hx" pathLength="1" points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5"/><circle class="nd" style="animation-delay:0.25s" cx="20" cy="3" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.37s" cx="35" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.49s" cx="35" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.61s" cx="20" cy="37" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.73s" cx="5" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.85s" cx="5" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><rect class="bd" x="11" y="11" width="18" height="18" rx="5" fill="var(--btn,#0a89f4)"/><text class="pl" x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink,#fff)">P</text></svg><div class="wm">PELEX</div><div class="tg">Your AI assistant</div><div class="bar"><i></i></div></div>
+<script>
+(function(){var sp=document.getElementById('splash');if(!sp)return;try{if(sessionStorage.getItem('pelex_splash')==='1'){sp.parentNode.removeChild(sp);return}sessionStorage.setItem('pelex_splash','1')}catch(e){}
+var r=sp.getBoundingClientRect(),w=r.width||390,h=r.height||844;var ship=sp.querySelector('.ship3');if(ship)ship.style.setProperty('--ang',(-Math.atan2(104*h/100,96*w/100)*180/Math.PI).toFixed(1)+'deg');var done=false;function out(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp)},650)}
+var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out);})();
+</script>
+
 <div class="app" id="app"><button class="iconbtn reopen" id="sideReopen" aria-label="Show sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button>
 <aside id="side" aria-label="Sidebar">
 <div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Pelex<span style="margin-left:auto;display:flex;gap:14px"><button class="iconbtn" id="instNavDesk" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button><button class="iconbtn" id="sideCollapse" aria-label="Hide sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button></span></div>
 <button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
 <button class="nav" data-go="library"><svg viewBox="0 0 24 24"><path d="M5 4v16M10 4v16M15 5l4 14"/></svg>Library</button>
-<button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled</button>
+<button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
 <button class="nav" data-go="images"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 7"/></svg>Images <span class="badge soon">Soon</span></button>
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
 <button class="nav" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg>Connectors</button>
@@ -413,7 +456,7 @@ dialog.adsheet::backdrop{background:rgba(11,27,74,.35)}
 <div class="srow">
 <div><label for="sFreq" class="muted">How often</label><select class="inp" id="sFreq"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option><option value="every2days">Every 2 days</option><option value="every3days">Every 3 days</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every month</option><option value="once">Just once</option></select></div>
 <div id="sDayWrap" hidden><label for="sDay" class="muted">On</label><select class="inp" id="sDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></div>
-<div><label for="sTime" class="muted">At</label><input class="inp" id="sTime" type="time" value="08:00"></div>
+<div><label for="sTime" class="muted">At</label><input class="inp" id="sTime" type="time" value="08:00"><div class="muted" id="sTzNote" style="font-size:12px;margin-top:4px"></div></div>
 <div><label for="sChan" class="muted">Send to</label><select class="inp" id="sChan"><option value="website">This app</option><option value="telegram" disabled>Telegram (linking soon)</option><option value="whatsapp" disabled>WhatsApp (soon)</option></select></div>
 <div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="personal">Personal assistant</option><option value="business">Business assistant</option></select></div>
 </div>
@@ -683,6 +726,7 @@ async function askAgent(text){
 var ptt=false,pttHeld=false,muted=false,silent=0,live=false,rec=null,stream=null,actx=null,an=null,abuf=null,timer=null,idleT=null,heard=false,busy=false;
 var player=new Audio();player.preload='auto';player.setAttribute('playsinline','');
 var SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',unlocked=false;
+function isTouch(){try{return !!(window.matchMedia&&matchMedia('(pointer:coarse)').matches)}catch(e){return false}}
 function vpref(k,d){try{var v=localStorage.getItem('pelex_voice_'+k);return v===null?d:v==='1'}catch(e){return d}}
 var LANGS=[{k:'en',n:'English',c:'en'},{k:'pcm',n:'Nigerian Pidgin',c:'en',b:1},{k:'yo',n:'Yoruba',c:'yo',b:1},{k:'ig',n:'Igbo',c:'ig',b:1},{k:'ha',n:'Hausa',c:'ha'},{k:'sw',n:'Swahili',c:'sw'},{k:'de',n:'German',c:'de'},{k:'fr',n:'French',c:'fr'},{k:'es',n:'Spanish',c:'es'},{k:'pt',n:'Portuguese',c:'pt'},{k:'it',n:'Italian',c:'it'},{k:'ar',n:'Arabic',c:'ar'},{k:'hi',n:'Hindi',c:'hi'},{k:'zh',n:'Chinese',c:'zh'},{k:'ja',n:'Japanese',c:'ja'},{k:'ko',n:'Korean',c:'ko'}];
 function voiceLang(){try{return localStorage.getItem('pelex_voice_lang')||'en'}catch(e){return 'en'}}
@@ -712,7 +756,11 @@ function chunk(t){
   parts.forEach(function(p){if(cur&&(cur+p).length>260){out.push(cur);cur=p}else cur+=p});
   if(cur.trim())out.push(cur);return out}
 function voicePrefs(){var c=null;try{c=JSON.parse(localStorage.getItem('pelex_custom')||'null')}catch(e){}return{voice:(c&&c.voice)||'female',speed:(c&&c.speed)||'1'}}
-function fetchAudio(c){var vp=voicePrefs();return post('/.netlify/functions/speak',{text:c,voice:vp.voice,speed:vp.speed,language:langCode()}).then(function(r){return r&&r.audio?'data:audio/mpeg;base64,'+r.audio:null}).catch(function(){return null})}
+var voiceWarned=false;
+function voiceFail(e){if(voiceWarned)return;voiceWarned=true;var m=String((e&&e.message)||'');
+  var why=/404|not found/i.test(m)?'the voice function is not deployed on this site yet':/not configured/i.test(m)?'the ElevenLabs key is missing on the server':/quota|credit|401|402|429|unusual/i.test(m)?'ElevenLabs refused the request ('+m+')':(m||'no reply from the voice service');
+  try{add('ElevenLabs voice is not responding: '+why+'. Using your device\'s basic voice instead.','sys')}catch(x){}}
+function fetchAudio(c){var vp=voicePrefs();return post('/.netlify/functions/speak',{text:c,voice:vp.voice,speed:vp.speed,language:langCode()}).then(function(r){if(r&&r.audio)return 'data:audio/mpeg;base64,'+r.audio;voiceFail(new Error('the voice service sent back no audio'));return null}).catch(function(e){voiceFail(e);return null})}
 function playUrl(u){return new Promise(function(res){
   curRes=res;
   player.onended=player.onerror=function(){player.onended=player.onerror=null;curRes=null;res(true)};
@@ -733,14 +781,14 @@ function stopSpeaking(){
   document.body.classList.remove('speaking')}
 // barge-in: while Pelex talks in live mode, ~0.4s of your voice cuts him off
 async function startBargeIn(tok){
-  if(!live||muted||!vpref('barge',true))return;
+  if(!live||muted||!vpref('barge',!isTouch()))return;
   try{await openMic()}catch(e){return}
   if(tok!==speakTok)return;
   var n=0;clearInterval(bargeTimer);
   bargeTimer=setInterval(function(){
     if(!an)return;
-    n=level()>0.045?n+1:0;
-    if(n>=4)stopSpeaking()},100)}
+    n=level()>0.09?n+1:0;
+    if(n>=8)stopSpeaking()},100)}
 async function speak(t){
   stopSpeaking();var tok=speakTok,cs=chunk(t);if(!cs.length)return;
   document.body.classList.add('speaking');startBargeIn(tok);
@@ -807,15 +855,15 @@ async function listenRec(){
     if(!heard){if(live){silent++;if(silent>=6){add('Live mode stopped after a while with no speech. Tap Talk live to continue.','sys');setLive(false)}else{if(vpref('handsfree',true))listen();else releaseSoon()}}else releaseSoon();return}
     silent=0;ptt=false;
     await handleAudio(new Blob(chunks,{type:mime}),mime)};
-  heard=ptt;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02;
+  heard=ptt;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02,loud=0;
   rec.start();$('mic').classList.add('recording');
   if(ptt&&!pttHeld){rec.stop();return}
   timer=setInterval(function(){
     if(!an)return;
     var now=Date.now(),l=level();
     if(now-t0<400){samples.push(l);return}
-    if(!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.04,Math.max(0.015,m*3));calibrated=true}
-    if(l>thr){heard=true;last=now}
+    if(!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.12,Math.max(0.025,m*3+0.012));calibrated=true}
+    if(l>thr){loud++;if(loud>=3)heard=true;if(heard)last=now}else{loud=0}
     if((!ptt&&((heard&&now-last>1500)||(!heard&&now-t0>12000)))||now-t0>60000){if(rec.state==='recording')rec.stop()}
   },100)}
 async function handleAudio(blob,mime){
@@ -825,7 +873,8 @@ async function handleAudio(blob,mime){
     var b64=await new Promise(function(res){var f=new FileReader();f.onload=function(){res(String(f.result).split(',')[1])};f.readAsDataURL(blob)});
     var r=await post('/.netlify/functions/transcribe',{audio:b64,mime:mime,language:langCode()});
     note.remove();
-    if(!r.text){add('I could not make out that recording. Try again.','sys');busy=false;if(live&&vpref('handsfree',true))listen();else releaseSoon();return}
+    if(r.text){r.text=r.text.replace(/\([^)]{0,40}\)|\[[^\]]{0,40}\]/g,'').trim();if(r.text.replace(/[^\p{L}\p{N}]/gu,'').length<2)r.text=''}
+    if(!r.text){if(!live)add('I could not make out that recording. Try again.','sys');busy=false;if(live&&vpref('handsfree',true))listen();else releaseSoon();return}
     if(live&&r.text.split(/\s+/).length<=8&&/\b(talk (to you )?later|goodbye|bye bye|bye|end (the )?call|stop listening)\b/i.test(r.text)){
       add(r.text,'me');add('Talk later! I am here whenever you need me.');busy=false;setLive(false);return}
     var reply=await turn(r.text);busy=false;
@@ -1182,20 +1231,39 @@ function syncWelcome(){var cb=chat.querySelector('.chatbody');if(cb)cb.style.dis
 })();
 
 var _add=add;add=function(){var r=_add.apply(this,arguments);syncWelcome();return r};
-var _go=go;go=function(v,t){_go(v,t);if(v==='projects')loadProjects();if(v==='scheduled')loadTasks()};
+var _go=go;go=function(v,t){_go(v,t);if(v==='projects')loadProjects();if(v==='scheduled'){loadTasks();markSchedSeen()}};
+function schedSeen(){try{return localStorage.getItem('pelex_sched_seen')||'1970-01-01T00:00:00Z'}catch(e){return '1970-01-01T00:00:00Z'}}
+function markSchedSeen(){try{localStorage.setItem('pelex_sched_seen',new Date().toISOString())}catch(e){}var b=document.getElementById('schedBadge');if(b)b.hidden=true}
+var _schedCount=0;
+async function checkSched(){
+  var b=document.getElementById('schedBadge');if(!b)return;
+  if(!dbOk()){b.hidden=true;return}
+  try{
+    var r=await sb.from('scheduled_tasks').select('id').gt('delivered_at',schedSeen());
+    if(r.error||!r.data){return}
+    var n=r.data.length;
+    if(n>0&&document.getElementById('v-scheduled').hidden===false){markSchedSeen();loadTasks();return}
+    b.textContent=n>9?'9+':String(n);b.hidden=n===0;
+    if(n>_schedCount&&n>0&&window.Notification&&Notification.permission==='granted'){try{new Notification('Pelex',{body:'A scheduled task just landed.'})}catch(e){}}
+    _schedCount=n;
+  }catch(e){}
+}
+setInterval(checkSched,60000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkSched()});
+setTimeout(checkSched,4000);
 
 async function ensureChat(firstText){
   if(!dbOk()||curChatId||!window.histOn())return;
   var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
   var r=await sb.from('chats').insert({title:title,project_id:curProjectId||null}).select('id').single();
-  if(r.error||!r.data)return;
+  if(r.error||!r.data){console.warn('Pelex: chat save failed',r.error);return}
   curChatId=r.data.id;loadRecents();
 }
 function saveMsg(role,content){
   if(!dbOk()||!curChatId||!content||!window.histOn())return;
   var cid=curChatId;
   sb.from('messages').insert({chat_id:cid,role:role,content:String(content).slice(0,20000)})
-    .then(function(){return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
+    .then(function(mr){if(mr&&mr.error)console.warn('Pelex: message save failed',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
     .catch(function(){});
 }
 function resetChatView(){chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
@@ -1311,6 +1379,7 @@ function nextRunFrom(freq,time,day){
   if(freq==='weekdays'){while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1)}
   return d.toISOString();
 }
+(function(){var tzn=$('sTzNote');if(tzn){var tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(e){}tzn.textContent='Your device time zone: '+tz+'. The task runs at this local time.'}})();
 document.querySelectorAll('#sChips .qchip').forEach(function(b){b.addEventListener('click',function(){
   $('sInstr').value=b.getAttribute('data-ins');
   var f=b.getAttribute('data-freq');if(f){$('sFreq').value=f;$('sFreq').dispatchEvent(new Event('change'))}
@@ -1618,7 +1687,25 @@ window.onUserChange=function(u){
       });
     });
     paintVoicePage();
+    loadNamedVoices();
   }
+  function vHue(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%360;return h}
+  function loadNamedVoices(){
+    var box=document.getElementById('voiceCards');if(!box||box.dataset.loaded)return;box.dataset.loaded='1';
+    fetch('/.netlify/functions/voices').then(function(r){return r.ok?r.json():null}).then(function(j){
+      if(!j||!j.voices||!j.voices.length)return;
+      j.voices.forEach(function(v){
+        if(!/^[A-Za-z0-9]{15,30}$/.test(v.id))return;
+        var o=document.createElement('option');o.value=v.id;o.textContent=v.name;vgenEl.appendChild(o);
+        var b=document.createElement('button');b.type='button';b.className='voiceCard';b.dataset.v=v.id;
+        var d=document.createElement('span');d.className='vcDot';var hh=vHue(v.id);
+        d.style.background='radial-gradient(circle at 35% 30%,hsl('+hh+',80%,85%),hsl('+hh+',70%,60%))';
+        var n=document.createElement('span');n.textContent=v.name;b.appendChild(d);b.appendChild(n);
+        if(v.hint){var h2=document.createElement('span');h2.className='muted';h2.style.fontSize='12px';h2.textContent=v.hint;b.appendChild(h2)}
+        b.addEventListener('click',function(){vgenEl.value=v.id;saveVoice();paintVoicePage();if(typeof speak==='function'){if(typeof unlockAudio==='function')unlockAudio();speak(SAMPLE_TXT)}});
+        box.appendChild(b)});
+      try{var sv=JSON.parse(localStorage.getItem('pelex_custom')||'null');if(sv&&sv.voice&&vgenEl.querySelector('option[value="'+sv.voice+'"]'))vgenEl.value=sv.voice}catch(e){}
+      paintVoicePage()}).catch(function(){})}
   var VT=[['pvHandsFree','handsfree'],['pvBarge','barge']];
   function vtPrefs(){var o={};VT.forEach(function(p){var e=document.getElementById(p[0]);if(e)o[p[1]]=e.checked});return o}
   function loadVT(u){
@@ -1626,7 +1713,7 @@ window.onUserChange=function(u){
     if(u&&u.user_metadata&&u.user_metadata.voice_lang)lss('pelex_voice_lang',u.user_metadata.voice_lang);
     VT.forEach(function(p){var e=document.getElementById(p[0]);if(!e)return;
       var v;if(acct&&Object.prototype.hasOwnProperty.call(acct,p[1]))v=!!acct[p[1]];
-      else{var sv=lsg('pelex_voice_'+p[1]);v=sv===null?true:sv==='1'}
+      else{var sv=lsg('pelex_voice_'+p[1]);v=sv===null?!(p[1]==='barge'&&isTouch()):sv==='1'}
       e.checked=v;lss('pelex_voice_'+p[1],v?'1':'0')});
     paintVoicePage();
   }
