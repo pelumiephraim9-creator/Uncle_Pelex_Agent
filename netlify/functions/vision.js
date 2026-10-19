@@ -1,4 +1,4 @@
-// Image understanding via Groq (vision-capable model).
+// Image understanding via Groq Qwen 3.8 27B (vision-capable).
 const json = (code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
 exports.handler = async (event) => {
