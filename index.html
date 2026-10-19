@@ -383,6 +383,60 @@ dialog.adsheet::backdrop{background:rgba(11,27,74,.35)}
 @keyframes spSway{from{transform:rotateY(-26deg) rotateX(4deg) rotateZ(-2deg)}to{transform:rotateY(-6deg) rotateX(12deg) rotateZ(2deg)}}
 @keyframes spFlame{from{transform:scaleX(.8);opacity:.75}to{transform:scaleX(1.2);opacity:1}}
 @media(prefers-reduced-motion:reduce){#splash .ship3{display:none}#splash .st{animation:none!important;opacity:.25}}
+
+/* LAYOUT LOCK: page never scrolls; chat scrolls inside; top bar always visible */
+html,body{overflow:hidden}
+.app{height:100vh;height:100dvh;overflow:hidden;grid-template-rows:minmax(0,1fr)}
+main{min-height:0;height:100%;overflow:hidden}
+.top{position:sticky;top:0;z-index:5;flex:none}
+/* option chips: aligned to the left, not centred */
+.chips{justify-content:flex-start}
+
+/* ONBOARDING */
+#onb{position:fixed;inset:0;z-index:200;background:var(--bg);display:none;overflow-y:auto;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#onb.show{display:block}
+.onbw{max-width:520px;margin:0 auto;padding:28px 20px 40px}
+.onbdots{display:flex;gap:6px;margin-bottom:18px}
+.onbdots i{height:4px;flex:1;border-radius:4px;background:var(--line)}
+.onbdots i.on{background:var(--btn)}
+.onbw h2{margin:0 0 6px;font-size:24px}
+.onbw p.sub2{margin:0 0 20px;color:var(--muted)}
+.onbw label{display:block;font-weight:600;margin:16px 0 6px;font-size:14px}
+.onbw input,.onbw textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;font-size:16px}
+.onbw textarea{min-height:90px;resize:vertical}
+.onbpick{display:flex;flex-wrap:wrap;gap:8px}
+.onbpick button{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:9px 15px;min-height:40px;cursor:pointer;font-size:14px}
+.onbpick button.on{background:var(--soft);border-color:var(--btn);font-weight:600}
+.onbpick button:disabled{opacity:.45;cursor:default}
+.onbact{display:flex;gap:10px;align-items:center;margin-top:26px}
+.onbact .go{flex:1;min-height:48px;border:0;border-radius:12px;background:var(--btn);color:var(--btnink);font-weight:700;font-size:16px;cursor:pointer}
+.onbact .bk,.onbskip{border:0;background:none;color:var(--muted);cursor:pointer;min-height:44px;padding:0 10px;font-size:14px}
+.onberr{color:#c0392b;font-size:14px;min-height:20px;margin-top:10px}
+
+/* RECENT CHATS (new style) */
+.rechead{display:flex;align-items:center;justify-content:space-between;padding:12px 6px 4px 10px;color:var(--muted)}
+.rechead[hidden],.recsearch[hidden]{display:none}
+.rechtitle{border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:6px 0;min-height:36px}
+.rchev{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.rechead.closed .rchev{transform:rotate(-90deg)}
+.rechtools{display:flex;gap:2px}
+.rechtools button{border:0;background:none;color:var(--muted);width:34px;height:34px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+.rechtools button:hover,.rechtools button.on{background:var(--soft);color:var(--ink)}
+.rechtools svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.recsearch{padding:2px 8px 6px}
+.recsearch input{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;font-size:14px}
+.reclabel2{font-size:13px;font-weight:600;color:var(--muted);padding:12px 10px 4px}
+.recrow .rec{display:flex;align-items:center;gap:12px;line-height:normal}
+.recrow .rec::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--muted);box-sizing:border-box;margin-left:4px}
+.recrow .rec span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.recrow .rec[aria-current="true"]{background:var(--sel);font-weight:600}
+.recrow .recx.dots{font-size:18px;font-weight:700;line-height:1}
+.recrow:hover .recx.dots,.recrow .rec[aria-current="true"]+.recx.dots{opacity:1}
+.recpop{position:fixed;z-index:300;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:6px;display:none}
+.recpop.show{display:block}
+.recpop button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;min-height:40px;border-radius:8px;cursor:pointer;font-size:14px}
+.recpop button:hover{background:var(--soft)}
+.recpop button.danger{color:#c0392b}
 </style>
 </head>
 <body>
@@ -404,10 +458,34 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
 <button class="nav" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg>Connectors</button>
 <button class="nav" data-go="ads"><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1zM18 9a4 4 0 0 1 0 6"/></svg>Run ads <span class="badge soon">Soon</span></button>
-<div class="navlabel" id="recLabel" hidden>Recent chats</div><div id="recents"></div>
+<div id="recPinned"></div>
+<div class="rechead" id="recLabel" hidden><button type="button" class="rechtitle" id="recToggle" aria-expanded="true">Chats <svg viewBox="0 0 24 24" class="rchev"><path d="M6 9l6 6 6-6"/></svg></button><span class="rechtools"><button type="button" id="recAll" aria-label="Show all chats" title="Show all"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></button><button type="button" id="recSearchBtn" aria-label="Search chats" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg></button><button type="button" id="recSortBtn" aria-label="Sort chats" title="Sort: Last activity"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16M4 9h4M10 15h4M16 8h4"/></svg></button></span></div>
+<div class="recsearch" id="recSearchWrap" hidden><input id="recSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
+<div id="recents"></div>
 <div class="sidefoot"><button class="nav" data-go="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Settings</button>
 <button class="me nav" id="sbAccountBtn" style="border-radius:10px;border-top:1px solid var(--line)"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span><strong id="sbName">Sign in</strong><br><span class="badge" id="sbSub">Free plan</span></span></button></div>
 </aside>
+
+<div id="onb" role="dialog" aria-modal="true" aria-label="Set up your profile"><div class="onbw">
+<div class="onbdots"><i class="on" id="od1"></i><i id="od2"></i></div>
+<div id="onb1">
+<h2>Welcome to Pelex</h2><p class="sub2">Tell us a little about you so Pelex can be genuinely useful from day one.</p>
+<label for="onName">Full name</label><input id="onName" autocomplete="name" maxlength="80" placeholder="Your full name">
+<label for="onDob">Date of birth</label><input id="onDob" type="date">
+<label for="onAbout">About yourself</label><textarea id="onAbout" maxlength="400" placeholder="What you do, what you are working on, what you care about"></textarea>
+<label>Which describes you best?</label><div class="onbpick" id="onCat"></div>
+<div class="onberr" id="onErr1"></div>
+<div class="onbact"><button class="go" id="onNext" type="button">Continue</button></div>
+<div style="text-align:center"><button class="onbskip" id="onSkip1" type="button">Skip for now</button></div>
+</div>
+<div id="onb2" hidden>
+<h2>What are you into?</h2><p class="sub2">Pick up to 3. Pelex will use these to suggest things you will actually like.</p>
+<div class="onbpick" id="onInt"></div>
+<div class="onberr" id="onErr2"></div>
+<div class="onbact"><button class="bk" id="onBack" type="button">Back</button><button class="go" id="onDone" type="button">Finish</button></div>
+<div style="text-align:center"><button class="onbskip" id="onSkip2" type="button">Skip for now</button></div>
+</div>
+</div></div>
 <div class="scrim" id="scrim"></div>
 <main>
 <div class="top"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button><span style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 40 40" width="22" height="22" class="hdrmark" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg><strong>Pelex</strong></span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><button class="iconbtn" id="instNav" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button></span></div>
@@ -989,7 +1067,7 @@ function applyUser(u){
 async function oauth(provider){
   if(!sb){authMsg('Sign-in is unavailable right now. Check your connection.',true);return}
   authMsg('Opening '+provider+'...');
-  var r=await sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:location.origin+'/'}});
+  var r=await sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account consent'}}});
   if(r.error)authMsg(friendly(r.error),true)}
 document.getElementById('authGoogle').addEventListener('click',function(){oauth('google')});
 document.getElementById('authGithub').addEventListener('click',function(){oauth('github')});
@@ -1207,7 +1285,7 @@ libRender();
 var curUser=null,curChatId=null,curProjectId=null,chatsCache=[],lastUid=null;
 function userDisplay(u){return u?((u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name||u.user_metadata.user_name))||(u.email||'').split('@')[0]||'there'):''}
 function agentSid(){return(signedIn&&curChatId)?'public-'+curChatId:sid}
-function agentMeta(){var m=curUser?{userId:curUser.id,userName:userDisplay(curUser)}:{};if(window.customPrefs)m.custom=window.customPrefs();return m}
+function agentMeta(){var m=curUser?{userId:curUser.id,userName:userDisplay(curUser)}:{};if(window.customPrefs)m.custom=window.customPrefs();var pf=curUser&&curUser.user_metadata&&curUser.user_metadata.profile;if(pf)m.profile={category:pf.category||'',interests:pf.interests||[],about:pf.about||''};return m}
 function dbOk(){return !!(sb&&signedIn&&curUser)}
 function syncWelcome(){var cb=chat.querySelector('.chatbody');if(cb)cb.style.display=chat.querySelector('.msg')?'none':''}
 (function(){
@@ -1252,18 +1330,25 @@ setInterval(checkSched,60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)checkSched()});
 setTimeout(checkSched,4000);
 
+var dbWarned=false;
+function chatFail(what,err){
+  console.warn('Pelex: '+what,err);
+  if(dbWarned)return;dbWarned=true;
+  var m=String((err&&(err.message||err.details))||'unknown error');
+  try{add('Your '+what+' ('+m+'). Run chat_history_fix.sql in Supabase to repair it.','sys')}catch(x){}
+}
 async function ensureChat(firstText){
   if(!dbOk()||curChatId||!window.histOn())return;
   var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
   var r=await sb.from('chats').insert({title:title,project_id:curProjectId||null}).select('id').single();
-  if(r.error||!r.data){console.warn('Pelex: chat save failed',r.error);return}
+  if(r.error||!r.data){chatFail('chat could not be saved',r.error||{message:'no row returned'});return}
   curChatId=r.data.id;loadRecents();
 }
 function saveMsg(role,content){
   if(!dbOk()||!curChatId||!content||!window.histOn())return;
   var cid=curChatId;
   sb.from('messages').insert({chat_id:cid,role:role,content:String(content).slice(0,20000)})
-    .then(function(mr){if(mr&&mr.error)console.warn('Pelex: message save failed',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
+    .then(function(mr){if(mr&&mr.error)chatFail('message could not be saved',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
     .catch(function(){});
 }
 function resetChatView(){chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
@@ -1279,43 +1364,69 @@ var recSortMode='activity';var recQuery='';
 function pinKey(id){return 'pelex_pin_'+id}
 function isPinned(id){try{return localStorage.getItem(pinKey(id))==='1'}catch(e){return false}}
 function setPinned(id,v){try{if(v)localStorage.setItem(pinKey(id),'1');else localStorage.removeItem(pinKey(id))}catch(e){}}
+var recCollapsed=false,recShowAll=false,recPop=null;
+function recMenu(c,btn){
+  if(!recPop){recPop=document.createElement('div');recPop.className='recpop';document.body.appendChild(recPop);
+    document.addEventListener('click',function(e){if(recPop&&!recPop.contains(e.target)&&!e.target.classList.contains('dots'))recPop.classList.remove('show')});
+    window.addEventListener('resize',function(){recPop.classList.remove('show')})}
+  recPop.innerHTML='';
+  function item(t,fn,cls){var x=document.createElement('button');x.type='button';x.textContent=t;if(cls)x.className=cls;x.onclick=function(){recPop.classList.remove('show');fn()};recPop.appendChild(x)}
+  item(isPinned(c.id)?'Unpin':'Pin',function(){setPinned(c.id,!isPinned(c.id));renderRecents()});
+  item('Rename',async function(){
+    var t=prompt('Rename chat',c.title||'');if(t===null)return;t=t.trim().slice(0,120);if(!t)return;
+    var r=await sb.from('chats').update({title:t}).eq('id',c.id);
+    if(r.error){chatFail('chat could not be renamed',r.error);return}
+    c.title=t;renderRecents()});
+  item('Delete',function(){delChat(c.id)},'danger');
+  var r=btn.getBoundingClientRect();recPop.style.top=Math.min(r.bottom+4,window.innerHeight-150)+'px';
+  recPop.style.left=Math.max(8,Math.min(r.left-110,window.innerWidth-170))+'px';
+  recPop.classList.add('show');
+}
+function recRow(c){
+  var row=document.createElement('div');row.className='recrow';
+  var b=document.createElement('button');b.className='nav rec';b.title=c.title||'';
+  var sp=document.createElement('span');sp.textContent=c.title||'New chat';b.appendChild(sp);
+  if(c.id===curChatId)b.setAttribute('aria-current','true');
+  b.onclick=function(){openChat(c.id);if(window.matchMedia('(max-width:820px)').matches){var a=document.querySelector('.app');if(a)a.classList.remove('open')}};
+  var m=document.createElement('button');m.type='button';m.className='recx dots';m.textContent='\u22ee';m.setAttribute('aria-label','Chat options');
+  m.onclick=function(e){e.stopPropagation();recMenu(c,m)};
+  row.appendChild(b);row.appendChild(m);return row;
+}
 function renderRecents(){
-  var box=$('recents'),lab=$('recLabel'),wrap=$('recSearchWrap');
-  var list=(chatsCache||[]).filter(function(c){
-    if(!recQuery)return true;
-    return (c.title||'New chat').toLowerCase().indexOf(recQuery.toLowerCase())!==-1;
-  });
-  list=list.slice().sort(function(a,b){
-    var pa=isPinned(a.id)?1:0,pb=isPinned(b.id)?1:0;
-    if(pa!==pb)return pb-pa;
+  var box=$('recents'),pbox=$('recPinned'),lab=$('recLabel'),wrap=$('recSearchWrap');
+  var all=chatsCache||[];
+  var list=all.filter(function(c){return !recQuery||(c.title||'New chat').toLowerCase().indexOf(recQuery.toLowerCase())!==-1});
+  var pins=list.filter(function(c){return isPinned(c.id)}),rest=list.filter(function(c){return !isPinned(c.id)});
+  rest.sort(function(a,b){
     if(recSortMode==='name')return (a.title||'New chat').localeCompare(b.title||'New chat');
-    return new Date(b.updated_at)-new Date(a.updated_at);
-  });
-  box.innerHTML='';lab.hidden=!(chatsCache||[]).length;wrap.hidden=!(chatsCache||[]).length;
-  list.forEach(function(c){
-    var row=document.createElement('div');row.className='recrow';
-    var p=document.createElement('button');p.className='recx';p.setAttribute('aria-label',isPinned(c.id)?'Unpin chat':'Pin chat');
-    p.textContent=isPinned(c.id)?'\u2605':'\u2606';p.title=isPinned(c.id)?'Unpin':'Pin';
-    p.onclick=function(){setPinned(c.id,!isPinned(c.id));renderRecents()};
-    var b=document.createElement('button');b.className='nav rec';b.textContent=c.title||'New chat';b.title=c.title||'';
-    if(c.id===curChatId)b.setAttribute('aria-current','true');
-    b.onclick=function(){openChat(c.id)};
-    var x=document.createElement('button');x.className='recx';x.textContent='\u00d7';x.setAttribute('aria-label','Delete chat');
-    x.onclick=function(){delChat(c.id)};
-    row.appendChild(p);row.appendChild(b);row.appendChild(x);box.appendChild(row)})
+    return new Date(b.updated_at)-new Date(a.updated_at)});
+  pbox.innerHTML='';box.innerHTML='';
+  lab.hidden=!all.length;
+  if(!all.length){wrap.hidden=true;return}
+  if(pins.length){var pl=document.createElement('div');pl.className='reclabel2';pl.textContent='Pinned';pbox.appendChild(pl);pins.forEach(function(c){pbox.appendChild(recRow(c))})}
+  lab.classList.toggle('closed',recCollapsed);$('recToggle').setAttribute('aria-expanded',recCollapsed?'false':'true');
+  if(recCollapsed)return;
+  var shown=recShowAll?rest:rest.slice(0,12);
+  shown.forEach(function(c){box.appendChild(recRow(c))});
+  if(!list.length&&recQuery){var n=document.createElement('div');n.className='reclabel2';n.textContent='No chats found';box.appendChild(n)}
+  $('recAll').style.display=rest.length>12?'':'none';
+  $('recAll').classList.toggle('on',recShowAll);
 }
 async function loadRecents(){
   var box=$('recents'),lab=$('recLabel');
-  if(!dbOk()){box.innerHTML='';lab.hidden=true;$('recSearchWrap').hidden=true;return}
-  var r=await sb.from('chats').select('id,title,project_id,updated_at').order('updated_at',{ascending:false}).limit(30);
-  if(r.error)return;
+  if(!dbOk()){box.innerHTML='';$('recPinned').innerHTML='';lab.hidden=true;$('recSearchWrap').hidden=true;return}
+  var r=await sb.from('chats').select('id,title,project_id,updated_at').order('updated_at',{ascending:false}).limit(100);
+  if(r.error){chatFail('recent chats could not be loaded',r.error);return}
   chatsCache=r.data||[];
   renderRecents();
 }
 (function(){
-  var s=document.getElementById('recSearch'),sb2=document.getElementById('recSortBtn');
+  var s=document.getElementById('recSearch'),sb2=document.getElementById('recSortBtn'),sbtn=document.getElementById('recSearchBtn'),tg=document.getElementById('recToggle'),al=document.getElementById('recAll');
   if(s)s.addEventListener('input',function(){recQuery=s.value;renderRecents()});
-  if(sb2)sb2.addEventListener('click',function(){recSortMode=recSortMode==='activity'?'name':'activity';sb2.title=recSortMode==='activity'?'Sort: Last activity':'Sort: Name';renderRecents()});
+  if(sbtn)sbtn.addEventListener('click',function(){var w=$('recSearchWrap');w.hidden=!w.hidden;sbtn.classList.toggle('on',!w.hidden);if(!w.hidden)s.focus();else{recQuery='';s.value='';renderRecents()}});
+  if(sb2)sb2.addEventListener('click',function(){recSortMode=recSortMode==='activity'?'name':'activity';sb2.title=recSortMode==='activity'?'Sort: Last activity':'Sort: Name';sb2.classList.toggle('on',recSortMode==='name');renderRecents()});
+  if(tg)tg.addEventListener('click',function(){recCollapsed=!recCollapsed;renderRecents()});
+  if(al)al.addEventListener('click',function(){recShowAll=!recShowAll;renderRecents()});
 })();
 async function openChat(id){
   if(!dbOk())return;
@@ -1340,14 +1451,16 @@ async function delChat(id){
 async function loadProjects(){
   var g=$('projectsGrid'),em=$('projectsEmpty');
   if(!dbOk()){g.innerHTML='';em.hidden=false;em.textContent='Sign in to create projects and keep related chats together.';return}
-  var pr=await sb.from('projects').select('id,name').order('created_at',{ascending:false});
+  var pr=await sb.from('projects').select('id,name,description').order('created_at',{ascending:false});
+  if(pr.error){pr=await sb.from('projects').select('id,name').order('created_at',{ascending:false})}
   var cr=await sb.from('chats').select('id,title,project_id,updated_at').not('project_id','is',null).order('updated_at',{ascending:false});
-  if(pr.error)return;
+  if(pr.error){chatFail('projects could not be loaded',pr.error);return}
   var list=pr.data||[],chats=cr.data||[];
   g.innerHTML='';em.hidden=list.length>0;em.textContent='No projects yet. Start one to keep related chats together.';
   list.forEach(function(p){
     var c=document.createElement('div');c.className='card';
     var h=document.createElement('strong');h.textContent=p.name;c.appendChild(h);
+    if(p.description){var ds=document.createElement('span');ds.className='muted';ds.textContent=p.description;c.appendChild(ds)}
     var mine=chats.filter(function(x){return x.project_id===p.id});
     if(!mine.length){var e=document.createElement('span');e.className='muted';e.textContent='No chats yet.';c.appendChild(e)}
     mine.slice(0,6).forEach(function(ch){var a=document.createElement('button');a.className='plink';a.textContent=ch.title;a.onclick=function(){openChat(ch.id)};c.appendChild(a)});
@@ -1364,8 +1477,12 @@ async function delProject(p){
 $('newProjectBtn').onclick=async function(){
   if(!dbOk()){setAuthMode('in');go('signin');return}
   var n=prompt('Name your project');if(!n||!n.trim())return;
-  var r=await sb.from('projects').insert({name:n.trim().slice(0,60)});
-  if(!r.error)loadProjects();
+  var d=prompt('What is this project about? (optional, for example: my fashion business plan)')||'';
+  var row={name:n.trim().slice(0,60)};if(d.trim())row.description=d.trim().slice(0,400);
+  var r=await sb.from('projects').insert(row);
+  if(r.error&&row.description){delete row.description;r=await sb.from('projects').insert(row)}
+  if(r.error){chatFail('project could not be saved',r.error);return}
+  loadProjects();
 };
 
 // ---- Scheduled board ----
@@ -1732,6 +1849,71 @@ window.onUserChange=function(u){
   });
   var _lnp=window.loadNotifPrefs;window.loadNotifPrefs=function(u){if(_lnp)_lnp(u);loadVT(u)};
   loadVT(null);
+})();
+
+/* ONBOARDING LOGIC */
+(function(){
+  var CATS=['Entrepreneur','Business owner','Student','Professional','Creative / freelancer','Job seeker','Other'];
+  var INTS=['Fashion & style','Modelling','Faith & spirituality','Business & startups','Student life','Tech & AI','Music','Movies & TV','Fitness & health','Food & cooking','Sports','Travel','Money & investing','Art & design','Content creation','Parenting'];
+  var cat='',ints=[],ob=document.getElementById('onb');
+  if(!ob)return;
+  function $o(i){return document.getElementById(i)}
+  function build(box,list,multi){
+    list.forEach(function(t){var b=document.createElement('button');b.type='button';b.textContent=t;
+      b.addEventListener('click',function(){
+        if(!multi){cat=t;[].forEach.call(box.children,function(x){x.classList.toggle('on',x===b)});return}
+        var k=ints.indexOf(t);if(k>=0)ints.splice(k,1);else if(ints.length<3)ints.push(t);
+        [].forEach.call(box.children,function(x){var on=ints.indexOf(x.textContent)>=0;x.classList.toggle('on',on);x.disabled=!on&&ints.length>=3});
+      });box.appendChild(b)});
+  }
+  build($o('onCat'),CATS,false);build($o('onInt'),INTS,true);
+  function step(n){$o('onb1').hidden=n!==1;$o('onb2').hidden=n!==2;$o('od2').classList.toggle('on',n===2);ob.scrollTop=0}
+  function age(d){var b=new Date(d);if(isNaN(b))return -1;var n=new Date(),a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return a}
+  $o('onDob').max=new Date().toISOString().slice(0,10);
+  $o('onNext').addEventListener('click',function(){
+    var nm=$o('onName').value.trim(),dob=$o('onDob').value,e=$o('onErr1');e.textContent='';
+    if(nm.length<2){e.textContent='Please enter your full name.';return}
+    if(!dob||age(dob)<0||age(dob)>120){e.textContent='Please enter your date of birth.';return}
+    if(age(dob)<13){e.textContent='Pelex is for people aged 13 and over.';return}
+    if(!cat){e.textContent='Please pick the option that describes you best.';return}
+    step(2);
+  });
+  $o('onBack').addEventListener('click',function(){step(1)});
+  function hide(){ob.classList.remove('show')}
+  function skip(){try{sessionStorage.setItem('pelex_onb_skip','1')}catch(e){}hide()}
+  $o('onSkip1').addEventListener('click',skip);$o('onSkip2').addEventListener('click',skip);
+  $o('onDone').addEventListener('click',async function(){
+    var e=$o('onErr2');e.textContent='';
+    if(!ints.length){e.textContent='Pick at least one interest, up to 3.';return}
+    var prof={category:cat,interests:ints.slice(),about:$o('onAbout').value.trim().slice(0,400),dob:$o('onDob').value};
+    var nm=$o('onName').value.trim(),btn=$o('onDone');btn.disabled=true;
+    try{
+      var r=await sb.auth.updateUser({data:{full_name:nm,profile:prof,onboarded:true}});
+      if(r&&r.error)throw r.error;
+      var u=(r&&r.data&&r.data.user)||curUser;
+      if(u)curUser=u;
+      if(curUser){curUser.user_metadata=Object.assign({},curUser.user_metadata,{full_name:nm,profile:prof,onboarded:true})}
+      try{applyUser(curUser)}catch(x){}
+      hide();applyProfileChips();
+    }catch(err){e.textContent='Could not save: '+((err&&err.message)||'please try again.')}
+    btn.disabled=false;
+  });
+  window.maybeOnboard=function(u){
+    if(!u)return;var md=u.user_metadata||{};
+    if(md.onboarded)return;
+    try{if(sessionStorage.getItem('pelex_onb_skip'))return}catch(e){}
+    var nm=md.full_name||md.name||'';if(nm&&!$o('onName').value)$o('onName').value=nm;
+    ob.classList.add('show');step(1);
+  };
+  window.applyProfileChips=function(){
+    var pr=curUser&&curUser.user_metadata&&curUser.user_metadata.profile;if(!pr||!pr.interests||!pr.interests.length)return;
+    var b=document.querySelector('.chip-sugg[data-sugg^="Teach me something new"]');
+    if(b)b.setAttribute('data-sugg','Teach me something new and useful about '+pr.interests[0]+(pr.category?' for a '+pr.category.toLowerCase():''));
+  };
+  if(sb){
+    sb.auth.getSession().then(function(r){var u=r.data&&r.data.session?r.data.session.user:null;if(u){curUser=curUser||u;window.maybeOnboard(u);window.applyProfileChips()}});
+    sb.auth.onAuthStateChange(function(ev,session){if(session&&session.user){window.maybeOnboard(session.user);window.applyProfileChips()}});
+  }
 })();
 </script>
 </body>
