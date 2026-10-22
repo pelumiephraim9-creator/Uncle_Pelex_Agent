@@ -1,12 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script src="https://browser.sentry-cdn.com/8.47.0/bundle.min.js" crossorigin="anonymous"></script>
-<script>
-  Sentry.init({
-    dsn: "https://b859fd35ab7a438c9099e34df858b6e7@app.glitchtip.com/28826"
-  });
-</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pelex</title>
@@ -619,6 +613,15 @@ html body .chips .chip-sugg{font-size:12px;padding:6px 8px}
 html body .chips{display:flex;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;overflow:visible;gap:8px;width:100%;max-width:760px;margin:0 auto;padding:0}
 html body .chips>.chip-sugg:first-child{margin-left:0}
 html body .chips .chip-sugg{font-size:13.5px;padding:8px 16px;min-height:38px}
+
+.msg .cpbar{position:absolute;top:6px;right:6px;display:flex;gap:6px}
+.msg .cpbar .cpcode{position:static}
+html body .msg pre{padding-top:40px}
+.pvmodal{position:fixed;inset:0;z-index:95;background:rgba(10,14,30,.6);display:flex;align-items:center;justify-content:center;padding:14px}
+.pvbox{width:100%;max-width:1000px;height:88%;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.pvtop{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0f1530;color:#fff;font-size:14px}
+.pvx{border:0;background:none;color:#fff;font-size:24px;line-height:1;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;padding:0}
+.pvbox iframe{flex:1;border:0;width:100%;background:#fff}
 </style>
 </head>
 <body>
@@ -750,6 +753,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <label for="authPass" class="muted" style="font-size:13px" id="authPassLabel">Password</label>
 <input class="inp" id="authPass" type="password" placeholder="••••••••">
 <div id="authMsg" class="muted" style="min-height:20px;font-size:13px;margin-bottom:8px" role="status"></div>
+<div id="authCodeWrap" hidden><label for="authCode" class="muted" style="font-size:13px">Confirmation code</label><input class="inp" id="authCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Code from your email"><button class="btn" id="authVerify" type="button" style="margin-top:8px">Confirm</button><button class="lp-pill" id="authResend" type="button" style="margin:10px auto 8px;display:block">Send a new code</button></div>
 <button class="btn" id="authSubmit">Sign in</button>
 <div class="authswitch" id="authSwitch">New here? <a id="authToggle">Create an account</a></div>
 </div></div>
@@ -963,7 +967,15 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
       else{var code=seg.replace(/^[^\n]*\n/,'');var pre=document.createElement('pre'),cd=document.createElement('code');cd.textContent=code.replace(/\n$/,'');pre.appendChild(cd);
         var cb=document.createElement('button');cb.type='button';cb.className='cpcode';cb.textContent='Copy';
         cb.onclick=function(){var tx=cd.textContent;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).catch(function(){var ta=document.createElement('textarea');ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}).then(function(){cb.textContent='Copied';setTimeout(function(){cb.textContent='Copy'},1200)})};
-        pre.appendChild(cb);textNode.appendChild(pre)}
+        var bar=document.createElement('div');bar.className='cpbar';bar.appendChild(cb);
+        var lang=(seg.match(/^[^\n]*/)||[''])[0].trim().toLowerCase(),codeTxt=cd.textContent,isHtml=lang==='html'||/^\s*<(!doctype|html)/i.test(codeTxt);
+        var EXT={html:'html',css:'css',javascript:'js',js:'js',typescript:'ts',ts:'ts',python:'py',py:'py',json:'json',bash:'sh',sh:'sh',sql:'sql',java:'java',php:'php',jsx:'jsx',tsx:'tsx',markdown:'md',md:'md',xml:'xml',yaml:'yml',yml:'yml',c:'c',cpp:'cpp',csharp:'cs',go:'go',rust:'rs',ruby:'rb'};
+        var ext=EXT[lang]||(isHtml?'html':'txt');
+        var dl=document.createElement('button');dl.type='button';dl.className='cpcode';dl.textContent='Download';
+        dl.onclick=function(){var bl=new Blob([codeTxt],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(isHtml?'index':'pelex-code')+'.'+ext;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)};
+        bar.appendChild(dl);
+        if(isHtml){var pv=document.createElement('button');pv.type='button';pv.className='cpcode';pv.textContent='Preview';pv.onclick=function(){window.openPreview(codeTxt)};bar.insertBefore(pv,bar.firstChild)}
+        pre.appendChild(bar);textNode.appendChild(pre)}
     });
   }else{textNode.textContent=t}
   d.appendChild(textNode);
@@ -1291,7 +1303,7 @@ var sb=null;try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY
 var signedIn=false, authMode='in';
 function authMsg(t,bad){var m=document.getElementById('authMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
 function setAuthMode(m){
-  authMode=m;authMsg('');
+  authMode=m;authMsg('');var cw=document.getElementById('authCodeWrap');if(cw)cw.hidden=true;
   document.getElementById('authTitle').textContent=m==='in'?'Sign in':'Create your account';
   document.getElementById('authSub').textContent=m==='in'?'Sign in to save your chats, library and plan across devices.':'Takes a minute. You can also use Google or GitHub above.';
   document.getElementById('authPassLabel').textContent=m==='in'?'Password':'Create a password';
@@ -1306,6 +1318,7 @@ function friendly(e){
   if(/already registered/i.test(t))return 'That email already has an account. Try signing in.';
   if(/Password should be/i.test(t))return 'Choose a password with at least 6 characters.';
   if(/rate limit/i.test(t))return 'Too many attempts. Please wait a few minutes and try again.';
+  if(/token has expired|otp_expired|invalid.*(token|otp)/i.test(t))return 'That code is wrong or has expired. Tap Send a new code.';
   return t}
 function applyUser(u){
   signedIn=!!u;curUser=u||null;
@@ -1336,12 +1349,26 @@ document.getElementById('authSubmit').addEventListener('click',async function(){
     }else{
       var r2=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.origin+'/'}});
       if(r2.error)authMsg(friendly(r2.error),true);
-      else if(!r2.data.session)authMsg('Check your email to confirm your account, then sign in.');
+      else if(!r2.data.session){showCode(em)}
       else{authMsg('');document.getElementById('authPass').value=''}
     }
   }catch(e){authMsg(friendly(e),true)}
   btn.disabled=false});
 document.getElementById('authPass').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('authSubmit').click()});
+var pendingEmail='';
+function showCode(em){pendingEmail=em;document.getElementById('authCodeWrap').hidden=false;authMsg('We sent a confirmation code to '+em+'. Enter it below, or tap the link in the email.');var c=document.getElementById('authCode');if(c)try{c.focus()}catch(e){}}
+document.getElementById('authVerify').addEventListener('click',async function(){
+  var t=document.getElementById('authCode').value.replace(/\s+/g,'');
+  if(!t){authMsg('Enter the code from your email.',true);return}
+  if(!sb||!pendingEmail){authMsg('Start again by creating your account.',true);return}
+  var b=this;b.disabled=true;authMsg('Checking the code...');
+  try{var r=await sb.auth.verifyOtp({email:pendingEmail,token:t,type:'signup'});
+    if(r.error)authMsg(friendly(r.error),true);else{authMsg('');document.getElementById('authCodeWrap').hidden=true;document.getElementById('authCode').value=''}
+  }catch(e){authMsg(friendly(e),true)}
+  b.disabled=false});
+document.getElementById('authResend').addEventListener('click',async function(){
+  if(!sb||!pendingEmail)return;
+  try{var r=await sb.auth.resend({type:'signup',email:pendingEmail});authMsg(r.error?friendly(r.error):'A new code is on its way.',!!r.error)}catch(e){authMsg(friendly(e),true)}});
 document.getElementById('sbAccountBtn').addEventListener('click',function(){
   if(signedIn){go('settings','account')}else{setAuthMode('in');go('signin')}
 });
@@ -1355,6 +1382,9 @@ if(sb){
   });
 }
 setAuthMode('in');
+(function(){try{var q=new URLSearchParams(location.search),th=q.get('token_hash'),ty=q.get('type');
+  if(sb&&th&&ty){history.replaceState(null,'',location.pathname);
+    sb.auth.verifyOtp({token_hash:th,type:ty}).then(function(r){if(r.error){go('signin');authMsg(friendly(r.error),true)}})}}catch(e){}})();
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
 (function(){
   /* Connectors list. To switch one on later, change its "on" to true: that is the only edit needed. */
@@ -2237,6 +2267,15 @@ window.onUserChange=function(u){
   var form=document.getElementById('lpAsk');
   if(form)form.addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('lpAskIn').value.trim();fill(v)});
 })();
+</script>
+<script>
+window.openPreview=function(html){
+  var o=document.createElement('div');o.className='pvmodal';
+  o.innerHTML='<div class="pvbox"><div class="pvtop"><b>Preview</b><button type="button" class="pvx" aria-label="Close preview">\u00d7</button></div><iframe sandbox="allow-scripts" title="Website preview"></iframe></div>';
+  o.querySelector('iframe').srcdoc=html;
+  o.querySelector('.pvx').onclick=function(){o.remove()};
+  o.addEventListener('click',function(e){if(e.target===o)o.remove()});
+  document.body.appendChild(o)};
 </script>
 </body>
 </html>

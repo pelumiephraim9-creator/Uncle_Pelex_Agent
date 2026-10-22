@@ -1,0 +1,13 @@
+<!-- n8n > Send Email node (HTML).  From: Pelex <hello@pelex.tech>   Reply-To: support@pelex.tech   Subject: Welcome to Pelex, {{ $json.body.name || 'friend' }}
+     In n8n, paste this as an Expression. {{ $json.body.name }} is the person's first name when we have it. -->
+<div style="background:#f4f6fb;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#111">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;border:1px solid #e3e8f2">
+    <tr><td style="padding:28px 28px 6px;font-size:22px;font-weight:700">Pelex</td></tr>
+    <tr><td style="padding:8px 28px 0;font-size:22px;font-weight:700">Welcome{{ $json.body.name ? ', ' + $json.body.name : '' }}</td></tr>
+    <tr><td style="padding:10px 28px 0;font-size:15px;line-height:1.6;color:#333">Your Pelex account is ready. Pelex is your AI agent for everyday work: it plans, writes, searches the web, explains your files and writes code, by text or by voice.</td></tr>
+    <tr><td style="padding:16px 28px 0;font-size:15px;line-height:1.7;color:#333"><b>Try this first</b><br>&bull; Ask it to plan your week<br>&bull; Share a photo or PDF and ask about it<br>&bull; Tap Talk live and speak to it</td></tr>
+    <tr><td align="center" style="padding:22px 28px"><a href="https://pelex.tech" style="display:inline-block;background:#6495ED;color:#0b1b4a;text-decoration:none;font-weight:700;font-size:15px;padding:12px 28px;border-radius:999px">Open Pelex</a></td></tr>
+    <tr><td style="padding:0 28px 22px;font-size:13px;line-height:1.55;color:#666">You can sign in anytime at pelex.tech with the email you used to sign up. Just reply to this email if you need anything, or write to <a href="mailto:support@pelex.tech" style="color:#3b6fd8">support@pelex.tech</a>.</td></tr>
+    <tr><td style="padding:16px 28px 24px;font-size:12px;color:#888;border-top:1px solid #eef1f7">Pelex, by PelexSkillHub &middot; hello@pelex.tech</td></tr>
+  </table>
+</div>
