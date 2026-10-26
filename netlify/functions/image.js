@@ -31,6 +31,40 @@ async function readJson(response) {
   }
 }
 
+// Accept image assets from common workflow response shapes, never prose or Markdown.
+function imageAsset(value, depth = 0) {
+  if (depth > 5 || value == null) return null;
+  if (typeof value === 'string') {
+    const candidate = value.trim();
+    if (/^data:image\/(?:png|jpeg|webp|gif|avif);base64,[A-Za-z0-9+/\r\n]+={0,2}$/i.test(candidate)) return candidate;
+    if (/^https:\/\//i.test(candidate)) {
+      try {
+        const url = new URL(candidate);
+        if (url.username || url.password || /(^|\.)(?:placeholder\.com|placehold\.co|placehold\.it|example\.com|example\.test)$/i.test(url.hostname)) return null;
+        return url.href;
+      } catch { return null; }
+    }
+    // Only recognizable image bytes can be treated as raw base64.
+    if (/^[A-Za-z0-9+/\r\n]+={0,2}$/.test(candidate) && candidate.length > 32) {
+      const bytes = Buffer.from(candidate, 'base64');
+      const mime = bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? 'image/png'
+        : bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255 ? 'image/jpeg'
+        : /^GIF8[79]a/.test(bytes.subarray(0, 6).toString()) ? 'image/gif'
+        : bytes.subarray(0, 4).toString() === 'RIFF' && bytes.subarray(8, 12).toString() === 'WEBP' ? 'image/webp' : null;
+      if (mime) return `data:${mime};base64,${candidate}`;
+    }
+    return null;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) { const image = imageAsset(item, depth + 1); if (image) return image; }
+  } else if (typeof value === 'object') {
+    for (const key of ['image', 'image_url', 'url', 'b64_json', 'base64', 'images', 'result', 'data', 'output']) {
+      const image = imageAsset(value[key], depth + 1); if (image) return image;
+    }
+  }
+  return null;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
@@ -265,31 +299,7 @@ exports.handler = async (event) => {
           await imageResponse.arrayBuffer()
         ).toString('base64');
     } else {
-      const result = await readJson(imageResponse);
-
-      const candidate =
-        result &&
-        (
-          result.image ||
-          (result.result && result.result.image) ||
-          result.b64_json ||
-          result.data ||
-          result.output
-        );
-
-      if (
-        typeof candidate === 'string' &&
-        candidate.length > 100
-      ) {
-        if (candidate.startsWith('data:image/')) {
-          image = candidate;
-        } else if (/^[A-Za-z0-9+/]+={0,2}$/.test(candidate)) {
-          image = `data:image/png;base64,${candidate}`;
-        } else {
-          // Preserve compatibility with workflows that return image URLs.
-          image = candidate;
-        }
-      }
+      image = imageAsset(await readJson(imageResponse));
     }
   } catch {
     return J(502, {
@@ -299,7 +309,7 @@ exports.handler = async (event) => {
 
   if (!image) {
     return J(502, {
-      error: 'I could not create that image. Please try again.',
+      error: 'The image service returned no usable image. Please try again.',
     });
   }
 
