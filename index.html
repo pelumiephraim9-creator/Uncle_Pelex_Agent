@@ -661,6 +661,7 @@ button.gav{cursor:pointer}.gav.sm{width:38px;height:38px;font-size:21px}
 .gdanger{color:#b3261e!important}
 .oauthbtn[hidden],#pkCard[hidden]{display:none}
 </style>
+<link rel="stylesheet" href="/assets/task-progress.css">
 </head>
 <body>
 <div id="splash" aria-hidden="true"><div class="sg"></div><svg viewBox="0 0 40 40"><polygon class="hx" pathLength="1" points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5"/><circle class="nd" style="animation-delay:0.25s" cx="20" cy="3" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.37s" cx="35" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.49s" cx="35" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.61s" cx="20" cy="37" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.73s" cx="5" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.85s" cx="5" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><rect class="bd" x="11" y="11" width="18" height="18" rx="5" fill="var(--btn,#0a89f4)"/><text class="pl" x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink,#fff)">P</text></svg><div class="wm">PELEX</div><div class="tg">Your AI assistant</div><div class="sbar"><i></i></div></div>
@@ -1029,6 +1030,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </div></section>
 </main>
 </div>
+<script src="/assets/task-progress.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.2/dist/umd/supabase.js"></script>
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>')}</script>
 <dialog class="adsheet" id="instSheet" aria-labelledby="instTitle">
@@ -1049,7 +1051,7 @@ var h=new Date().getHours();
 if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 function add(t,cls,img,retryFn){var d=document.createElement('div');d.className='msg '+(cls||'');
-  if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt='Uploaded image';box.appendChild(im)})}
+  if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt=cls==='me'?'Attached image':'Generated image';box.appendChild(im)})}
   var textNode=document.createElement('span');
   if(!cls&&t.indexOf('```')>-1){
     t.split('```').forEach(function(seg,k){
@@ -1107,17 +1109,18 @@ async function netDown(){
   try{var c=new AbortController(),t=setTimeout(function(){c.abort()},4000);
     await fetch(location.origin+'/?ping='+Date.now(),{method:'HEAD',cache:'no-store',signal:c.signal});clearTimeout(t);return false}
   catch(e){return true}}
-// backend trouble stays silent; only a real internet problem is shown; deliberate user-facing messages still show
+// Keep task failures visible so an interrupted request never looks complete.
 async function showErr(e){
-  if(e&&e.backend)return;
+  if(e&&e.backend){add(e.message||'The task could not finish. Please try again.','sys');return}
   if(e&&e.name==='TypeError'){if(await netDown())add(NET_MSG,'sys');return}
   if(e&&e.message)add(e.message,'sys')}
-async function askAgentRetry(text){
-  try{return await askAgent(text)}
+async function askAgentRetry(text,task){
+  try{return await askAgent(text,task)}
   catch(e){
     if((e&&(e.backend||e.name==='TypeError'))&&navigator.onLine!==false){
+      if(task)task.step('Connection interrupted; retrying the agent request');
       await new Promise(function(r){setTimeout(r,1500)});
-      return await askAgent(text)}
+      return await askAgent(text,task)}
     throw e}}
 async function post(path,body){
   var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -1135,14 +1138,16 @@ async function personalOn(){
     var on=!!(pr&&pr.data&&pr.data.length);__planC={uid:curUser.id,at:Date.now(),on:on};return on;
   }catch(e){return false}
 }
-async function askAgent(text){
+async function askAgent(text,task){
   if(WEBHOOK_URL.indexOf('PASTE_')===0){var ne=new Error('The chat backend is not connected yet.');ne.backend=true;throw ne}
+  if(task)task.step('Checking which agent handles your request');
   var url=WEBHOOK_URL,meta=agentMeta();
   if(await personalOn()){
     url=PERSONAL_WEBHOOK_URL;
     try{var ss=await sb.auth.getSession(),tk=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;if(tk)meta.accessToken=tk}catch(e){}
   }
-  var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:meta})});
+  if(task)task.step('Request sent; waiting for the agent response');
+  var r=await fetch(url,{pelexTask:task,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:meta})});
   var raw=await r.text(), out=raw;
   try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.response||o.reply||o.text||o.message||raw}catch(e){}
   if(!r.ok){var ae=new Error('The agent could not reply ('+r.status+').');ae.backend=true;throw ae}
@@ -1236,23 +1241,28 @@ async function speak(t){
 
 // ---- typed / spoken turn ----
 var pendingDoc=null;
+function isImageRequest(text){
+  if(/^\s*(?:(?:please|can you|could you|would you)\s+)*(?:generate|create|make|design)\s+(?:(?:me|a|an|the)\s+)*(?:prompt|description|instructions|code|website|email|story|article|document)\b/i.test(text))return false;
+  return /^\s*(?:(?:please|can you|could you|would you|i want you to)\s+)*(?:generate|create|draw|render|make|design|paint|produce)\b[^\n]{0,90}\b(?:image|picture|photo|illustration|artwork|portrait|logo|poster)\b/i.test(text) || /^\s*i (?:want|need) (?:an? |you to (?:create|generate) an? )(?:image|picture|photo|illustration|portrait|logo|poster)\b/i.test(text) || /^\s*(?:please\s+)?(?:draw|paint)\s+(?!up\b|a conclusion\b|attention\b)\S/i.test(text);
+}
 async function turn(text,shown,img,el){
+  if(!shown&&!img&&isImageRequest(text)&&window.generatePelexImage){if(el)el.remove();return window.generatePelexImage(text)}
   if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
-  var wait=add('Thinking...','sys');
+  var task=PelexTasks.begin('Agent task',chat);task.step('Preparing your conversation');
   var _ct=shown||text;try{await ensureChat(_ct)}catch(e){}
   saveMsg('user',_ct);
   try{
-    var reply=await askAgentRetry(text);wait.remove();saveMsg('assistant',reply);
+    var reply=await askAgentRetry(text,task);task.step('Response received; preparing your reply');saveMsg('assistant',reply);
     var node;
     var retryFn=function(){
-      var w2=add('Thinking...','sys');
-      return askAgentRetry(text).then(function(r2){w2.remove();node.remove();node=add(r2,null,null,retryFn)})
-        .catch(function(e2){w2.remove();return showErr(e2)});
+      var retryTask=PelexTasks.begin('Retry agent task',chat);
+      return askAgentRetry(text,retryTask).then(function(r2){node.remove();node=add(r2,null,null,retryFn);retryTask.done('Reply displayed')})
+        .catch(function(e2){retryTask.fail('The agent could not complete this request');return showErr(e2)});
     };
-    node=add(reply,null,null,retryFn);
+    node=add(reply,null,null,retryFn);task.done('Reply displayed');
     try{window.notifyReply&&window.notifyReply(reply)}catch(e3){}
     return reply}
-  catch(e){wait.remove();await showErr(e);return ''}
+  catch(e){task.fail('The agent could not complete this request');await showErr(e);return ''}
 }
 async function sendTyped(){
   if(pendingImgs.length){await sendImage();return}
@@ -1370,21 +1380,22 @@ async function sendImage(){
 }
 $('file').onchange=async function(e){
   var fs=[].slice.call((e.target&&e.target.files)||[]);try{e.target.value=''}catch(x){}if(!fs.length)return;
+  var attachmentTask=PelexTasks.begin('Prepare attachments');attachmentTask.step('Reading selected files');
   try{
     var imgs=fs.filter(function(f){return f.type.indexOf('image/')===0});
     if(imgs.length){
       pendingDoc=null;var room=4-pendingImgs.length;
       for(var k=0;k<Math.min(room,imgs.length);k++){pendingImgs.push(await shrink(imgs[k]))}
       if(imgs.length>room)add('You can attach up to 4 images at a time.','sys');
-      showAttach('img');input.focus();
+      showAttach('img');input.focus();attachmentTask.done('Images ready to send');
     }else{
       var f=fs[0];clearAttach();
       var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
       text=text.trim().slice(0,12000);
       if(!text) throw new Error('No readable text was found in that file.');
-      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();
+      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();attachmentTask.done('Document text ready to send');
     }
-  }catch(err){await showErr(err)}
+  }catch(err){attachmentTask.fail('The attachment could not be read');await showErr(err)}
 };
 input.addEventListener('paste',function(e){
   var fl=[].filter.call((e.clipboardData&&e.clipboardData.files)||[],function(f){return f.type.indexOf('image/')===0});
@@ -1753,7 +1764,7 @@ function saveMsg(role,content){
     .then(function(mr){if(mr&&mr.error)chatFail('message could not be saved',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
     .catch(function(){});
 }
-function resetChatView(){chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
+function resetChatView(){chat.querySelectorAll('.msg,.task-inline').forEach(function(m){m.remove()});syncWelcome()}
 function newChat(projectId){
   curChatId=null;curProjectId=projectId||null;pendingDoc=null;
   try{clearAttach()}catch(e){}
@@ -2015,19 +2026,24 @@ $('pSaveS').onclick=async function(){if(!ready())return;var on=$('pActive').chec
 function shieldHtml(v){return{legit_signals:['ok','No warning signs found'],caution:['warn','Be careful'],red_flags:['bad','Warning signs found']}[v]||['warn','Be careful']}
 $('pCheck').onclick=async function(){if(!ready()||busy)return;var u=$('pUrl').value.trim();if(!u){pm('Paste the offer link first.',true);return}
   if(!/^https?:\/\//i.test(u))u='https://'+u;try{var uu=new URL(u);if(!uu.hostname.includes('.'))throw 0;u=uu.href}catch(e){pm('That link does not look right.',true);return}
+  var linkTask=PelexTasks.begin('Pitch Agent link check');linkTask.step('Submitting the link for checking');
   busy=true;this.disabled=true;pm('Checking the link...');$('pRes').innerHTML='';
+  try{
   var ins=await sb.from('pitch_link_checks').insert({url:u,status:'pending'}).select('id').single();
-  if(ins.error||!ins.data){pm('Could not start the check. Please try again.',true);busy=false;this.disabled=false;return}
+  if(ins.error||!ins.data){linkTask.fail('The link check could not start');pm('Could not start the check. Please try again.',true);busy=false;this.disabled=false;return}
+  linkTask.step('Link submitted; waiting for the Pitch Agent result');
   var id=ins.data.id,tries=0,row=null;
   while(tries++<20){await new Promise(function(r){setTimeout(r,3000)});var g=await sb.from('pitch_link_checks').select('*').eq('id',id).single();if(g.data&&g.data.status!=='pending'){row=g.data;break}}
   busy=false;this.disabled=false;
-  if(!row||row.status==='failed'){pm('I could not finish that check. Try again in a moment.',true);return}
+  if(!row||row.status==='failed'){linkTask.fail(!row?'No result received yet. The check may still be running.':'The Pitch Agent could not finish the check');pm('I could not finish that check. Try again in a moment.',true);return}
+  linkTask.done('Link check result received');
   pm('');var s2=shieldHtml(row.verdict),box=$('pRes'),c=document.createElement('div');c.className='pcard';
   c.innerHTML='<span class="pshield '+s2[0]+'"></span><div class="muted prs" style="margin-top:8px"></div><div class="muted" style="margin-top:8px">This is a check of warning signs, not a guarantee.</div>';
   c.querySelector('.pshield').textContent=s2[1];c.querySelector('.prs').textContent=(row.reasons||[]).join(' · ');box.appendChild(c);
   if(row.verdict!=='red_flags'){var q=document.createElement('div');q.innerHTML='<p>Do you want me to prepare your application for this?</p><div class="prow"><button type="button" class="btn pyes">Yes, prepare it</button><button type="button" class="btn alt pno">No thanks</button></div>';c.appendChild(q);
     q.querySelector('.pyes').onclick=async function(){this.disabled=true;var r=await sb.from('pitch_link_checks').update({prepare_requested:true}).eq('id',id);q.textContent=r.error?'Could not send that. Please try again.':'Okay. I will prepare a draft and put it in your Inbox. Nothing is sent until you approve it.'};
-    q.querySelector('.pno').onclick=function(){q.textContent='Okay, nothing will be done.'}}};
+    q.querySelector('.pno').onclick=function(){q.textContent='Okay, nothing will be done.'}}
+  }catch(e){linkTask.fail('The link check was interrupted');pm('Could not finish the link check. Please try again.',true)}finally{busy=false;this.disabled=false}};
 })();
 
 (function(){
@@ -2062,14 +2078,26 @@ setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},
 var imgMode=false,ta=$('send').parentElement.querySelector('textarea,input[type=text]'),ph=ta?ta.placeholder:'';
 $('imgBtn').onclick=function(){imgMode=!imgMode;this.classList.toggle('on',imgMode);this.setAttribute('aria-pressed',imgMode);if(ta)ta.placeholder=imgMode?'Describe the image you want':ph;if(ta)ta.focus()};
 async function makeImage(prompt){
-  if(!dbOk()){add('Sign in to create images.','sys');return}
-  add(prompt,'me');var w=add('Creating your image...','sys');
-  try{var ss=await sb.auth.getSession(),tok=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
-    var r=await fetch('/.netlify/functions/image',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
-    var j={};try{j=await r.json()}catch(e){}w.remove();
-    if(!r.ok||!j.image){add(j.error||'I could not create that image. Please try again.','sys');return}
-    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image)
-  }catch(e){try{w.remove()}catch(x){}add('I could not create that image. Please try again.','sys')}}
+  if(!dbOk()){add('Sign in to create images.','sys');return ''}
+  add(prompt,'me');var task=PelexTasks.begin('Generate image',chat);
+  try{
+    task.step('Checking your sign-in');
+    var ss=await sb.auth.getSession(),tok=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
+    if(!tok)throw new Error('Please sign in again to create images.');
+    try{await ensureChat(prompt)}catch(e){}
+    saveMsg('user',prompt);
+    task.step('Request sent; waiting for image generation and access checks');
+    var r=await fetch('/.netlify/functions/image',{pelexTask:task,method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
+    var j={};try{j=await r.json()}catch(e){}
+    if(!r.ok||!j.image)throw new Error(j.error||'The image service did not return an image. Please try again.');
+    task.step('Image received; checking that it opens');
+    await new Promise(function(resolve,reject){var image=new Image(),timer=setTimeout(function(){image.src='';reject(new Error('The generated image took too long to open. Please try again.'))},30000);image.onload=function(){clearTimeout(timer);resolve()};image.onerror=function(){clearTimeout(timer);reject(new Error('The generated image could not be opened. Please try again.'))};image.src=j.image});
+    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image);
+    task.done('Generated image displayed');
+    return '';
+  }catch(e){task.fail(e.message||'Image generation failed. Please try again.');add(e.message||'I could not create that image. Please try again.','sys');return ''}
+}
+window.generatePelexImage=makeImage;
 function grab(){var t=ta.value.trim();if(!t)return false;ta.value='';ta.dispatchEvent(new Event('input'));makeImage(t);return true}
 document.addEventListener('click',function(e){if(imgMode&&e.target.closest&&e.target.closest('#send')){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
 document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e.key==='Enter'&&!e.shiftKey){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
