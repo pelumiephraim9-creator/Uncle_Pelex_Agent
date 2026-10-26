@@ -86,7 +86,7 @@ exports.handler = async (event) => {
   const SU = (E.SUPABASE_URL || '').replace(/\/+$/, '');
   const AK = E.SUPABASE_ANON_KEY;
   const SK = E.SUPABASE_SECRET_KEY || E.SUPABASE_SERVICE_KEY;
-  const HU = E.IMAGE_WEBHOOK_URL;
+  let HU = E.IMAGE_WEBHOOK_URL;
   const IK = E.X_Pelex_Image_Key || E.IMAGE_KEY;
 
   if (!SU || !AK || !SK || !HU || !IK) {
@@ -95,14 +95,15 @@ exports.handler = async (event) => {
     });
   }
 
-  // Editor-only webhook URLs stop working once the n8n test listener closes.
+  // n8n editor listeners are temporary. Use the same workflow's production
+  // route even when an older site configuration still contains its test URL.
   try {
-    if (new URL(HU).pathname.includes('/webhook-test/')) {
-      return J(503, {
-        error: 'The image service is connected to an editor test webhook. Connect the production webhook and publish or activate the image workflow.',
-        code: 'IMAGE_TEST_WEBHOOK',
-      });
+    const webhook = new URL(HU);
+    if (webhook.protocol !== 'https:' || webhook.username || webhook.password) {
+      return J(503, { error: 'The image service requires a valid HTTPS webhook URL.', code: 'IMAGE_WEBHOOK_INVALID' });
     }
+    webhook.pathname = webhook.pathname.replace(/\/webhook-test(?=\/)/, '/webhook');
+    HU = webhook.href;
   } catch {
     return J(503, { error: 'The image service webhook URL is invalid.', code: 'IMAGE_WEBHOOK_INVALID' });
   }

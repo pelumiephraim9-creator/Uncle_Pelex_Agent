@@ -16,14 +16,17 @@ function service(payload, legacy = false, webhookStatus = 200) {
   };
   const ctx = { exports: {}, process: { env }, Buffer, URL, fetch: async (url, opts) => {
     calls.push({ url, opts });
+    const productionWebhook = new URL(env.IMAGE_WEBHOOK_URL);
+    productionWebhook.pathname = productionWebhook.pathname.replace(/\/webhook-test(?=\/)/, '/webhook');
+    const isWebhook = url === productionWebhook.href;
     let data;
     if (url.endsWith('/auth/v1/user')) data = { id: '12345678-1234-4234-8234-123456789abc' };
     else if (url.includes('/image_premium?')) data = [];
     else if (url.includes('/image_usage?')) data = [{ used: 0 }];
     else if (url.endsWith('/rpc/consume_image_quota')) data = 1;
-    else if (url === env.IMAGE_WEBHOOK_URL) data = payload;
+    else if (isWebhook) data = payload;
     else throw new Error('Unexpected request');
-    return { ok: url !== env.IMAGE_WEBHOOK_URL || webhookStatus === 200, status: url === env.IMAGE_WEBHOOK_URL ? webhookStatus : 200, headers: { get: () => 'application/json' }, json: async () => data };
+    return { ok: !isWebhook || webhookStatus === 200, status: isWebhook ? webhookStatus : 200, headers: { get: () => 'application/json' }, json: async () => data };
   }};
   vm.runInNewContext(backend, ctx);
   return { ctx, calls, handler: ctx.exports.handler };
@@ -146,11 +149,23 @@ test('inactive production webhooks and header authentication failures have disti
   }
 });
 
-test('an editor test webhook is rejected with setup guidance', async () => {
-  const {handler,ctx,calls} = service({});
+test('an editor test webhook uses the production route and delivers the image', async () => {
+  for (const prefix of ['', '/n8n']) {
+    const {handler,ctx,calls} = service({image: png});
+    ctx.process.env.IMAGE_WEBHOOK_URL = 'https://workflow.example.test'+prefix+'/webhook-test/pelex-image?version=2';
+    const response = await handler(event);
+    assert.equal(response.statusCode,200);
+    assert.equal(JSON.parse(response.body).image,png);
+    assert.ok(calls.some(c => c.url === 'https://workflow.example.test'+prefix+'/webhook/pelex-image?version=2'));
+    assert.ok(!calls.some(c => c.url.includes('/webhook-test/')));
+  }
+});
+
+test('an unpublished converted production webhook reports the activation requirement', async () => {
+  const {handler,ctx,calls} = service({},false,404);
   ctx.process.env.IMAGE_WEBHOOK_URL = 'https://workflow.example.test/webhook-test/pelex-image';
   const response = await handler(event);
-  assert.equal(response.statusCode,503);
-  assert.equal(JSON.parse(response.body).code,'IMAGE_TEST_WEBHOOK');
-  assert.equal(calls.length,0);
+  assert.equal(response.statusCode,502);
+  assert.equal(JSON.parse(response.body).code,'IMAGE_WEBHOOK_NOT_FOUND');
+  assert.ok(!calls.some(c => c.url.endsWith('/rpc/consume_image_quota')));
 });
