@@ -3,9 +3,9 @@
 // Required Netlify environment variables:
 // SUPABASE_URL
 // SUPABASE_ANON_KEY
-// SUPABASE_SERVICE_KEY
+// SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_KEY)
 // IMAGE_WEBHOOK_URL
-// IMAGE_KEY
+// X_Pelex_Image_Key (or IMAGE_KEY)
 //
 // Optional:
 // IMAGE_FREE_DAILY (default: 3)
@@ -46,9 +46,9 @@ exports.handler = async (event) => {
 
   const SU = (E.SUPABASE_URL || '').replace(/\/+$/, '');
   const AK = E.SUPABASE_ANON_KEY;
-  const SK = E.SUPABASE_SERVICE_KEY;
+  const SK = E.SUPABASE_SECRET_KEY || E.SUPABASE_SERVICE_KEY;
   const HU = E.IMAGE_WEBHOOK_URL;
-  const IK = E.IMAGE_KEY;
+  const IK = E.X_Pelex_Image_Key || E.IMAGE_KEY;
 
   if (!SU || !AK || !SK || !HU || !IK) {
     return J(503, {
