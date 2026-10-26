@@ -100,7 +100,14 @@ h2{font-size:20px;margin:0 0 4px}
 .authswitch{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
 .authswitch a{color:var(--btn);cursor:pointer;font-weight:600;text-decoration:none}
 .disclaimer{text-align:center;font-size:12px;color:var(--muted);padding:0 clamp(12px,4vw,48px) 4px}
-.msgactions{display:flex;gap:4px;margin-top:4px}
+.msgactions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.msg.me .msgactions{justify-content:flex-end}
+.msgactions button{min-width:36px;min-height:36px}
+.msgactions button:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.msgactions button:disabled{opacity:.45;cursor:wait}
+.message-editor{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.message-editor textarea{width:100%;min-height:100px;padding:12px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:inherit}
+.message-editor button{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;cursor:pointer}
 .msgactions button{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:8px;font-size:14px;line-height:1}
 .msgactions button:hover{background:var(--panel);color:inherit}
 .msgactions button[aria-pressed="true"]{color:var(--btn)}
@@ -1031,6 +1038,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </main>
 </div>
 <script src="/assets/task-progress.js"></script>
+<script src="/assets/message-actions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.2/dist/umd/supabase.js"></script>
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>')}</script>
 <dialog class="adsheet" id="instSheet" aria-labelledby="instTitle">
@@ -1101,7 +1109,7 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
     row.appendChild(fb);
     d.appendChild(row);
   }
-  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
+  chat.appendChild(d);if(window.pelexMessageActions)window.pelexMessageActions(d,t,cls,img,retryFn);chat.scrollTop=chat.scrollHeight;return d}
 
 var NET_MSG='Connection failed. Check your internet and try again.';
 async function netDown(){
@@ -1247,7 +1255,7 @@ function isImageRequest(text){
 }
 async function turn(text,shown,img,el){
   if(!shown&&!img&&isImageRequest(text)&&window.generatePelexImage){if(el)el.remove();return window.generatePelexImage(text)}
-  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
+  if(el){el.remove();}add(shown||text,'me',img);
   var task=PelexTasks.begin('Agent task',chat);task.step('Preparing your conversation');
   var _ct=shown||text;try{await ensureChat(_ct)}catch(e){}
   saveMsg('user',_ct);
@@ -1264,6 +1272,19 @@ async function turn(text,shown,img,el){
     return reply}
   catch(e){task.fail('The agent could not complete this request');await showErr(e);return ''}
 }
+// Reuse the correct request path when reloading or editing an attachment.
+window.replayPelexMessage=async function(text,images){
+  if(!images)return turn(text);
+  add(text,'me',images);
+  var task=PelexTasks.begin('Read attached images',chat);
+  try{
+    await ensureChat(text);saveMsg('user',text);
+    task.step('Sending your images for analysis');
+    var result=await post('/.netlify/functions/vision',{images:Array.isArray(images)?images:[images],prompt:text});
+    add(result.text,null,null,function(){return window.replayPelexMessage(text,images)});
+    saveMsg('assistant',result.text);task.done('Reply displayed');
+  }catch(e){task.fail('Image analysis failed');await showErr(e)}
+};
 async function sendTyped(){
   if(pendingImgs.length){await sendImage();return}
   var q=input.value.trim();
@@ -1748,7 +1769,7 @@ function chatFail(what,err){
   console.warn('Pelex: '+what,err);
   if(dbWarned)return;dbWarned=true;
   var m=String((err&&(err.message||err.details))||'unknown error');
-  try{add('Your '+what+' ('+m+'). Run chat_history_fix.sql in Supabase to repair it.','sys')}catch(x){}
+  try{add('Your '+what+'. '+(/fetch|network|connection/i.test(m)?'The chat history service could not be reached. Check your connection and try again.':'Chat history is temporarily unavailable. Try signing in again.')+' You can continue in this chat, but these messages may not appear in your history.','sys')}catch(x){}
 }
 async function ensureChat(firstText){
   if(!dbOk()||curChatId||!window.histOn())return;
@@ -2089,10 +2110,11 @@ async function makeImage(prompt){
     task.step('Request sent; waiting for image generation and access checks');
     var r=await fetch('/.netlify/functions/image',{pelexTask:task,method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
     var j={};try{j=await r.json()}catch(e){}
-    if(!r.ok||!j.image)throw new Error(j.error||'The image service did not return an image. Please try again.');
+    if(!j.image)j.image=j.image_url||j.imageUrl;
+    if(!r.ok||!j.image)throw new Error(j.error||('Image generation failed (HTTP '+r.status+'). The image workflow must return image bytes or an image URL.'));
     task.step('Image received; checking that it opens');
     await new Promise(function(resolve,reject){var image=new Image(),timer=setTimeout(function(){image.src='';reject(new Error('The generated image took too long to open. Please try again.'))},30000);image.onload=function(){clearTimeout(timer);resolve()};image.onerror=function(){clearTimeout(timer);reject(new Error('The generated image could not be opened. Please try again.'))};image.src=j.image});
-    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image);
+    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image,function(){return makeImage(prompt)});
     task.done('Generated image displayed');
     return '';
   }catch(e){task.fail(e.message||'Image generation failed. Please try again.');add(e.message||'I could not create that image. Please try again.','sys');return ''}

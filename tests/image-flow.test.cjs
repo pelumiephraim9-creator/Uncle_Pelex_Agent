@@ -6,7 +6,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 const backend = fs.readFileSync('netlify/functions/image.js', 'utf8');
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN3sAAAAASUVORK5CYII=';
 
-function service(payload, legacy = false) {
+function service(payload, legacy = false, webhookStatus = 200) {
   const calls = [];
   const env = {
     SUPABASE_URL: 'https://accounts.example.test', SUPABASE_ANON_KEY: 'test-only-anon',
@@ -23,7 +23,7 @@ function service(payload, legacy = false) {
     else if (url.endsWith('/rpc/consume_image_quota')) data = 1;
     else if (url === env.IMAGE_WEBHOOK_URL) data = payload;
     else throw new Error('Unexpected request');
-    return { ok: true, headers: { get: () => 'application/json' }, json: async () => data };
+    return { ok: url !== env.IMAGE_WEBHOOK_URL || webhookStatus === 200, status: url === env.IMAGE_WEBHOOK_URL ? webhookStatus : 200, headers: { get: () => 'application/json' }, json: async () => data };
   }};
   vm.runInNewContext(backend, ctx);
   return { ctx, calls, handler: ctx.exports.handler };
@@ -106,4 +106,51 @@ test('all inline application scripts parse', () => {
     if (/src=|application\/ld\+json/.test(attrs)) continue;
     new vm.Script(source);
   }
+});
+
+
+test('workflow response variants preserve actual assets and reject acknowledgements', () => {
+  const {ctx} = service({});
+  for (const payload of [
+    {imageUrl: 'https://images.test/a.png'},
+    {body: JSON.stringify({image_url: 'https://images.test/a.png'})},
+    [{json: {binary: {data: {data: png.split(',')[1]}}}}],
+    '![Generated image](https://images.test/a.png)'
+  ]) assert.ok(ctx.imageAsset(payload));
+  for (const payload of [{message: 'Workflow started'}, '![image](https://via.placeholder.com/600x400)', 'Generate a blue car', 'Accepted']) assert.equal(ctx.imageAsset(payload), null);
+});
+
+test('a successful webhook without image data returns an actionable error without billing quota', async () => {
+  const {handler, calls} = service({message: 'Workflow was started'});
+  const response = await handler(event);
+  assert.equal(response.statusCode, 502);
+  assert.equal(JSON.parse(response.body).code, 'IMAGE_RESPONSE_MISSING');
+  assert.ok(!calls.some(c => c.url.endsWith('/rpc/consume_image_quota')));
+});
+
+
+test('the supplied workflow response delivers a data image and records usage', async () => {
+  const {handler} = service({image: png, provider: 'cloudflare'});
+  const response = await handler(event);
+  assert.equal(response.statusCode,200);
+  assert.equal(JSON.parse(response.body).image,png);
+});
+
+test('inactive production webhooks and header authentication failures have distinct diagnostics', async () => {
+  for (const [status, code] of [[404,'IMAGE_WEBHOOK_NOT_FOUND'],[401,'IMAGE_WEBHOOK_AUTH'],[403,'IMAGE_WEBHOOK_AUTH']]) {
+    const {handler,calls} = service({},false,status);
+    const response = await handler(event);
+    assert.equal(response.statusCode,502);
+    assert.equal(JSON.parse(response.body).code,code);
+    assert.ok(!calls.some(c => c.url.endsWith('/rpc/consume_image_quota')));
+  }
+});
+
+test('an editor test webhook is rejected with setup guidance', async () => {
+  const {handler,ctx,calls} = service({});
+  ctx.process.env.IMAGE_WEBHOOK_URL = 'https://workflow.example.test/webhook-test/pelex-image';
+  const response = await handler(event);
+  assert.equal(response.statusCode,503);
+  assert.equal(JSON.parse(response.body).code,'IMAGE_TEST_WEBHOOK');
+  assert.equal(calls.length,0);
 });
