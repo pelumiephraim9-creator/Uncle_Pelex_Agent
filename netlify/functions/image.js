@@ -36,6 +36,11 @@ function imageAsset(value, depth = 0) {
   if (depth > 5 || value == null) return null;
   if (typeof value === 'string') {
     const candidate = value.trim();
+    if (/^[\[{]/.test(candidate)) {
+      try { return imageAsset(JSON.parse(candidate), depth + 1); } catch { return null; }
+    }
+    const markdown = candidate.match(/^!\[[^\]]*\]\((https:\/\/[^\s)]+)\)$/);
+    if (markdown) return imageAsset(markdown[1], depth + 1);
     if (/^data:image\/(?:png|jpeg|webp|gif|avif);base64,[A-Za-z0-9+/\r\n]+={0,2}$/i.test(candidate)) return candidate;
     if (/^https:\/\//i.test(candidate)) {
       try {
@@ -58,7 +63,7 @@ function imageAsset(value, depth = 0) {
   if (Array.isArray(value)) {
     for (const item of value) { const image = imageAsset(item, depth + 1); if (image) return image; }
   } else if (typeof value === 'object') {
-    for (const key of ['image', 'image_url', 'url', 'b64_json', 'base64', 'images', 'result', 'data', 'output']) {
+    for (const key of ['image', 'image_url', 'imageUrl', 'imageURL', 'url', 'b64_json', 'base64', 'images', 'result', 'data', 'output', 'json', 'body', 'response', 'binary', 'file']) {
       const image = imageAsset(value[key], depth + 1); if (image) return image;
     }
   }
@@ -76,7 +81,7 @@ exports.handler = async (event) => {
     };
   }
 
-  const E = process.env;
+  const E = typeof Netlify !== 'undefined' ? new Proxy({}, { get: (_, name) => Netlify.env.get(name) }) : process.env;
 
   const SU = (E.SUPABASE_URL || '').replace(/\/+$/, '');
   const AK = E.SUPABASE_ANON_KEY;
@@ -88,6 +93,18 @@ exports.handler = async (event) => {
     return J(503, {
       error: 'Image creation is not switched on yet.',
     });
+  }
+
+  // Editor-only webhook URLs stop working once the n8n test listener closes.
+  try {
+    if (new URL(HU).pathname.includes('/webhook-test/')) {
+      return J(503, {
+        error: 'The image service is connected to an editor test webhook. Connect the production webhook and publish or activate the image workflow.',
+        code: 'IMAGE_TEST_WEBHOOK',
+      });
+    }
+  } catch {
+    return J(503, { error: 'The image service webhook URL is invalid.', code: 'IMAGE_WEBHOOK_INVALID' });
   }
 
   // Require a bearer token from the signed-in user.
@@ -277,6 +294,18 @@ exports.handler = async (event) => {
   }
 
   if (!imageResponse.ok) {
+    if (imageResponse.status === 404) {
+      return J(502, {
+        error: 'The production image webhook was not found. Publish or activate the image workflow and check its production webhook URL.',
+        code: 'IMAGE_WEBHOOK_NOT_FOUND',
+      });
+    }
+    if (imageResponse.status === 401 || imageResponse.status === 403) {
+      return J(502, {
+        error: 'The image workflow rejected the server connection. Check that its header authentication matches the website image service configuration.',
+        code: 'IMAGE_WEBHOOK_AUTH',
+      });
+    }
     return J(502, {
       error: 'The image service is busy right now. Please try again in a moment.',
     });
@@ -299,7 +328,10 @@ exports.handler = async (event) => {
           await imageResponse.arrayBuffer()
         ).toString('base64');
     } else {
-      image = imageAsset(await readJson(imageResponse));
+      // Webhooks may return JSON, a JSON string, or a plain image URL.
+      const payload = typeof imageResponse.text === 'function'
+        ? await imageResponse.text() : await readJson(imageResponse);
+      image = imageAsset(payload);
     }
   } catch {
     return J(502, {
@@ -309,7 +341,8 @@ exports.handler = async (event) => {
 
   if (!image) {
     return J(502, {
-      error: 'The image service returned no usable image. Please try again.',
+      error: 'The image workflow returned no usable image. It must return the generated image as image bytes or JSON with an image URL, rather than a prompt or a workflow acknowledgement.',
+      code: 'IMAGE_RESPONSE_MISSING',
     });
   }
 
