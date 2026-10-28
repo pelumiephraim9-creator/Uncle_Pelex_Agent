@@ -32,7 +32,7 @@
 <style>
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--panel:#171d2b;--ink:#eef1f8;--muted:#9aa6c4;--line:#2a3347;--soft:#1f2840;--sel:#232d47;--teal:#3a4f7d;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f1420;--panel:#171d2b;--ink:#eef1f8;--muted:#9aa6c4;--line:#2a3347;--soft:#1f2840;--sel:#232d47;--teal:#3a4f7d;color-scheme:dark}
-:root{--bg:#ffffff;--panel:#fff;--ink:#111111;--muted:#55617f;--line:#dfe4ee;--soft:#e8eefb;--btn:#6495ED;--btnink:#0b1b4a;--teal:#a9c4f5;--sel:#e3eafb;
+:root{--bg:#ffffff;--panel:#fff;--ink:#111111;--muted:#55617f;--line:#dfe4ee;--soft:#f5f7fb;--btn:#6495ED;--btnink:#0b1b4a;--teal:#a9c4f5;--sel:#eef2fb;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45}
@@ -100,14 +100,7 @@ h2{font-size:20px;margin:0 0 4px}
 .authswitch{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
 .authswitch a{color:var(--btn);cursor:pointer;font-weight:600;text-decoration:none}
 .disclaimer{text-align:center;font-size:12px;color:var(--muted);padding:0 clamp(12px,4vw,48px) 4px}
-.msgactions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;align-items:center}
-.msg.me .msgactions{justify-content:flex-end}
-.msgactions button{min-width:36px;min-height:36px}
-.msgactions button:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
-.msgactions button:disabled{opacity:.45;cursor:wait}
-.message-editor{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-.message-editor textarea{width:100%;min-height:100px;padding:12px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:inherit}
-.message-editor button{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;cursor:pointer}
+.msgactions{display:flex;gap:4px;margin-top:4px}
 .msgactions button{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:8px;font-size:14px;line-height:1}
 .msgactions button:hover{background:var(--panel);color:inherit}
 .msgactions button[aria-pressed="true"]{color:var(--btn)}
@@ -666,9 +659,34 @@ button.gav{cursor:pointer}.gav.sm{width:38px;height:38px;font-size:21px}
 .gmod .gav{background:#e8eefb;border-color:#dfe4ee}.gmod code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
 .gmem{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #eef1f8}.gmem:first-child{border-top:0}.gmem .gt{flex:1;min-width:0;display:flex;flex-direction:column}
 .gdanger{color:#b3261e!important}
+.card[hidden],.nav[hidden]{display:none}
+.ghead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}.gtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.gtools[hidden]{display:none}
+.gmini{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:16px;padding:8px 12px;background:var(--panel)}
+.gdot{width:11px;height:11px;border-radius:50%;background:#e5484d;flex:none;box-shadow:0 0 0 3px rgba(229,72,77,.2)}
+.rtyping{padding:2px 16px 6px;font-size:13px;color:var(--muted);font-style:italic;flex:none}.rtyping[hidden]{display:none}
+.ignedge{position:fixed;right:0;top:44%;z-index:40;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-right:0;background:var(--panel);color:var(--ink);border-radius:14px 0 0 14px;padding:10px 12px 10px 11px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.ignedge svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ignedge.on{background:#0f1530;color:#f59e0b;border-color:#0f1530}.ignedge[hidden]{display:none}
+@media(max-width:820px){.ignedge{display:none}}
+.md{white-space:normal;word-break:break-word}.md>*:last-child{margin-bottom:0}.md p{margin:0 0 8px}.md ul,.md ol{margin:0 0 8px;padding-left:22px}.md li{margin:2px 0}
+.md .mdh{font-weight:700;font-size:16px;margin:12px 0 6px}.md hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.md table{border-collapse:collapse;font-size:13.5px;margin:8px 0;display:block;overflow-x:auto;max-width:100%}.md th,.md td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.md th{background:var(--soft)}
+.md img{max-width:100%;border-radius:10px;margin:6px 0;display:block}.md a{color:var(--btn);text-decoration:underline}.md code{background:var(--soft);padding:1px 5px;border-radius:6px;font-size:.92em}
+.stask .res{white-space:normal;max-height:340px;overflow:auto}
+.pchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:4px 6px 4px 12px;font-size:14px}.pchip button{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;padding:0 4px;color:inherit}
+.bgate[hidden]{display:none}.bmsgs{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:8px 2px}
+.bm{max-width:88%;padding:8px 12px;border-radius:14px;background:var(--soft);align-self:flex-start}.bm.me{align-self:flex-end;background:var(--btn);color:var(--btnink)}
+.supbar{display:flex;gap:8px;margin-top:10px}.supbar input{flex:1;min-width:0}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:3px;background:var(--btn);z-index:200;pointer-events:none}
+.msgactions{flex-wrap:wrap;gap:6px;margin-top:8px}
+.msgactions button{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:var(--bg);color:var(--muted)}
+.msgactions button:hover{background:var(--soft);color:var(--ink)}
+.msg.me .msgactions{justify-content:flex-end}
+.act{font-size:13px;color:var(--muted);line-height:1.8}.actrow.now{color:var(--ink)}
+details.actlog{margin:0 0 8px;font-size:12.5px;color:var(--muted)}details.actlog summary{cursor:pointer;list-style:none}
+details.actlog summary::before{content:"\25B8 "}details.actlog[open] summary::before{content:"\25BE "}details.actlog div{padding:2px 0 0 14px}
+#v-business,#v-personal{background:var(--bg)}#v-business .card,#v-personal .card{background:var(--bg);border:1px solid var(--line);box-shadow:none}
 .oauthbtn[hidden],#pkCard[hidden]{display:none}
 </style>
-<link rel="stylesheet" href="/assets/task-progress.css">
 </head>
 <body>
 <div id="splash" aria-hidden="true"><div class="sg"></div><svg viewBox="0 0 40 40"><polygon class="hx" pathLength="1" points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5"/><circle class="nd" style="animation-delay:0.25s" cx="20" cy="3" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.37s" cx="35" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.49s" cx="35" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.61s" cx="20" cy="37" r="2.2" fill="#5ec3e6"/><circle class="nd" style="animation-delay:0.73s" cx="5" cy="28.5" r="2.2" fill="var(--btn,#0a89f4)"/><circle class="nd" style="animation-delay:0.85s" cx="5" cy="11.5" r="2.2" fill="var(--btn,#0a89f4)"/><rect class="bd" x="11" y="11" width="18" height="18" rx="5" fill="var(--btn,#0a89f4)"/><text class="pl" x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink,#fff)">P</text></svg><div class="wm">PELEX</div><div class="tg">Your AI assistant</div><div class="sbar"><i></i></div></div>
@@ -686,7 +704,10 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
 <button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
 <button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
-<button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups</button>
+<button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups<span class="nbadge" id="gBadge" hidden aria-label="Groups with new messages"></span></button>
+<button class="nav" data-go="personal"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg>Personal Bot</button>
+<button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Bot</button>
+<button class="nav" data-go="support" id="navSupport" hidden><svg viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 13h3v5H4zM17 13h3v5h-3zM17 18c0 2-2 3-5 3"/></svg>Support<span class="nbadge" id="supBadge" hidden></span></button>
 <button class="nav" data-go="ads"><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1zM18 9a4 4 0 0 1 0 6"/></svg>Run ads <span class="badge soon">Soon</span></button>
 <div id="recPinned"></div>
 <div class="rechead" id="recLabel" hidden><button type="button" class="rechtitle" id="recToggle" aria-expanded="true">Chats <svg viewBox="0 0 24 24" class="rchev"><path d="M6 9l6 6 6-6"/></svg></button><span class="rechtools"><button type="button" id="recAll" aria-label="Show all chats" title="Show all"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></button><button type="button" id="recSearchBtn" aria-label="Search chats" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg></button><button type="button" id="recSortBtn" aria-label="Sort chats" title="Sort: Last activity"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16M4 9h4M10 15h4M16 8h4"/></svg></button></span></div>
@@ -724,7 +745,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div id="chat" aria-live="polite">
 <div class="chatbody">
 <h1 class="hello" id="hello">&nbsp;</h1>
-<div class="chips"><button class="chip-sugg" data-sugg="Help me plan my week">Plan my week</button><button class="chip-sugg" data-fill="I need advice on ">Get advice</button><button class="chip-sugg" data-sugg="Teach me something new and useful for my business">Learn something new</button><button class="chip-sugg" data-fill="Search the web for ">Search the web</button><button class="chip-sugg" data-fill="Write code for ">Write code</button></div>
+<div class="chips"><button class="chip-sugg" data-sugg="Teach me something new and useful for my business">Learn something new</button><button class="chip-sugg" data-fill="Search the web for ">Search the web</button><button class="chip-sugg" data-fill="Write code for ">Write code</button></div>
 </div>
 </div>
 <div class="limit" id="limit" hidden><strong>You have reached today's free limit.</strong><span class="muted">It resets in 6 hours. Your earlier chats are still open in the sidebar.</span><div class="limitbtns"><button class="btn" data-go="plans">Upgrade to General Premium</button><button class="btn alt" data-go="plans">Start 2-day trial</button></div></div>
@@ -749,7 +770,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </div></section>
 
 <section class="view" id="v-pitch" hidden><div class="wrap">
-<h1>Pitch Agent <span class="badge soon">Soon</span></h1><div class="muted">Finds jobs and clients, writes in your tone, and asks you before anything is sent.</div>
+<h1>Pitch Agent</h1><div class="muted">Finds jobs and clients, writes in your tone, and asks you before anything is sent.</div>
 <div id="pMsg" class="muted" role="status" style="min-height:20px;margin-top:8px"></div>
 <div class="pfun" id="pFun"></div>
 <div class="qchips" id="pTabs"><button type="button" class="qchip on" data-t="inbox">Inbox</button><button type="button" class="qchip" data-t="check">Check a link</button><button type="button" class="qchip" data-t="profile">Profile</button><button type="button" class="qchip" data-t="sched">Schedule</button></div>
@@ -760,8 +781,8 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="pfield"><label for="pField">What do you do?</label><input class="inp" id="pField" placeholder="For example: front-end developer"></div>
 <div class="pfield"><label for="pYears">Years of experience</label><input class="inp" id="pYears" type="number" min="0" max="50" inputmode="numeric"></div>
 <div class="pfield"><label>Where can you work?</label><div class="prow"><label><input type="checkbox" class="pMode" value="remote"> Remote</label><label><input type="checkbox" class="pMode" value="hybrid"> Hybrid</label><label><input type="checkbox" class="pMode" value="onsite"> On-site</label></div></div>
-<div class="pfield"><label for="pLoc">Your location (for hybrid or on-site)</label><input class="inp" id="pLoc"></div>
-<div class="pfield"><label for="pCountries">Countries you can legally work for (remote)</label><input class="inp" id="pCountries" placeholder="For example: Nigeria, UK, Germany"></div>
+<div class="pfield"><label for="pLocCity">Your location (for hybrid or on-site)</label><div class="two" style="gap:8px"><input class="inp" id="pLocCity" placeholder="City" autocomplete="off"><input class="inp" id="pLocCty" list="pCtyList" placeholder="Country" autocomplete="off"></div><input type="hidden" id="pLoc"></div>
+<div class="pfield"><label for="pCtyIn">Countries you can legally work for (remote)</label><div class="prow" id="pCtyChips" style="margin:6px 0"></div><input class="inp" id="pCtyIn" list="pCtyList" placeholder="Start typing a country, then pick it from the list" autocomplete="off"><input type="hidden" id="pCountries"><datalist id="pCtyList"></datalist></div>
 <div class="pfield"><label for="pTone">Your pitch tone (optional)</label><textarea class="inp" id="pTone" rows="3" placeholder="Describe how you pitch, or paste an example"></textarea></div>
 <div class="pfield"><label for="pPort">Portfolio or website link</label><input class="inp" id="pPort" type="url"></div>
 <div class="pfield"><label for="pResume">Resume (PDF or Word, up to 5 MB)</label><input id="pResume" type="file" accept=".pdf,.doc,.docx"><div class="muted" id="pResNote"></div></div>
@@ -773,12 +794,12 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="muted" id="pNext"></div><button class="btn" id="pSaveS" type="button" style="margin-top:10px">Save schedule</button></div>
 </div></section>
 <section class="view" id="v-groups" hidden><div class="wrap">
-<h1>Groups</h1><div class="muted">Chat with friends and colleagues, and bring in Pelex Support when you need help.</div>
+<div class="ghead"><div><h1>Groups</h1><div class="muted">Chat with friends and colleagues, and bring in Pelex Support when you need help.</div></div>
+<div class="gtools" id="gTools" hidden><div class="gmini"><button type="button" class="gav sm" id="gMeEmoji" aria-label="Change your emoji">&#128578;</button><span class="gmeT"><b id="gMeName">You</b><span><code id="gMeId">PLX-......</code> <button type="button" class="btn alt gsm" id="gMeCopy">Copy</button></span></span></div><button type="button" class="btn" id="gNew">New group</button></div></div>
 <div id="gOut" class="card" style="margin-top:18px" hidden><h2>Sign in to use groups</h2><span class="muted">Your Pelex ID and your groups live in your account.</span><button class="btn" id="gSignIn" type="button">Sign in</button></div>
 <div id="gIn" hidden>
-<div class="gme"><button type="button" class="gav" id="gMeEmoji" aria-label="Change your emoji">&#128578;</button><div class="gmeT"><b id="gMeName">You</b><span class="muted" style="font-size:13px">Your Pelex ID</span><span><code id="gMeId">PLX-......</code> <button type="button" class="btn alt gsm" id="gMeCopy">Copy</button></span></div></div>
 <div class="gemo" id="gEmojiPick" hidden></div>
-<div class="prow" style="margin:6px 0 12px"><button type="button" class="btn" id="gNew">New group</button></div>
+<input class="inp" id="gSearch" type="search" placeholder="Search your groups by name or ID" aria-label="Search your groups" style="margin:14px 0 10px">
 <div id="gMsg" class="muted" role="status" style="min-height:18px;font-size:13px"></div>
 <div class="glist" id="gList"></div>
 <p class="muted" id="gEmpty" hidden>No groups yet. Create one, then invite friends with a link or with their Pelex ID.</p>
@@ -789,9 +810,40 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="iconbtn" id="rPlus" type="button" aria-label="Add people" title="Add people"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 <button class="iconbtn" id="rInfo" type="button" aria-label="Group details" title="Group details"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
 <div id="rMsgs" class="rmsgs" aria-live="polite"></div>
+<div class="rtyping" id="rTyping" hidden aria-live="polite"></div>
 <div class="rbar"><input id="rIn" type="text" placeholder="Message the group" maxlength="2000" aria-label="Message the group"><button class="ic send" id="rSend" type="button" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
 </section>
 <div class="lp-toast" id="gToast" role="status" aria-live="polite" hidden></div>
+<section class="view" id="v-personal" hidden><div class="wrap">
+<h1>Personal Bot</h1><div class="muted">Your own assistant. It remembers what matters to you, keeps your notes and tasks, and works with your email once Gmail is connected.</div>
+<div class="card" style="margin-top:18px"><h2>Status</h2><div id="pbStatus" class="muted">Checking...</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="pbOpen" hidden>Open chat</button><button class="btn" type="button" data-plan="personal" id="pbStart" hidden>Start 2-day trial</button><button class="btn" type="button" data-go="plugins">Connect email</button></div></div>
+</div></section>
+<section class="view" id="v-business" hidden><div class="wrap">
+<h1>Business Bot</h1><div class="muted">Tell Pelex about your business. Your bot answers customers in your tone and stays inside the limits you set.</div>
+<div class="card bgate" id="bGate" style="margin-top:18px" hidden><h2>Start the Business Bot plan first</h2><span class="muted">Switch the plan on, then set up your bot here.</span><button class="btn" type="button" data-plan="business">Start 2-day trial</button></div>
+<div id="bForm" hidden>
+<div class="pfield"><label for="bName">Business name</label><input class="inp" id="bName" maxlength="80" placeholder="For example: Ada's Bakery"></div>
+<div class="pfield"><label for="bTone">Tone</label><select class="inp" id="bTone"><option>Friendly and short</option><option>Professional</option><option>Warm and caring</option><option>Direct</option><option>Playful</option></select></div>
+<div class="pfield"><label for="bDesc">What do you sell or do?</label><textarea class="inp" id="bDesc" rows="5" maxlength="3000" placeholder="What you offer, your prices if you want them shared, opening hours, delivery areas, common questions"></textarea></div>
+<div class="pfield"><label for="bSite">Website</label><input class="inp" id="bSite" type="url" placeholder="https://yourbusiness.com"></div>
+<div class="pfield"><label for="bLimits">What the bot must NOT promise or do</label><textarea class="inp" id="bLimits" rows="3" maxlength="2000" placeholder="For example: never promise delivery dates, never quote discounts"></textarea></div>
+<div class="prow"><button class="btn" id="bSave" type="button">Save my bot</button></div>
+<div class="muted" id="bMsg" role="status" style="min-height:20px;margin-top:8px"></div>
+<h2 style="margin-top:22px">Test your bot</h2><div class="muted" style="font-size:13px">Chat with it here the way a customer would.</div>
+<div class="bmsgs" id="bMsgs"></div>
+<div class="supbar"><input class="inp" id="bIn" placeholder="Ask your bot something" maxlength="1000" aria-label="Test message"><button class="btn" id="bSend" type="button">Send</button></div>
+</div></div></section>
+<section class="view" id="v-support" hidden><div class="wrap">
+<h1>Support inbox</h1><div class="muted">Groups that called Pelex Support. Open one to read the chat and reply as Pelex Support.</div>
+<div class="glist" id="supList" style="margin-top:16px"></div><p class="muted" id="supEmpty">No open requests right now.</p>
+<div id="supRoom" hidden>
+<div class="prow" style="margin:6px 0 10px"><button class="btn alt" id="supBack" type="button">Back</button><button class="btn alt gdanger" id="supClose" type="button">Close this request</button></div>
+<h2 id="supName" style="margin:0 0 6px"></h2>
+<div class="bmsgs" id="supMsgs" style="max-height:420px"></div>
+<div class="supbar"><input class="inp" id="supIn" placeholder="Reply as Pelex Support" maxlength="2000" aria-label="Reply as Pelex Support"><button class="btn" id="supSend" type="button">Send</button></div>
+</div></div></section>
+<button class="ignedge" id="ignEdge" type="button" aria-label="Ignitor, private chat" title="Ignitor: a private chat that is never saved"><svg viewBox="0 0 24 24"><path d="M13 3l-2 7h6l-8 11 2-8H5z"/></svg><span>Ignitor</span></button>
 <section class="view" id="v-scheduled" hidden><div class="wrap">
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Scheduled</h1><div class="muted">Tell Pelex what to do and how often.</div>
 <div class="qchips" id="sChips">
@@ -856,15 +908,15 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="st-capbar"><p class="cp1">Tired of working by yourself?</p><p class="cp2">Tired of handling all the taxes?</p><p class="cp3"><b>Pelex has got you.</b><span>Taxes filed. Invoices sorted. Week planned.</span></p></div>
 </div></div></div>
 <div class="lp-in lp-sec" id="lp-features"><h2>Everything Pelex does</h2><p class="lp-lead">One assistant for the work that piles up. Free to start, no login needed.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></span><b>Chat and plan</b><span class="d">Ask anything, plan your week, get advice and learn something new.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg></span><b>Search the web</b><span class="d">Live answers pulled from the web, not just old knowledge.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><b>Voice chat</b><span class="d">Talk to Pelex and hear it answer back.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></span><b>Write code</b><span class="d">Get working code in clean blocks you can copy in one tap.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg></span><b>Documents</b><span class="d">Save any long reply as a PDF or Word file.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-8 7"/></svg></span><b>Read images and files</b><span class="d">Share up to 4 photos, or a PDF, and ask about them.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><b>Scheduled tasks <span class="badge soon">Soon</span></b><span class="d">Set recurring jobs Pelex runs for you.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7V3M15 7V3M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg></span><b>Connectors <span class="badge soon">Soon</span></b><span class="d">Link the apps you use so Pelex can act in them.</span></div></div></div>
-<div class="lp-in lp-sec" id="lp-personal"><h2>Personal Bot <span class="badge soon">Soon</span></h2><p class="lp-lead">Your own assistant, working inside your accounts. You name it, then talk to it on the website, Telegram or WhatsApp.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><b>Pelex Mail Agent</b><span class="d">Your Inbox. Your Instructions. Your AI Agent. Works across every email account you connect, each with its own on and off switch. Drafts replies in your tone, filters your inbox and files mail into your own labels.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><b>Asks before it acts</b><span class="d">Suggests a new label or idea by name and waits for your approval. It never sees PINs or payment details, even if they appear in an email.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><b>Calendar and Sheets</b><span class="d">Reads and updates your calendar and spreadsheets from the chat.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><b>Scheduled tasks</b><span class="d">Set daily or weekly jobs in plain words and choose where Pelex delivers them.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Data entry and statistics</b><span class="d">Turn invoices and records into clean tables, cash-flow summaries and charts.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="14" rx="1"/><rect x="10" y="4" width="5" height="9" rx="1"/><rect x="17" y="4" width="4" height="11" rx="1"/></svg></span><b>Projects with Trello</b><span class="d">Create and move task cards from the chat, with a clear project structure.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13l20-8-8 20-3-9z"/></svg></span><b>Flights and distance</b><span class="d">Look up ticket prices and driving distance for a trip.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0 0 6v1a3 3 0 0 0 5 2V6a2 2 0 0 0-2-2zM15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 0 6v1a3 3 0 0 1-5 2"/></svg></span><b>Remembers you</b><span class="d">Keeps your context and preferences between sessions.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3L3 11l7 3 3 7z"/><path d="M10 14l11-11"/></svg></span><b>Telegram and WhatsApp</b><span class="d">Telegram is included. WhatsApp is an add-on.</span></div></div></div>
-<div class="lp-in lp-sec" id="lp-business"><h2>Business Bot <span class="badge soon">Soon</span></h2><p class="lp-lead">A support assistant for your business, set up in minutes and managed by you.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg></span><b>Website support bot</b><span class="d">Answers your customers on your website, in your brand and tone.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg></span><b>Lead alerts</b><span class="d">Messages you on Telegram when a visitor shows interest, with their details.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 15l2 2 4-4"/></svg></span><b>Meeting handoff</b><span class="d">Asks you whether to book a meeting, then confirms the date to the visitor.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><b>Business Mail Agent</b><span class="d">The same Pelex Mail Agent, working on your behalf across your business accounts.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4 2 6 6 5 11l-5 3-5-3C6 9 8 5 12 3zM9 19l-2 3M15 19l2 3"/><circle cx="12" cy="10" r="1.6"/></svg></span><b>Self-serve setup</b><span class="d">Pay, describe your business, paste your website address and the bot goes live on its own.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3L3 11l7 3 3 7z"/><path d="M10 14l11-11"/></svg></span><b>Telegram and WhatsApp</b><span class="d">Telegram is included. WhatsApp is an add-on.</span></div></div></div>
-<div class="lp-in lp-sec" id="lp-pitch"><h2>Pelex Pitch Agent <span class="badge soon">Soon</span></h2><p class="lp-lead">Stop chasing clients and jobs. Pelex finds them, you approve.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/></svg></span><b>Finds work for you</b><span class="d">Every day or every 2 days it finds up to 3 companies that need what you do.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"/></svg></span><b>Reads before it applies</b><span class="d">It checks each job against your experience and only picks real fits.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span><b>You approve every message</b><span class="d">It writes in your tone and sends the draft to you first. Nothing goes out until you tap Approve.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6"/></svg></span><b>Sends your resume and portfolio</b><span class="d">After you approve, it sends from your own Gmail with your resume and portfolio attached.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><b>Remote, hybrid or on-site</b><span class="d">Hybrid and on-site search near you. Remote searches the world, in countries you can work for.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Aims at growing companies</b><span class="d">Your experience sets the size of company it looks for, judged from public signals.</span></div></div><div class="lp-plan" style="max-width:420px;margin:20px auto 0"><h3>Pelex Pitch Agent <span class="badge soon">Soon</span></h3><div class="tag">Add-on for Personal and Business plans</div><div class="pr"><span data-ngn="&#8358;19,500" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year</div><button class="btn" disabled aria-disabled="true" type="button">Notify me at launch</button><ul><li>Up to 3 companies per run</li><li>You approve every message</li><li>Sends from your own Gmail</li><li>2-day free trial</li></ul></div></div>
+<div class="lp-in lp-sec" id="lp-personal"><h2>Personal Bot</h2><p class="lp-lead">Your own assistant, working inside your accounts. You name it, then talk to it on the website, Telegram or WhatsApp.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><b>Pelex Mail Agent</b><span class="d">Your Inbox. Your Instructions. Your AI Agent. Works across every email account you connect, each with its own on and off switch. Drafts replies in your tone, filters your inbox and files mail into your own labels.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><b>Asks before it acts</b><span class="d">Suggests a new label or idea by name and waits for your approval. It never sees PINs or payment details, even if they appear in an email.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><b>Calendar and Sheets</b><span class="d">Reads and updates your calendar and spreadsheets from the chat.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><b>Scheduled tasks</b><span class="d">Set daily or weekly jobs in plain words and choose where Pelex delivers them.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Data entry and statistics</b><span class="d">Turn invoices and records into clean tables, cash-flow summaries and charts.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="14" rx="1"/><rect x="10" y="4" width="5" height="9" rx="1"/><rect x="17" y="4" width="4" height="11" rx="1"/></svg></span><b>Projects with Trello</b><span class="d">Create and move task cards from the chat, with a clear project structure.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13l20-8-8 20-3-9z"/></svg></span><b>Flights and distance</b><span class="d">Look up ticket prices and driving distance for a trip.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0 0 6v1a3 3 0 0 0 5 2V6a2 2 0 0 0-2-2zM15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 0 6v1a3 3 0 0 1-5 2"/></svg></span><b>Remembers you</b><span class="d">Keeps your context and preferences between sessions.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3L3 11l7 3 3 7z"/><path d="M10 14l11-11"/></svg></span><b>Telegram and WhatsApp</b><span class="d">Telegram is included. WhatsApp is an add-on.</span></div></div></div>
+<div class="lp-in lp-sec" id="lp-business"><h2>Business Bot</h2><p class="lp-lead">A support assistant for your business, set up in minutes and managed by you.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg></span><b>Website support bot</b><span class="d">Answers your customers on your website, in your brand and tone.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg></span><b>Lead alerts</b><span class="d">Messages you on Telegram when a visitor shows interest, with their details.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 15l2 2 4-4"/></svg></span><b>Meeting handoff</b><span class="d">Asks you whether to book a meeting, then confirms the date to the visitor.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><b>Business Mail Agent</b><span class="d">The same Pelex Mail Agent, working on your behalf across your business accounts.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4 2 6 6 5 11l-5 3-5-3C6 9 8 5 12 3zM9 19l-2 3M15 19l2 3"/><circle cx="12" cy="10" r="1.6"/></svg></span><b>Self-serve setup</b><span class="d">Pay, describe your business, paste your website address and the bot goes live on its own.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3L3 11l7 3 3 7z"/><path d="M10 14l11-11"/></svg></span><b>Telegram and WhatsApp</b><span class="d">Telegram is included. WhatsApp is an add-on.</span></div></div></div>
+<div class="lp-in lp-sec" id="lp-pitch"><h2>Pelex Pitch Agent</h2><p class="lp-lead">Stop chasing clients and jobs. Pelex finds them, you approve.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/></svg></span><b>Finds work for you</b><span class="d">Every day or every 2 days it finds up to 3 companies that need what you do.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"/></svg></span><b>Reads before it applies</b><span class="d">It checks each job against your experience and only picks real fits.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span><b>You approve every message</b><span class="d">It writes in your tone and sends the draft to you first. Nothing goes out until you tap Approve.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6"/></svg></span><b>Sends your resume and portfolio</b><span class="d">After you approve, it sends from your own Gmail with your resume and portfolio attached.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><b>Remote, hybrid or on-site</b><span class="d">Hybrid and on-site search near you. Remote searches the world, in countries you can work for.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Aims at growing companies</b><span class="d">Your experience sets the size of company it looks for, judged from public signals.</span></div></div><div class="lp-plan" style="max-width:420px;margin:20px auto 0"><h3>Pelex Pitch Agent</h3><div class="tag">Add-on for Personal and Business plans</div><div class="pr"><span data-ngn="&#8358;19,500" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Up to 3 companies per run</li><li>You approve every message</li><li>Sends from your own Gmail</li><li>2-day free trial</li></ul></div></div>
 <div class="lp-in lp-sec" id="lp-artcraft"><h2>ArtCraft creative tools</h2><p class="lp-lead">Creative apps built on the open-source ArtCraft engine and run for you by Pelex, so there is nothing extra to log in to. Generated images and videos are deleted after two days, so save what you want to keep.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L16 8M15 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg></span><b>Image generation <span class="badge soon">Soon</span></b><span class="d">Describe a picture and get it in the chat.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><b>Video clips <span class="badge soon">Premium</span></b><span class="d">Realistic 15-second clips, with a monthly limit per person.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg></span><b>WordCraft <span class="badge soon">Soon</span></b><span class="d">Documents.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg></span><b>GridCraft <span class="badge soon">Soon</span></b><span class="d">Data entry, statistics and volume review.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M9 15h6"/></svg></span><b>PdfCraft <span class="badge soon">Soon</span></b><span class="d">PDF tools.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><b>DeckCraft <span class="badge soon">Soon</span></b><span class="d">Slide decks.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><b>FilmCraft <span class="badge soon">Soon</span></b><span class="d">Video.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L16 8M15 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg></span><b>EffectCraft <span class="badge soon">Soon</span></b><span class="d">Visual effects.</span></div></div></div>
 <div class="lp-in lp-sec" id="lp-connectors"><h2>Connectors</h2><p class="lp-lead">Connect the apps you already use. Each one turns on as its sign-in is approved.</p><p class="lp-sub2">Built in</p><div class="lp-pills"><span class="lp-pl2">Web search <span class="badge ok">Live</span></span><span class="lp-pl2">Weather <span class="badge ok">Live</span></span></div><p class="lp-sub2">Google apps <span class="badge soon">Soon</span></p><div class="lp-pills"><span class="lp-pl2">Gmail</span><span class="lp-pl2">Calendar</span><span class="lp-pl2">Drive</span><span class="lp-pl2">Docs</span><span class="lp-pl2">Sheets</span><span class="lp-pl2">Slides</span><span class="lp-pl2">Forms</span><span class="lp-pl2">Meet</span><span class="lp-pl2">Tasks</span><span class="lp-pl2">Keep</span><span class="lp-pl2">Contacts</span><span class="lp-pl2">Maps</span><span class="lp-pl2">YouTube</span></div><p class="lp-sub2">Other apps <span class="badge soon">Soon</span></p><div class="lp-pills"><span class="lp-pl2">Canva</span><span class="lp-pl2">CapCut</span><span class="lp-pl2">Seedance 2.5</span><span class="lp-pl2">Trello</span></div></div>
 <div class="lp-in lp-sec" id="lp-ads"><h2>Run ads <span class="badge soon">Soon</span></h2><p class="lp-lead">Personal and Business bot users will be able to run their own ad campaigns through Pelex.</p><div class="lp-pills"><span class="lp-pl2">Meta (Facebook, Instagram, WhatsApp)</span><span class="lp-pl2">Google</span><span class="lp-pl2">LinkedIn</span><span class="lp-pl2">YouTube</span><span class="lp-pl2">TikTok</span></div></div>
 <div class="lp-in lp-sec" id="lp-plans"><h2>Explore plans</h2><p class="lp-lead">Start free. Every paid plan begins with a 2-day free trial. A card is taken at the start and you can cancel any time during the trial.</p>
 <div class="lp-tabs" role="tablist"><button class="lp-tab" role="tab" aria-selected="true" data-ptab="ind" type="button">Individual</button><button class="lp-tab" role="tab" aria-selected="false" data-ptab="biz" type="button">Business</button></div>
-<div class="lp-plans" data-p="ind"><div class="lp-plan"><h3>Free</h3><div class="tag">Try Pelex</div><div class="pr">$0</div><div class="psub">Free for everyone</div><button class="btn" data-go="chat" type="button">Try Pelex</button><ul><li>Chat, web search and voice</li><li>Upload images and documents</li><li>Write code and save replies as PDF or Word</li><li>Daily limit, no login needed</li></ul></div><div class="lp-plan"><h3>Premium</h3><div class="tag">For everyday productivity</div><div class="pr"><span data-ngn="&#8358;6,500" data-usd="$5"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year</div><button class="btn" data-go="plans" type="button">See Premium</button><ul><li>Everything in Free, plus:</li><li>Unlimited chat (fair use)</li><li>Live guided walkthroughs of your files</li><li>2-day free trial</li></ul></div><div class="lp-plan"><h3>Personal Bot <span class="badge soon">Soon</span></h3><div class="tag">Your own assistant</div><div class="pr"><span data-ngn="&#8358;17,500" data-usd="$13"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year</div><button class="btn" disabled aria-disabled="true" type="button">Notify me at launch</button><ul><li>Your Gmail, Calendar and Sheets</li><li>On the website and Telegram</li><li>2-day free trial</li></ul></div></div><div class="lp-plans two" data-p="biz" hidden><div class="lp-plan"><h3>Business Bot <span class="badge soon">Soon</span></h3><div class="tag">Support bot for your business</div><div class="pr"><span data-ngn="&#8358;20,000" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year</div><button class="btn" disabled aria-disabled="true" type="button">Notify me at launch</button><ul><li>Answers customers on your website</li><li>Set to your brand and tone</li><li>Telegram included</li><li>2-day free trial</li></ul></div><div class="lp-plan"><h3>WhatsApp add-on <span class="badge soon">Soon</span></h3><div class="tag">Reach people where they chat</div><div class="pr"><span data-ngn="&#8358;9,500" data-usd="$7"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;5,500" data-usd="$4"></span> biweekly or <span data-ngn="&#8358;95,000" data-usd="$70"></span> per year</div><button class="btn" disabled aria-disabled="true" type="button">Notify me at launch</button><ul><li>Adds WhatsApp to a Personal or Business plan</li></ul></div></div>
+<div class="lp-plans" data-p="ind"><div class="lp-plan"><h3>Free</h3><div class="tag">Try Pelex</div><div class="pr">$0</div><div class="psub">Free for everyone</div><button class="btn" data-go="chat" type="button">Try Pelex</button><ul><li>Chat, web search and voice</li><li>Upload images and documents</li><li>Write code and save replies as PDF or Word</li><li>Daily limit, no login needed</li></ul></div><div class="lp-plan"><h3>Premium</h3><div class="tag">For everyday productivity</div><div class="pr"><span data-ngn="&#8358;6,500" data-usd="$5"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year</div><button class="btn" data-go="plans" type="button">See Premium</button><ul><li>Everything in Free, plus:</li><li>Unlimited chat (fair use)</li><li>Live guided walkthroughs of your files</li><li>2-day free trial</li></ul></div><div class="lp-plan"><h3>Personal Bot</h3><div class="tag">Your own assistant</div><div class="pr"><span data-ngn="&#8358;17,500" data-usd="$13"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Your Gmail, Calendar and Sheets</li><li>On the website and Telegram</li><li>2-day free trial</li></ul></div></div><div class="lp-plans two" data-p="biz" hidden><div class="lp-plan"><h3>Business Bot</h3><div class="tag">Support bot for your business</div><div class="pr"><span data-ngn="&#8358;20,000" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Answers customers on your website</li><li>Set to your brand and tone</li><li>Telegram included</li><li>2-day free trial</li></ul></div><div class="lp-plan"><h3>WhatsApp add-on <span class="badge soon">Soon</span></h3><div class="tag">Reach people where they chat</div><div class="pr"><span data-ngn="&#8358;9,500" data-usd="$7"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;5,500" data-usd="$4"></span> biweekly or <span data-ngn="&#8358;95,000" data-usd="$70"></span> per year</div><button class="btn" disabled aria-disabled="true" type="button">Notify me at launch</button><ul><li>Adds WhatsApp to a Personal or Business plan</li></ul></div></div>
 <p class="lp-fine">Plans and prices may change. Prices show in naira in Nigeria and in dollars elsewhere.</p></div>
 <div class="lp-in lp-sec" id="lp-faq"><h2>FAQ</h2><div class="lp-faq"><details><summary>What is the Pelex Pitch Agent?</summary><p>Coming soon. You tell it what you do and share your resume and portfolio. It finds a few suitable companies, writes a message in your tone and shows it to you first. It only sends after you approve.</p></details><details><summary>What is Pelex and how does it work?</summary><p>Pelex is an AI agent you talk to by text or voice. Ask it to plan, write, search the web, explain your files and write code. It answers in the chat, and you can save long replies as a PDF or Word file.</p></details><details><summary>What should I use Pelex for?</summary><p>Planning your week, drafting messages and documents, learning something new, researching with web search, and writing code. The Personal and Business bots, coming soon, will work with your own accounts.</p></details><details><summary>How much does it cost?</summary><p>Chat is free with a daily limit and needs no login. Premium and the bots are paid, and every plan starts with a 2-day free trial. A card is taken at the start, and you can cancel any time during the trial. See the plans above.</p></details><details><summary>Do I need an account?</summary><p>No. You can chat without one. Signing in saves your chats and library across your devices.</p></details><details><summary>Can I delete my data?</summary><p>Yes. In Settings you can download your data, delete all your chats, or delete your account.</p></details></div></div>
 <footer class="lp-foot"><div class="lp-in"><div class="cols">
@@ -925,10 +977,10 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Plans</h1><div class="muted">Every plan starts with a 2-day free trial. You are asked to activate only after the trial ends.</div>
 <div class="grid">
 <div class="card"><h2>General</h2><div class="price">Free</div><span class="muted">Chat, web search, voice and image upload with a daily limit. No login needed.</span><span class="muted">General Premium: <span data-ngn="&#8358;6,500" data-usd="$5"></span> monthly, <span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year. Unlimited chat (fair use) and live walkthroughs.</span><button class="btn alt">Start free</button></div>
-<div class="card pick"><div class="cardtop"><h2>Personal Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;17,500" data-usd="$13"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year.</span><span class="muted">Your own Gmail, Calendar and Sheets, on website and Telegram.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
-<div class="card"><div class="cardtop"><h2>Business Bot</h2><span class="badge soon">Coming soon</span></div><div class="price"><span data-ngn="&#8358;20,000" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year.</span><span class="muted">Customer-support bot on your website and Telegram, set to your brand and tone.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
+<div class="card pick"><div class="cardtop"><h2>Personal Bot</h2></div><div class="price"><span data-ngn="&#8358;17,500" data-usd="$13"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;9,500" data-usd="$7"></span> biweekly or <span data-ngn="&#8358;175,500" data-usd="$132"></span> per year.</span><span class="muted">Your own Gmail, Calendar and Sheets, on website and Telegram.</span><button class="btn" data-plan="personal" type="button">Start 2-day trial</button></div>
+<div class="card"><div class="cardtop"><h2>Business Bot</h2></div><div class="price"><span data-ngn="&#8358;20,000" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year.</span><span class="muted">Customer-support bot on your website and Telegram, set to your brand and tone.</span><button class="btn" data-plan="business" type="button">Start 2-day trial</button></div>
 <div class="card"><h2>WhatsApp Add-on</h2><div class="price"><span data-ngn="&#8358;9,500" data-usd="$7"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;5,500" data-usd="$4"></span> biweekly or <span data-ngn="&#8358;95,000" data-usd="$70"></span> per year.</span><span class="muted">Adds WhatsApp access on top of any Personal or Business plan.</span><button class="btn">Add to my plan</button></div>
-<div class="card"><h2>Pelex Pitch Agent</h2><div class="price"><span data-ngn="&#8358;19,500" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year.</span><span class="muted">Finds jobs and clients for you and applies in your tone. You approve every message first. Add-on for Personal and Business plans.</span><button class="btn" disabled aria-disabled="true">Notify me at launch</button></div>
+<div class="card"><h2>Pelex Pitch Agent</h2><div class="price"><span data-ngn="&#8358;19,500" data-usd="$15"></span><span class="muted" style="font-size:15px;font-weight:400"> / month</span></div><span class="muted"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year.</span><span class="muted">Finds jobs and clients for you and applies in your tone. You approve every message first. Add-on for Personal and Business plans.</span><button class="btn" data-plan="pitch" type="button">Start 2-day trial</button></div>
 </div>
 </div></section>
 
@@ -1037,8 +1089,6 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </div></section>
 </main>
 </div>
-<script src="/assets/task-progress.js"></script>
-<script src="/assets/message-actions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.2/dist/umd/supabase.js"></script>
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>')}</script>
 <dialog class="adsheet" id="instSheet" aria-labelledby="instTitle">
@@ -1049,6 +1099,8 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 // ====== SET THIS ======
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
 var PERSONAL_WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c9b40769-e309-45e7-951f-ab531c535635/chat';
+var BUSINESS_WEBHOOK_URL = 'PASTE_BUSINESS_CHAT_URL_HERE';
+var AGENT_URL = 'https://admin-pelex-dev.pelumiephraim9.workers.dev'; // the Cloudflare shield address (or the Render address). While it says PASTE_, public chat keeps using n8n
 // ======================
 var $ = function(i){return document.getElementById(i)};
 var chat=$('chat'), input=$('in'), chip=$('chip');
@@ -1059,11 +1111,11 @@ var h=new Date().getHours();
 if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 function add(t,cls,img,retryFn){var d=document.createElement('div');d.className='msg '+(cls||'');
-  if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt=cls==='me'?'Attached image':'Generated image';box.appendChild(im)})}
+  if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt='Uploaded image';box.appendChild(im)})}
   var textNode=document.createElement('span');
   if(!cls&&t.indexOf('```')>-1){
     t.split('```').forEach(function(seg,k){
-      if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';tp.textContent=seg.replace(/^\n+|\n+$/g,'');textNode.appendChild(tp)}}
+      if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';var sg=seg.replace(/^\n+|\n+$/g,'');if(window.mdRender)tp.appendChild(window.mdRender(sg));else tp.textContent=sg;textNode.appendChild(tp)}}
       else{var code=seg.replace(/^[^\n]*\n/,'');var pre=document.createElement('pre'),cd=document.createElement('code');cd.textContent=code.replace(/\n$/,'');pre.appendChild(cd);
         var cb=document.createElement('button');cb.type='button';cb.className='cpcode';cb.textContent='Copy';
         cb.onclick=function(){var tx=cd.textContent;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).catch(function(){var ta=document.createElement('textarea');ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}).then(function(){cb.textContent='Copied';setTimeout(function(){cb.textContent='Copy'},1200)})};
@@ -1077,11 +1129,12 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
         if(isHtml){var pv=document.createElement('button');pv.type='button';pv.className='cpcode';pv.textContent='Preview';pv.onclick=function(){window.openPreview(codeTxt)};bar.insertBefore(pv,bar.firstChild)}
         pre.appendChild(bar);textNode.appendChild(pre)}
     });
-  }else{textNode.textContent=t}
+  }else{if(!cls&&window.mdRender)textNode.appendChild(window.mdRender(t));else textNode.textContent=t}
+  if(!cls&&window.__lastSteps&&window.__lastSteps.length&&!window.__stepsDone){window.__stepsDone=true;var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary'),sn=window.__lastSteps.length;sm.textContent='Activity \u00b7 '+sn+(sn===1?' step':' steps');dt.appendChild(sm);window.__lastSteps.forEach(function(x){var r=document.createElement('div');r.textContent='\u2713 '+x;dt.appendChild(r)});d.appendChild(dt)}
   d.appendChild(textNode);
   if(!cls){ // bot reply: add copy / thumbs / retry row
     var row=document.createElement('div');row.className='msgactions';
-    var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='⧉';
+    var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='Copy';
     cp.onclick=function(){
       var text=t;
       (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject())
@@ -1094,7 +1147,6 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
     var fb=document.createElement('span');fb.className='fb';
     up.onclick=function(){up.setAttribute('aria-pressed','true');down.setAttribute('aria-pressed','false');fb.textContent='Thanks for the feedback.'};
     down.onclick=function(){down.setAttribute('aria-pressed','true');up.setAttribute('aria-pressed','false');fb.textContent='Thanks, noted.'};
-    row.appendChild(up);row.appendChild(down);
     if(t.length>180){
       var esc=function(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
       var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap}</style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p></body></html>'};
@@ -1103,13 +1155,23 @@ function add(t,cls,img,retryFn){var d=document.createElement('div');d.className=
       var wd=document.createElement('button');wd.type='button';wd.className='dl';wd.textContent='Word';wd.setAttribute('aria-label','Save as Word document');
       wd.onclick=function(){var bl=new Blob(['\ufeff'+docHtml()],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='pelex-document.doc';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)};
       row.appendChild(pdf);row.appendChild(wd)}
-    if(retryFn){var rt=document.createElement('button');rt.setAttribute('aria-label','Retry');rt.textContent='⟳';
-      rt.onclick=function(){rt.disabled=true;retryFn().finally(function(){rt.disabled=false})};
-      row.appendChild(rt)}
+    var rt=document.createElement('button');rt.setAttribute('aria-label','Reload');rt.textContent='Reload';
+    rt.onclick=function(){if(retryFn){rt.disabled=true;retryFn().finally(function(){rt.disabled=false})}else if(window.__lastQ){input.value=window.__lastQ;var sb2=document.getElementById('send');if(sb2)sb2.click()}};
+    row.appendChild(rt);
+    var sh=document.createElement('button');sh.setAttribute('aria-label','Share');sh.textContent='Share';
+    sh.onclick=function(){if(navigator.share){navigator.share({text:t}).catch(function(){})}else{cp.click()}};
+    row.appendChild(sh);row.appendChild(up);row.appendChild(down);
     row.appendChild(fb);
     d.appendChild(row);
+  }else if(cls==='me'&&typeof t==='string'&&t){
+    window.__lastQ=t;var ur=document.createElement('div');ur.className='msgactions';
+    var uc=document.createElement('button');uc.type='button';uc.textContent='Copy';
+    uc.onclick=function(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){}).then(function(){uc.textContent='Copied';setTimeout(function(){uc.textContent='Copy'},1200)})};
+    var ue=document.createElement('button');ue.type='button';ue.textContent='Edit';
+    ue.onclick=function(){input.value=t;input.focus()};
+    ur.appendChild(uc);ur.appendChild(ue);d.appendChild(ur);
   }
-  chat.appendChild(d);if(window.pelexMessageActions)window.pelexMessageActions(d,t,cls,img,retryFn);chat.scrollTop=chat.scrollHeight;return d}
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
 
 var NET_MSG='Connection failed. Check your internet and try again.';
 async function netDown(){
@@ -1117,18 +1179,17 @@ async function netDown(){
   try{var c=new AbortController(),t=setTimeout(function(){c.abort()},4000);
     await fetch(location.origin+'/?ping='+Date.now(),{method:'HEAD',cache:'no-store',signal:c.signal});clearTimeout(t);return false}
   catch(e){return true}}
-// Keep task failures visible so an interrupted request never looks complete.
+// backend trouble stays silent; only a real internet problem is shown; deliberate user-facing messages still show
 async function showErr(e){
-  if(e&&e.backend){add(e.message||'The task could not finish. Please try again.','sys');return}
+  if(e&&e.backend)return;
   if(e&&e.name==='TypeError'){if(await netDown())add(NET_MSG,'sys');return}
   if(e&&e.message)add(e.message,'sys')}
-async function askAgentRetry(text,task){
-  try{return await askAgent(text,task)}
+async function askAgentRetry(text){
+  try{return await askAgent(text)}
   catch(e){
     if((e&&(e.backend||e.name==='TypeError'))&&navigator.onLine!==false){
-      if(task)task.step('Connection interrupted; retrying the agent request');
       await new Promise(function(r){setTimeout(r,1500)});
-      return await askAgent(text,task)}
+      return await askAgent(text)}
     throw e}}
 async function post(path,body){
   var r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -1146,16 +1207,65 @@ async function personalOn(){
     var on=!!(pr&&pr.data&&pr.data.length);__planC={uid:curUser.id,at:Date.now(),on:on};return on;
   }catch(e){return false}
 }
-async function askAgent(text,task){
-  if(WEBHOOK_URL.indexOf('PASTE_')===0){var ne=new Error('The chat backend is not connected yet.');ne.backend=true;throw ne}
-  if(task)task.step('Checking which agent handles your request');
-  var url=WEBHOOK_URL,meta=agentMeta();
+// ---- public agent (code backend): login token or human-checked guest token, live activity steps ----
+var __gt={tok:'',exp:0,p:null};
+function tsReady(){return new Promise(function(res,rej){
+  if(window.turnstile)return res();
+  var n=0,sc=document.querySelector('script[src*="turnstile/v0/api.js"]');
+  if(!sc){sc=document.createElement('script');sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.async=true;sc.onerror=function(){rej(new Error('Could not load the human check. Check your connection and try again.'))};document.head.appendChild(sc)}
+  var t=setInterval(function(){if(window.turnstile){clearInterval(t);res()}else if(++n>120){clearInterval(t);rej(new Error('Could not load the human check. Check your connection and try again.'))}},100)})}
+function guestHumanToken(){return tsReady().then(function(){return new Promise(function(res,rej){
+  var box=document.getElementById('guestCap');
+  if(!box){box=document.createElement('div');box.id='guestCap';box.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:80';document.body.appendChild(box)}
+  box.innerHTML='';var done=false,id,MSG='Could not confirm you are human. Please try again.';
+  function fin(f,v){if(done)return;done=true;clearTimeout(to);try{turnstile.remove(id)}catch(e){}box.innerHTML='';f(v)}
+  var to=setTimeout(function(){fin(rej,new Error(MSG))},30000);
+  try{id=turnstile.render(box,{sitekey:TURNSTILE_SITE_KEY,appearance:'interaction-only',theme:'auto',callback:function(t){fin(res,t)},'error-callback':function(){fin(rej,new Error(MSG))}})}catch(e){fin(rej,new Error(MSG))}
+})})}
+async function agentAuth(force){
+  try{var ss=await sb.auth.getSession(),tk=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;if(tk)return tk}catch(e){}
+  if(!force&&__gt.tok&&Date.now()<__gt.exp-60000)return __gt.tok;
+  if(__gt.p)return __gt.p;
+  __gt.p=(async function(){try{
+    var ht=await guestHumanToken();
+    var r=await fetch(AGENT_URL.replace(/\/+$/,'')+'/auth/guest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({turnstileToken:ht})});
+    var j=await r.json().catch(function(){return{}});
+    if(!r.ok||!j.token){var ge=new Error(j.error||'Could not confirm you are human. Please try again.');if([404,500,502,503].indexOf(r.status)>-1)ge.backend=true;throw ge}
+    __gt.tok=j.token;__gt.exp=Date.now()+(j.expiresIn||1800000);return j.token}finally{__gt.p=null}})();
+  return __gt.p}
+function stepWait(el){window.__lastSteps=[];window.__stepsDone=false;window.__stepCb=function(l){try{window.__lastSteps.push(l);var sp=el.querySelector('span')||el,h=document.createElement('div'),n=window.__lastSteps.length;h.className='act';window.__lastSteps.forEach(function(x,i){var r=document.createElement('div');r.className='actrow'+(i===n-1?' now':'');r.textContent=(i===n-1?'\u2022 ':'\u2713 ')+x;h.appendChild(r)});sp.innerHTML='';sp.appendChild(h)}catch(e){}}}
+async function askPublicAgent(text,meta){
+  var base=AGENT_URL.replace(/\/+$/,'');
+  for(var attempt=0;attempt<2;attempt++){
+    var tok=await agentAuth(attempt>0);
+    var r=await fetch(base+'/chat/stream',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:meta})});
+    if(r.status===401&&attempt===0){__gt={tok:'',exp:0,p:null};continue}
+    if(!r.ok){
+      var j=await r.json().catch(function(){return{}});
+      if([400,401,403,413,429].indexOf(r.status)>-1)throw new Error(j.error||'The agent could not reply ('+r.status+').');
+      var be=new Error('The agent could not reply ('+r.status+').');be.backend=true;throw be}
+    var rd=r.body.getReader(),dec=new TextDecoder(),buf='',out=null,err=null;
+    while(true){
+      var c=await rd.read();if(c.done)break;buf+=dec.decode(c.value,{stream:true});
+      var parts=buf.split('\n\n');buf=parts.pop();
+      for(var k=0;k<parts.length;k++){
+        var m=/^event: (\w+)\ndata: ([\s\S]*)$/.exec(parts[k]);if(!m)continue;
+        var d={};try{d=JSON.parse(m[2])}catch(e){}
+        if(m[1]==='step'){if(window.__stepCb&&d.label)try{window.__stepCb(d.label)}catch(e){}}
+        else if(m[1]==='text')out=d.output;else if(m[1]==='error')err=d.error}}
+    if(out!==null)return String(out);
+    var ee=new Error(err||'The agent could not reply.');ee.backend=true;throw ee}
+  throw new Error('Could not confirm you are human. Please try again.')}
+async function askAgent(text){
+  var useAgent=AGENT_URL.indexOf('PASTE_')!==0;
+  if(WEBHOOK_URL.indexOf('PASTE_')===0&&!useAgent){var ne=new Error('The chat backend is not connected yet.');ne.backend=true;throw ne}
+  var url=WEBHOOK_URL,meta=agentMeta(),personal=false;
   if(await personalOn()){
-    url=PERSONAL_WEBHOOK_URL;
+    url=PERSONAL_WEBHOOK_URL;personal=true;
     try{var ss=await sb.auth.getSession(),tk=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;if(tk)meta.accessToken=tk}catch(e){}
   }
-  if(task)task.step('Request sent; waiting for the agent response');
-  var r=await fetch(url,{pelexTask:task,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:meta})});
+  if(useAgent&&!personal){try{return await askPublicAgent(text,meta)}catch(e0){if(!(e0&&(e0.backend||e0.name==='TypeError'))||WEBHOOK_URL.indexOf('PASTE_')===0)throw e0}}
+  var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:agentSid(),chatInput:text,metadata:meta})});
   var raw=await r.text(), out=raw;
   try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.response||o.reply||o.text||o.message||raw}catch(e){}
   if(!r.ok){var ae=new Error('The agent could not reply ('+r.status+').');ae.backend=true;throw ae}
@@ -1249,42 +1359,24 @@ async function speak(t){
 
 // ---- typed / spoken turn ----
 var pendingDoc=null;
-function isImageRequest(text){
-  if(/^\s*(?:(?:please|can you|could you|would you)\s+)*(?:generate|create|make|design)\s+(?:(?:me|a|an|the)\s+)*(?:prompt|description|instructions|code|website|email|story|article|document)\b/i.test(text))return false;
-  return /^\s*(?:(?:please|can you|could you|would you|i want you to)\s+)*(?:generate|create|draw|render|make|design|paint|produce)\b[^\n]{0,90}\b(?:image|picture|photo|illustration|artwork|portrait|logo|poster)\b/i.test(text) || /^\s*i (?:want|need) (?:an? |you to (?:create|generate) an? )(?:image|picture|photo|illustration|portrait|logo|poster)\b/i.test(text) || /^\s*(?:please\s+)?(?:draw|paint)\s+(?!up\b|a conclusion\b|attention\b)\S/i.test(text);
-}
 async function turn(text,shown,img,el){
-  if(!shown&&!img&&isImageRequest(text)&&window.generatePelexImage){if(el)el.remove();return window.generatePelexImage(text)}
-  if(el){el.remove();}add(shown||text,'me',img);
-  var task=PelexTasks.begin('Agent task',chat);task.step('Preparing your conversation');
+  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
+  var wait=add('Thinking...','sys');stepWait(wait);
   var _ct=shown||text;try{await ensureChat(_ct)}catch(e){}
   saveMsg('user',_ct);
   try{
-    var reply=await askAgentRetry(text,task);task.step('Response received; preparing your reply');saveMsg('assistant',reply);
+    var reply=await askAgentRetry(text);wait.remove();saveMsg('assistant',reply);
     var node;
     var retryFn=function(){
-      var retryTask=PelexTasks.begin('Retry agent task',chat);
-      return askAgentRetry(text,retryTask).then(function(r2){node.remove();node=add(r2,null,null,retryFn);retryTask.done('Reply displayed')})
-        .catch(function(e2){retryTask.fail('The agent could not complete this request');return showErr(e2)});
+      var w2=add('Thinking...','sys');stepWait(w2);
+      return askAgentRetry(text).then(function(r2){w2.remove();node.remove();node=add(r2,null,null,retryFn)})
+        .catch(function(e2){w2.remove();return showErr(e2)});
     };
-    node=add(reply,null,null,retryFn);task.done('Reply displayed');
+    node=add(reply,null,null,retryFn);
     try{window.notifyReply&&window.notifyReply(reply)}catch(e3){}
     return reply}
-  catch(e){task.fail('The agent could not complete this request');await showErr(e);return ''}
+  catch(e){wait.remove();await showErr(e);return ''}
 }
-// Reuse the correct request path when reloading or editing an attachment.
-window.replayPelexMessage=async function(text,images){
-  if(!images)return turn(text);
-  add(text,'me',images);
-  var task=PelexTasks.begin('Read attached images',chat);
-  try{
-    await ensureChat(text);saveMsg('user',text);
-    task.step('Sending your images for analysis');
-    var result=await post('/.netlify/functions/vision',{images:Array.isArray(images)?images:[images],prompt:text});
-    add(result.text,null,null,function(){return window.replayPelexMessage(text,images)});
-    saveMsg('assistant',result.text);task.done('Reply displayed');
-  }catch(e){task.fail('Image analysis failed');await showErr(e)}
-};
 async function sendTyped(){
   if(pendingImgs.length){await sendImage();return}
   var q=input.value.trim();
@@ -1383,7 +1475,7 @@ function showAttach(kind,data,name){
       var x=document.createElement('button');x.type='button';x.className='thx';x.setAttribute('aria-label','Remove image');x.textContent='\u00d7';
       x.onclick=function(){pendingImgs.splice(ix,1);if(pendingImgs.length)showAttach('img');else clearAttach()};
       w.appendChild(x);th.appendChild(w)});
-    $('attachNm').textContent=pendingImgs.length+(pendingImgs.length===1?' image':' images')+' (up to 4)';attach.classList.add('multi');
+    $('attachNm').textContent=pendingImgs.length+(pendingImgs.length===1?' image':' images')+' (up to 6)';attach.classList.add('multi');
   }else{var d=document.createElement('div');d.className='th';d.textContent='\ud83d\udcc4';th.appendChild(d);$('attachNm').textContent=name;attach.classList.remove('multi')}
   attach.hidden=false}
 function clearAttach(){attach.classList.remove('multi');pendingImgs=[];pendingDoc=null;attach.hidden=true;$('attachTh').innerHTML='';chip.style.display='none'}
@@ -1396,27 +1488,27 @@ async function sendImage(){
   add(q,'me',datas);var w=add('Looking at the image...','sys');
   try{await ensureChat(q)}catch(e){}
   saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
-  try{var r=await post('/.netlify/functions/vision',{images:datas,prompt:q});w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}}
+  stepWait(w);
+  try{var r;if(AGENT_URL.indexOf('PASTE_')!==0){try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:datas}))}}catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post('/.netlify/functions/vision',{images:datas,prompt:q})}}else{r=await post('/.netlify/functions/vision',{images:datas,prompt:q})}w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}}
   catch(err){w.remove();await showErr(err)}
 }
 $('file').onchange=async function(e){
   var fs=[].slice.call((e.target&&e.target.files)||[]);try{e.target.value=''}catch(x){}if(!fs.length)return;
-  var attachmentTask=PelexTasks.begin('Prepare attachments');attachmentTask.step('Reading selected files');
   try{
     var imgs=fs.filter(function(f){return f.type.indexOf('image/')===0});
     if(imgs.length){
-      pendingDoc=null;var room=4-pendingImgs.length;
+      pendingDoc=null;var room=6-pendingImgs.length;
       for(var k=0;k<Math.min(room,imgs.length);k++){pendingImgs.push(await shrink(imgs[k]))}
       if(imgs.length>room)add('You can attach up to 4 images at a time.','sys');
-      showAttach('img');input.focus();attachmentTask.done('Images ready to send');
+      showAttach('img');input.focus();
     }else{
       var f=fs[0];clearAttach();
       var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
       text=text.trim().slice(0,12000);
       if(!text) throw new Error('No readable text was found in that file.');
-      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();attachmentTask.done('Document text ready to send');
+      pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();
     }
-  }catch(err){attachmentTask.fail('The attachment could not be read');await showErr(err)}
+  }catch(err){await showErr(err)}
 };
 input.addEventListener('paste',function(e){
   var fl=[].filter.call((e.clipboardData&&e.clipboardData.files)||[],function(f){return f.type.indexOf('image/')===0});
@@ -1487,9 +1579,9 @@ document.getElementById('authGoogle').addEventListener('click',function(){oauth(
 document.getElementById('authGithub').addEventListener('click',function(){oauth('github')});
 document.getElementById('authSubmit').addEventListener('click',async function(){
   if(!sb){authMsg('Sign-in is unavailable right now. Check your connection.',true);return}
-  var em=document.getElementById('authEmail').value.trim(),pw=document.getElementById('authPass').value;
+  var em=document.getElementById('authEmail').value.trim().toLowerCase(),pw=document.getElementById('authPass').value;
   if(!em||!pw){authMsg('Enter your email and password.',true);return}
-  if(capOn()&&!capTok){capLoad();authMsg('Please wait for the security check to finish, then try again.',true);return}
+  if(capOn()&&!capTok){capLoad();authMsg('Tick the box that says Verify you are human, then try again.',true);return}
   var btn=this;btn.disabled=true;authMsg(authMode==='in'?'Signing in...':'Creating your account...');
   try{
     if(authMode==='in'){
@@ -1517,7 +1609,7 @@ document.getElementById('authVerify').addEventListener('click',async function(){
   b.disabled=false});
 document.getElementById('authResend').addEventListener('click',async function(){
   if(!sb||!pendingEmail)return;
-  if(capOn()&&!capTok){authMsg('Please wait for the security check to finish, then try again.',true);return}
+  if(capOn()&&!capTok){authMsg('Tick the box that says Verify you are human, then try again.',true);return}
   try{var r=await sb.auth.resend({type:'signup',email:pendingEmail,options:capOpts()});authMsg(r.error?friendly(r.error):'A new code is on its way.',!!r.error)}catch(e){authMsg(friendly(e),true)}
   capReset()});
 document.getElementById('sbAccountBtn').addEventListener('click',function(){
@@ -1769,7 +1861,7 @@ function chatFail(what,err){
   console.warn('Pelex: '+what,err);
   if(dbWarned)return;dbWarned=true;
   var m=String((err&&(err.message||err.details))||'unknown error');
-  try{add('Your '+what+'. '+(/fetch|network|connection/i.test(m)?'The chat history service could not be reached. Check your connection and try again.':'Chat history is temporarily unavailable. Try signing in again.')+' You can continue in this chat, but these messages may not appear in your history.','sys')}catch(x){}
+  try{add('Your '+what+' ('+m+'). Run chat_history_fix.sql in Supabase to repair it.','sys')}catch(x){}
 }
 async function ensureChat(firstText){
   if(!dbOk()||curChatId||!window.histOn())return;
@@ -1785,7 +1877,7 @@ function saveMsg(role,content){
     .then(function(mr){if(mr&&mr.error)chatFail('message could not be saved',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
     .catch(function(){});
 }
-function resetChatView(){chat.querySelectorAll('.msg,.task-inline').forEach(function(m){m.remove()});syncWelcome()}
+function resetChatView(){chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
 function newChat(projectId){
   curChatId=null;curProjectId=projectId||null;pendingDoc=null;
   try{clearAttach()}catch(e){}
@@ -1966,7 +2058,7 @@ async function loadTasks(){
     meta.textContent=when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
     c.appendChild(meta);
     if(t.last_result){
-      var lr=document.createElement('div');lr.className='res';lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
+      var lr=document.createElement('div');lr.className='res';if(window.mdRender)lr.appendChild(window.mdRender(t.last_result.slice(0,6000)));else lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
       var ld=document.createElement('div');ld.className='meta';ld.textContent='Last sent '+(t.delivered_at?new Date(t.delivered_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');c.appendChild(ld)}
     var a=document.createElement('div');a.className='acts';
     var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
@@ -2005,7 +2097,7 @@ function ptab(t){['inbox','check','profile','sched'].forEach(function(x){$('pt-'
 document.querySelectorAll('#pTabs .qchip').forEach(function(b){b.addEventListener('click',function(){ptab(b.dataset.t)})});
 function ready(){if(!dbOk()){pm('Sign in to use the Pitch Agent.',true);return false}return true}
 function fill(){$('pField').value=P.field||'';$('pYears').value=P.years==null?'':P.years;document.querySelectorAll('.pMode').forEach(function(c){c.checked=(P.work_modes||[]).indexOf(c.value)>-1});
-  $('pLoc').value=P.location||'';$('pCountries').value=P.countries||'';$('pTone').value=P.tone||'';$('pPort').value=P.portfolio_url||'';
+  $('pLoc').value=P.location||'';$('pCountries').value=P.countries||'';window.pCtyRender&&window.pCtyRender();window.pLocRender&&window.pLocRender();$('pTone').value=P.tone||'';$('pPort').value=P.portfolio_url||'';
   $('pResNote').textContent=P.resume_path?'A resume is saved. Choose a file only to replace it.':'';
   $('pEvery').value=String(P.run_every_days||2);$('pTime').value=P.run_time?String(P.run_time).slice(0,5):'08:00';$('pActive').checked=!!P.active;
   $('pNext').textContent=P.active&&P.next_run?'Next run: '+new Date(P.next_run).toLocaleString([],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}
@@ -2047,24 +2139,19 @@ $('pSaveS').onclick=async function(){if(!ready())return;var on=$('pActive').chec
 function shieldHtml(v){return{legit_signals:['ok','No warning signs found'],caution:['warn','Be careful'],red_flags:['bad','Warning signs found']}[v]||['warn','Be careful']}
 $('pCheck').onclick=async function(){if(!ready()||busy)return;var u=$('pUrl').value.trim();if(!u){pm('Paste the offer link first.',true);return}
   if(!/^https?:\/\//i.test(u))u='https://'+u;try{var uu=new URL(u);if(!uu.hostname.includes('.'))throw 0;u=uu.href}catch(e){pm('That link does not look right.',true);return}
-  var linkTask=PelexTasks.begin('Pitch Agent link check');linkTask.step('Submitting the link for checking');
   busy=true;this.disabled=true;pm('Checking the link...');$('pRes').innerHTML='';
-  try{
   var ins=await sb.from('pitch_link_checks').insert({url:u,status:'pending'}).select('id').single();
-  if(ins.error||!ins.data){linkTask.fail('The link check could not start');pm('Could not start the check. Please try again.',true);busy=false;this.disabled=false;return}
-  linkTask.step('Link submitted; waiting for the Pitch Agent result');
+  if(ins.error||!ins.data){pm('Could not start the check. Please try again.',true);busy=false;this.disabled=false;return}
   var id=ins.data.id,tries=0,row=null;
   while(tries++<20){await new Promise(function(r){setTimeout(r,3000)});var g=await sb.from('pitch_link_checks').select('*').eq('id',id).single();if(g.data&&g.data.status!=='pending'){row=g.data;break}}
   busy=false;this.disabled=false;
-  if(!row||row.status==='failed'){linkTask.fail(!row?'No result received yet. The check may still be running.':'The Pitch Agent could not finish the check');pm('I could not finish that check. Try again in a moment.',true);return}
-  linkTask.done('Link check result received');
+  if(!row||row.status==='failed'){pm('I could not finish that check. Try again in a moment.',true);return}
   pm('');var s2=shieldHtml(row.verdict),box=$('pRes'),c=document.createElement('div');c.className='pcard';
   c.innerHTML='<span class="pshield '+s2[0]+'"></span><div class="muted prs" style="margin-top:8px"></div><div class="muted" style="margin-top:8px">This is a check of warning signs, not a guarantee.</div>';
   c.querySelector('.pshield').textContent=s2[1];c.querySelector('.prs').textContent=(row.reasons||[]).join(' · ');box.appendChild(c);
   if(row.verdict!=='red_flags'){var q=document.createElement('div');q.innerHTML='<p>Do you want me to prepare your application for this?</p><div class="prow"><button type="button" class="btn pyes">Yes, prepare it</button><button type="button" class="btn alt pno">No thanks</button></div>';c.appendChild(q);
     q.querySelector('.pyes').onclick=async function(){this.disabled=true;var r=await sb.from('pitch_link_checks').update({prepare_requested:true}).eq('id',id);q.textContent=r.error?'Could not send that. Please try again.':'Okay. I will prepare a draft and put it in your Inbox. Nothing is sent until you approve it.'};
-    q.querySelector('.pno').onclick=function(){q.textContent='Okay, nothing will be done.'}}
-  }catch(e){linkTask.fail('The link check was interrupted');pm('Could not finish the link check. Please try again.',true)}finally{busy=false;this.disabled=false}};
+    q.querySelector('.pno').onclick=function(){q.textContent='Okay, nothing will be done.'}}};
 })();
 
 (function(){
@@ -2099,27 +2186,14 @@ setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},
 var imgMode=false,ta=$('send').parentElement.querySelector('textarea,input[type=text]'),ph=ta?ta.placeholder:'';
 $('imgBtn').onclick=function(){imgMode=!imgMode;this.classList.toggle('on',imgMode);this.setAttribute('aria-pressed',imgMode);if(ta)ta.placeholder=imgMode?'Describe the image you want':ph;if(ta)ta.focus()};
 async function makeImage(prompt){
-  if(!dbOk()){add('Sign in to create images.','sys');return ''}
-  add(prompt,'me');var task=PelexTasks.begin('Generate image',chat);
-  try{
-    task.step('Checking your sign-in');
-    var ss=await sb.auth.getSession(),tok=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
-    if(!tok)throw new Error('Please sign in again to create images.');
-    try{await ensureChat(prompt)}catch(e){}
-    saveMsg('user',prompt);
-    task.step('Request sent; waiting for image generation and access checks');
-    var r=await fetch('/.netlify/functions/image',{pelexTask:task,method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
-    var j={};try{j=await r.json()}catch(e){}
-    if(!j.image)j.image=j.image_url||j.imageUrl;
-    if(!r.ok||!j.image)throw new Error(j.error||('Image generation failed (HTTP '+r.status+'). The image workflow must return image bytes or an image URL.'));
-    task.step('Image received; checking that it opens');
-    await new Promise(function(resolve,reject){var image=new Image(),timer=setTimeout(function(){image.src='';reject(new Error('The generated image took too long to open. Please try again.'))},30000);image.onload=function(){clearTimeout(timer);resolve()};image.onerror=function(){clearTimeout(timer);reject(new Error('The generated image could not be opened. Please try again.'))};image.src=j.image});
-    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image,function(){return makeImage(prompt)});
-    task.done('Generated image displayed');
-    return '';
-  }catch(e){task.fail(e.message||'Image generation failed. Please try again.');add(e.message||'I could not create that image. Please try again.','sys');return ''}
-}
-window.generatePelexImage=makeImage;
+  if(!dbOk()){add('Sign in to create images.','sys');return}
+  add(prompt,'me');var w=add('Creating your image...','sys');
+  try{var ss=await sb.auth.getSession(),tok=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
+    var r=await fetch('/.netlify/functions/image',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
+    var j={};try{j=await r.json()}catch(e){}w.remove();
+    if(!r.ok||!j.image){add(j.error||'I could not create that image. Please try again.','sys');return}
+    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image)
+  }catch(e){try{w.remove()}catch(x){}add('I could not create that image. Please try again.','sys')}}
 function grab(){var t=ta.value.trim();if(!t)return false;ta.value='';ta.dispatchEvent(new Event('input'));makeImage(t);return true}
 document.addEventListener('click',function(e){if(imgMode&&e.target.closest&&e.target.closest('#send')){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
 document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e.key==='Enter'&&!e.shiftKey){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
@@ -2554,7 +2628,14 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
 (function(){
   var GE=['\u{1F600}','\u{1F60E}','\u{1F913}','\u{1F973}','\u{1F607}','\u{1F920}','\u{1F98A}','\u{1F43C}','\u{1F981}','\u{1F42F}','\u{1F438}','\u{1F419}','\u{1F984}','\u{1F41D}','\u{1F31F}','\u{1F525}','\u{1F308}','\u{1F340}','\u{1F3A7}','\u{1F680}','\u{1F3A8}','\u26BD','\u{1F3AF}','\u{1F48E}'];
   var RE=['\u{1F4AC}','\u{1F680}','\u{1F3AF}','\u{1F525}','\u{1F31F}','\u{1F4BC}','\u{1F3A8}','\u{1F3A7}','\u26BD','\u{1F340}','\u{1F308}','\u{1F48E}'];
-  var me=null,rooms=[],cur=null,members=[],seen={},lastId=0,timer=null,rt=null,loaded=false,tt=null;
+  var me=null,rooms=[],cur=null,members=[],seen={},lastId=0,timer=null,rt=null,loaded=false,tt=null,gseen=null,typing={},lastTypeSent=0,typeTimer=null,roomPoll=null,filterQ='';
+  function uid(){return curUser?curUser.id:'x'}
+  function lsj(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+  function lsw(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function unread(r){return !!gseen&&(r.last_id||0)>(gseen[r.id]||0)}
+  function paintBadge(){var n=rooms.filter(unread).length,b=$g('gBadge');if(b){b.textContent=n>9?'9+':String(n);b.hidden=n===0}}
+  function markSeen(r){if(!r)return;gseen=gseen||{};var v=Math.max(gseen[r.id]||0,lastId||0,r.last_id||0);gseen[r.id]=v;r.last_id=Math.max(r.last_id||0,v);lsw('pelex_gseen_'+uid(),gseen);paintBadge()}
+  function desk(t,b){try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification(t,{body:b||'',icon:'icons/icon-192.png',tag:'pelex-group'})}catch(e){}}
   function $g(i){return document.getElementById(i)}
   function toast(m){var t=$g('gToast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2600)}
   async function rpc(n,a){var r=await sb.rpc(n,a||{});if(r.error)throw r.error;return r.data}
@@ -2573,16 +2654,35 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
     function close(){o.remove()}x.onclick=close;o.addEventListener('click',function(e){if(e.target===o)close()});return{close:close,box:c}}
   function paintMe(){if(!me)return;$g('gMeEmoji').textContent=me.emoji;$g('gMeName').textContent=me.first_name||'You';$g('gMeId').textContent=me.pelex_id}
   function paintList(){
-    var L=$g('gList');L.innerHTML='';$g('gEmpty').hidden=rooms.length>0;
-    rooms.forEach(function(r){
+    var L=$g('gList');L.innerHTML='';
+    var q=filterQ.trim().toLowerCase(),shown=rooms.filter(function(r){return !q||r.name.toLowerCase().indexOf(q)>-1||String(r.room_code).toLowerCase().indexOf(q)>-1});
+    $g('gEmpty').hidden=shown.length>0;$g('gEmpty').textContent=rooms.length?'No group matches that search.':'No groups yet. Create one, then invite friends with a link or with their Pelex ID.';
+    paintBadge();
+    shown.forEach(function(r){
       var b=document.createElement('button');b.type='button';b.className='grow';
       var av=document.createElement('span');av.className='gav';av.textContent=r.emoji;
       var gt=document.createElement('span');gt.className='gt';var n=document.createElement('b');n.textContent=r.name;var m=document.createElement('span');m.className='muted';m.style.fontSize='13px';m.textContent=r.room_code+' \u00b7 '+r.members+(r.members===1?' person':' people');
-      gt.appendChild(n);gt.appendChild(m);b.appendChild(av);b.appendChild(gt);b.onclick=function(){openRoom(r)};L.appendChild(b)})}
+      gt.appendChild(n);gt.appendChild(m);b.appendChild(av);b.appendChild(gt);if(unread(r)){var dot=document.createElement('span');dot.className='gdot';dot.setAttribute('aria-label','New messages');b.appendChild(dot)}b.onclick=function(){openRoom(r)};L.appendChild(b)})}
+  function applyRooms(list,quiet){
+    if(gseen===null){gseen=lsj('pelex_gseen_'+uid(),null)}
+    if(gseen===null){gseen={};list.forEach(function(r){gseen[r.id]=r.last_id||0});lsw('pelex_gseen_'+uid(),gseen)}
+    var known=lsj('pelex_gknown_'+uid(),null),old={};rooms.forEach(function(r){old[r.id]=r});
+    if(!quiet){
+      if(known){list.forEach(function(r){if(known.indexOf(r.id)<0){toast('You were added to '+r.name+'.');desk('You were added to a group',r.name)}})}
+      list.forEach(function(r){var o=old[r.id];if(o&&(r.last_id||0)>(o.last_id||0)&&(!cur||cur.id!==r.id)){desk('New message in '+r.name,'Open Pelex to read it.')}})}
+    lsw('pelex_gknown_'+uid(),list.map(function(r){return r.id}));
+    if(cur){var c=list.filter(function(r){return r.id===cur.id})[0];if(c){c.last_id=Math.max(c.last_id||0,lastId||0)}}
+    rooms=list;if(cur)markSeen(cur);paintBadge();
+    if(!$g('v-groups').hidden)paintList()}
+  async function pollRooms(){if(!dbOk())return;try{applyRooms(await rpc('my_rooms')||[])}catch(e){}}
+  window.pelexPollRooms=pollRooms;
   async function loadGroups(){
-    $g('gOut').hidden=signedIn;$g('gIn').hidden=!signedIn;$g('gMsg').textContent='';
+    $g('gOut').hidden=signedIn;$g('gIn').hidden=!signedIn;$g('gTools').hidden=!signedIn;$g('gMsg').textContent='';
     if(!dbOk())return;
-    try{me=await rpc('ensure_profile');paintMe();rooms=await rpc('my_rooms')||[];paintList()}catch(e){$g('gMsg').textContent=gerr(e)}}
+    try{me=await rpc('ensure_profile');paintMe();applyRooms(await rpc('my_rooms')||[],true);paintList()}catch(e){$g('gMsg').textContent=gerr(e)}}
+  $g('gSearch').addEventListener('input',function(){filterQ=this.value;paintList()});
+  if(!roomPoll)roomPoll=setInterval(pollRooms,15000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)pollRooms()});
   $g('gSignIn').onclick=function(){setAuthMode('in');go('signin')};
   $g('gMeCopy').onclick=function(){if(me)copy(me.pelex_id,this)};
   $g('gMeEmoji').onclick=function(){var p=$g('gEmojiPick');p.hidden=!p.hidden;
@@ -2616,7 +2716,9 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
       if(lab.textContent)d.appendChild(lab);
       var tx=document.createElement('div');tx.textContent=m.content;d.appendChild(tx);
       var tm=document.createElement('div');tm.className='tm';try{tm.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}catch(e){}d.appendChild(tm)}
-    box.appendChild(d);if(near||mine)box.scrollTop=box.scrollHeight}
+    box.appendChild(d);if(near||mine)box.scrollTop=box.scrollHeight;
+    if(m.user_id&&typing[m.user_id]){delete typing[m.user_id];paintTyping()}
+    if(loaded)markSeen(cur)}
   async function pull(first){
     if(!cur)return;var id=cur.id,q=sb.from('room_messages').select('id,user_id,kind,content,created_at').eq('room_id',id),r;
     try{r=first?await q.order('id',{ascending:false}).limit(100):await q.gt('id',lastId).order('id',{ascending:true}).limit(200)}catch(e){return}
@@ -2624,17 +2726,25 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
   function stopLive(){clearInterval(timer);timer=null;if(rt){try{sb.removeChannel(rt)}catch(e){}rt=null}}
   function startLive(){stopLive();
     timer=setInterval(function(){if(!document.hidden)pull(false)},4000);
-    try{if(sb.channel){rt=sb.channel('room-'+cur.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'room_messages',filter:'room_id=eq.'+cur.id},function(p){if(p&&p.new)addMsg(p.new)}).subscribe()}}catch(e){}}
+    try{if(sb.channel){rt=sb.channel('room-'+cur.id,{config:{broadcast:{self:false}}}).on('postgres_changes',{event:'INSERT',schema:'public',table:'room_messages',filter:'room_id=eq.'+cur.id},function(p){if(p&&p.new)addMsg(p.new)}).on('broadcast',{event:'typing'},function(p){gotTyping(p&&p.payload)}).subscribe()}}catch(e){}}
+  function paintTyping(){var el=$g('rTyping'),ks=Object.keys(typing);if(!ks.length){el.hidden=true;el.textContent='';return}
+    var v=ks.map(function(k){return typing[k]});
+    el.textContent=v.length===1?(v[0].emoji+' '+v[0].name+' \u00b7 '+v[0].pid+' is typing...'):(v.map(function(x){return x.name}).join(', ')+' are typing...');el.hidden=false}
+  function gotTyping(p){if(!p||!p.uid||!curUser||p.uid===curUser.id)return;
+    typing[p.uid]={name:String(p.name||'Someone').slice(0,30),emoji:String(p.emoji||'').slice(0,8),pid:String(p.pid||'').slice(0,12),t:Date.now()};paintTyping();
+    clearTimeout(typeTimer);typeTimer=setTimeout(function(){var n=Date.now();Object.keys(typing).forEach(function(k){if(n-typing[k].t>3400)delete typing[k]});paintTyping()},3600)}
+  $g('rIn').addEventListener('input',function(){if(!rt||!me||!curUser)return;var n=Date.now();if(n-lastTypeSent<2000)return;lastTypeSent=n;
+    try{rt.send({type:'broadcast',event:'typing',payload:{uid:curUser.id,name:me.first_name,emoji:me.emoji,pid:me.pelex_id}})}catch(e){}});
   async function openRoom(r,addNow){
-    cur=r;seen={};lastId=0;loaded=false;$g('rMsgs').innerHTML='';
+    cur=r;seen={};lastId=0;loaded=false;typing={};paintTyping();$g('rMsgs').innerHTML='';
     $g('rEmoji').textContent=r.emoji;$g('rName').textContent=r.name;$g('rMeta').textContent=r.room_code;
     go('room');
     try{members=await rpc('room_members_info',{p_room:r.id})}catch(e){members=[]}
-    metaTxt();await pull(true);loaded=true;startLive();
+    metaTxt();await pull(true);loaded=true;markSeen(cur);startLive();
     if(addNow)addPeople()}
   $g('rBack').onclick=function(){go('groups')};
   async function send(){var inp=$g('rIn'),t=inp.value.trim();if(!t||!cur)return;inp.value='';
-    var r=await sb.from('room_messages').insert({room_id:cur.id,user_id:curUser.id,kind:'user',content:t.slice(0,2000)}).select('id,user_id,kind,content,created_at').single();
+    lastTypeSent=0;var r=await sb.from('room_messages').insert({room_id:cur.id,user_id:curUser.id,kind:'user',content:t.slice(0,2000)}).select('id,user_id,kind,content,created_at').single();
     if(!r||r.error||!r.data){inp.value=t;toast('Could not send that message. Please try again.');return}
     addMsg(r.data)}
   $g('rSend').onclick=send;$g('rIn').addEventListener('keydown',function(e){if(e.key==='Enter')send()});
@@ -2663,7 +2773,7 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
   $g('rPlus').onclick=addPeople;
   /* ---- group details ---- */
   function showMembers(){
-    if(!cur)return;var w=document.createElement('div'),owner=cur.role==='owner';w.className='gmod';
+    if(!cur)return;var w=document.createElement('div');w.className='gmod',owner=cur.role==='owner';
     var head=document.createElement('div');head.style.cssText='display:flex;align-items:center;gap:12px;margin-bottom:10px';
     var av=document.createElement('span');av.className='gav';av.textContent=cur.emoji;var gt=document.createElement('span');gt.className='gt';gt.style.cssText='display:flex;flex-direction:column;flex:1;min-width:0';
     var n=document.createElement('b');n.textContent=cur.name;var idr=document.createElement('code');idr.textContent=cur.room_code;gt.appendChild(n);gt.appendChild(idr);
@@ -2699,7 +2809,147 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
     catch(e){toast(gerr(e));go('groups')}}
   setTimeout(function(){var t=null;try{t=sessionStorage.getItem('pelex_join')}catch(e){}if(t&&!signedIn){setAuthMode('up');go('signin');authMsg('Create an account or sign in to join the group.')}},1800);
   var _g=go;go=function(v,t){_g(v,t);if(v==='room'){var n=document.querySelector('aside .nav[data-go="groups"]');if(n)n.setAttribute('aria-current','true')}if(v!=='room')stopLive();if(v==='groups')loadGroups()};
-  var _uc=window.onUserChange;window.onUserChange=function(u){if(_uc)_uc(u);if(u)tryJoin();else{rooms=[];cur=null;me=null;stopLive()}};
+  var _uc=window.onUserChange;window.onUserChange=function(u){if(_uc)_uc(u);if(u){gseen=null;tryJoin();pollRooms()}else{rooms=[];cur=null;me=null;gseen=null;stopLive();paintBadge()}};
+})();
+</script>
+<script>
+(function(){
+  function $n(i){return document.getElementById(i)}
+  function toast(m){var t=$n('gToast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){t.hidden=true},3000)}
+  async function rpc(n,a){var r=await sb.rpc(n,a||{});if(r.error)throw r.error;return r.data}
+  function em(e){var m=String((e&&e.message)||'');if(/does not exist|schema cache|could not find the function/i.test(m))return 'This part is not switched on yet. Run pelex_update_oct26.sql in Supabase first.';return m||'Something went wrong. Please try again.'}
+  /* ---------- markdown-lite renderer: bold, lists, headings, tables, links, https images ---------- */
+  window.mdRender=function(src){
+    var root=document.createElement('div');root.className='md';
+    var lines=String(src==null?'':src).replace(/\r/g,'').split('\n'),i=0;
+    function inl(p,s){
+      var re=/!\[([^\]]*)\]\((https:\/\/[^\s)]+)\)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\*\*([^*\n]+)\*\*|`([^`\n]+)`|(https?:\/\/[^\s<)\]]+)/g,last=0,m;
+      function link(h,t){var a=document.createElement('a');a.href=h;a.textContent=t;a.target='_blank';a.rel='noopener noreferrer nofollow';return a}
+      while((m=re.exec(s))){
+        if(m.index>last)p.appendChild(document.createTextNode(s.slice(last,m.index)));
+        if(m[2]){var im=document.createElement('img');im.src=m[2];im.alt=m[1]||'Image';im.loading='lazy';im.referrerPolicy='no-referrer';im.onerror=function(){this.style.display='none'};p.appendChild(im)}
+        else if(m[4])p.appendChild(link(m[4],m[3]));
+        else if(m[5]){var b=document.createElement('strong');b.textContent=m[5];p.appendChild(b)}
+        else if(m[6]){var c=document.createElement('code');c.textContent=m[6];p.appendChild(c)}
+        else if(m[7]){var u=m[7],tail='';while(/[.,;:!?]$/.test(u)){tail=u.slice(-1)+tail;u=u.slice(0,-1)}p.appendChild(link(u,u));if(tail)p.appendChild(document.createTextNode(tail))}
+        last=re.lastIndex}
+      if(last<s.length)p.appendChild(document.createTextNode(s.slice(last)))}
+    function tbl(rows){var t=document.createElement('table'),n=Math.max.apply(null,rows.map(function(r){return r.length}));
+      rows.forEach(function(r,ri){var tr=document.createElement('tr');for(var k=0;k<n;k++){var c=document.createElement(ri===0?'th':'td');inl(c,r[k]||'');tr.appendChild(c)}t.appendChild(tr)});return t}
+    var UL=/^\s*[-*\u2022]\s+/,OL=/^\s*\d+[.)]\s+/,SEP=/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+    while(i<lines.length){
+      var l=lines[i];if(!l.trim()){i++;continue}
+      var h=l.match(/^\s{0,3}(#{1,4})\s+(.*)$/);
+      if(h){var he=document.createElement('div');he.className='mdh';inl(he,h[2]);root.appendChild(he);i++;continue}
+      if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)){root.appendChild(document.createElement('hr'));i++;continue}
+      if(l.indexOf('|')>-1&&i+1<lines.length&&SEP.test(lines[i+1])&&lines[i+1].indexOf('-')>-1){
+        var rows=[l];i+=2;while(i<lines.length&&lines[i].trim()&&lines[i].indexOf('|')>-1){rows.push(lines[i]);i++}
+        root.appendChild(tbl(rows.map(function(r){return r.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(function(c){return c.trim()})})));continue}
+      if(l.indexOf('\t')>-1&&i+1<lines.length&&lines[i+1].indexOf('\t')>-1){
+        var tr=[];while(i<lines.length&&lines[i].indexOf('\t')>-1){tr.push(lines[i].split('\t').map(function(c){return c.trim()}));i++}
+        root.appendChild(tbl(tr));continue}
+      if(UL.test(l)||OL.test(l)){var ord=OL.test(l),rx=ord?OL:UL,lst=document.createElement(ord?'ol':'ul');
+        while(i<lines.length&&rx.test(lines[i])){var li=document.createElement('li');inl(li,lines[i].replace(rx,''));lst.appendChild(li);i++}
+        root.appendChild(lst);continue}
+      var p=document.createElement('p'),first=true;
+      while(i<lines.length&&lines[i].trim()&&!/^\s{0,3}#{1,4}\s/.test(lines[i])&&!UL.test(lines[i])&&!OL.test(lines[i])){
+        if(!first)p.appendChild(document.createElement('br'));first=false;inl(p,lines[i]);i++;
+        if(i+1<lines.length&&lines[i].indexOf('|')>-1&&SEP.test(lines[i+1]))break}
+      root.appendChild(p)}
+    return root};
+  /* scheduled results: show formatted instead of raw text */
+  var _lt=window.loadTasks;
+  /* ---------- plans ---------- */
+  var plans={};
+  function paintPlans(){document.querySelectorAll('[data-plan]').forEach(function(b){b.textContent=plans[b.dataset.plan]?'Open':'Start 2-day trial'})}
+  async function loadPlans(){
+    plans={};
+    if(dbOk()){try{var r=await sb.from('bot_plans').select('kind,active');(r.data||[]).forEach(function(x){if(x.active)plans[x.kind]=1})}catch(e){}}
+    paintPlans();checkSupport();if(!$n('v-business').hidden)loadBusiness()}
+  document.addEventListener('click',async function(e){
+    var b=e.target.closest&&e.target.closest('[data-plan]');if(!b)return;var k=b.dataset.plan;
+    if(!dbOk()){setAuthMode('in');go('signin');return}
+    function open(){if(k==='personal')go('chat');else if(k==='business')go('business');else go('pitch')}
+    if(plans[k]){open();return}
+    b.disabled=true;
+    try{await rpc('start_test_plan',{p_kind:k});plans[k]=1;paintPlans();try{__planC={uid:'',at:0,on:false}}catch(x){}
+      toast(k==='personal'?'Personal Bot is on. New chats now go to your Personal Agent.':k==='business'?'Business Bot is on. Set it up now.':'Pitch Agent is on. Fill in your profile.');open()}
+    catch(x){toast(em(x))}
+    b.disabled=false});
+  /* ---------- Business Bot ---------- */
+  var biz=null,bSid='bt-'+Math.random().toString(36).slice(2);
+  async function loadBusiness(){
+    var ok=dbOk()&&plans.business;$n('bGate').hidden=!!ok;$n('bForm').hidden=!ok;
+    if(!dbOk()){$n('bGate').hidden=false;return}
+    if(!ok)return;
+    try{biz=await rpc('my_business');if(biz){$n('bName').value=biz.name||'';$n('bDesc').value=biz.description||'';$n('bSite').value=biz.website||'';$n('bLimits').value=biz.limits||'';if(biz.tone)$n('bTone').value=biz.tone}}catch(e){$n('bMsg').textContent=em(e)}}
+  $n('bSave').onclick=async function(){var btn=this;btn.disabled=true;$n('bMsg').textContent='Saving...';
+    try{var r=await rpc('save_business',{p_name:$n('bName').value,p_tone:$n('bTone').value,p_description:$n('bDesc').value,p_website:$n('bSite').value.trim(),p_limits:$n('bLimits').value});biz=biz||{};biz.id=r.id;$n('bMsg').textContent='Saved. Your bot is live for testing below.'}
+    catch(e){$n('bMsg').textContent=em(e)}btn.disabled=false};
+  function bAdd(t,me){var d=document.createElement('div');d.className='bm'+(me?' me':'');if(me)d.textContent=t;else d.appendChild(window.mdRender(t));$n('bMsgs').appendChild(d);$n('bMsgs').scrollTop=$n('bMsgs').scrollHeight;return d}
+  async function bSend(){var t=$n('bIn').value.trim();if(!t)return;
+    if(!biz||!biz.id){$n('bMsg').textContent='Save your bot first.';return}
+    if(typeof BUSINESS_WEBHOOK_URL==='undefined'||BUSINESS_WEBHOOK_URL.indexOf('PASTE_')===0){$n('bMsg').textContent='The Business chat address is not connected yet. Paste it into BUSINESS_WEBHOOK_URL in index.html.';return}
+    $n('bIn').value='';bAdd(t,true);var w=bAdd('...',false);
+    try{var r=await fetch(BUSINESS_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendMessage',sessionId:bSid,chatInput:t,metadata:{businessId:biz.id}})});
+      var raw=await r.text(),out=raw;try{var j=JSON.parse(raw);var o=Array.isArray(j)?j[0]:j;out=o.output||o.text||o.message||raw}catch(e){}
+      w.remove();if(!r.ok)bAdd('The bot could not reply ('+r.status+').',false);else bAdd(String(out),false)}
+    catch(e){w.remove();bAdd('The bot could not reply. Check your connection.',false)}}
+  $n('bSend').onclick=bSend;$n('bIn').addEventListener('keydown',function(e){if(e.key==='Enter')bSend()});
+  /* ---------- Support inbox (staff only) ---------- */
+  var sup=false,supList=[],supCur=null,supLast=0,supT=null,supN=0;
+  function supBadge(n){var b=$n('supBadge');b.textContent=n>9?'9+':String(n);b.hidden=n===0}
+  async function checkSupport(){
+    if(!dbOk()){sup=false;$n('navSupport').hidden=true;return}
+    try{sup=!!(await rpc('is_support'))}catch(e){sup=false}
+    $n('navSupport').hidden=!sup;if(sup)pollSupport()}
+  async function pollSupport(){
+    if(!sup||!dbOk())return;
+    try{supList=await rpc('support_open_requests')||[]}catch(e){return}
+    var n=supList.length;supBadge(n);
+    if(n>supN){toast('Pelex Support: '+(n-supN===1?'a group is asking for help.':(n-supN)+' groups are asking for help.'));
+      try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification('Pelex Support',{body:'A group is asking for help.',icon:'icons/icon-192.png'})}catch(e){}}
+    supN=n;if(!$n('v-support').hidden&&!supCur)paintSup()}
+  window.pelexPollSupport=pollSupport;
+  setInterval(pollSupport,20000);
+  function paintSup(){var L=$n('supList');L.innerHTML='';$n('supEmpty').hidden=supList.length>0;
+    supList.forEach(function(r){var b=document.createElement('button');b.type='button';b.className='grow';
+      var av=document.createElement('span');av.className='gav';av.textContent=r.emoji||'\u{1F4AC}';
+      var gt=document.createElement('span');gt.className='gt';var n=document.createElement('b');n.textContent=r.room_name;var m=document.createElement('span');m.className='muted';m.style.fontSize='13px';
+      m.textContent=r.room_code+' \u00b7 asked by '+(r.by||'a member')+' \u00b7 '+(r.status==='joined'?'in progress':'waiting')+' \u00b7 '+new Date(r.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      gt.appendChild(n);gt.appendChild(m);b.appendChild(av);b.appendChild(gt);b.onclick=function(){supOpen(r)};L.appendChild(b)})}
+  function supMsg(m){var d=document.createElement('div'),mine=m.kind==='pelex';
+    if(m.kind==='system'){d.className='bm';d.style.cssText='align-self:center;background:none;color:var(--muted);font-size:13px';d.textContent=m.content}
+    else{d.className='bm'+(mine?' me':'');var who=mine?'Pelex Support':((m.emoji||'')+' '+(m.first_name||'Member')).trim();var l=document.createElement('div');l.style.cssText='font-size:12px;font-weight:700;opacity:.8';l.textContent=who;d.appendChild(l);var t=document.createElement('div');t.style.whiteSpace='pre-wrap';t.textContent=m.content;d.appendChild(t)}
+    $n('supMsgs').appendChild(d);$n('supMsgs').scrollTop=$n('supMsgs').scrollHeight}
+  async function supPull(){if(!supCur)return;try{var rows=await rpc('support_messages',{p_room:supCur.room_id,p_after:supLast})||[];rows.forEach(function(m){if(m.id>supLast){supLast=m.id;supMsg(m)}})}catch(e){toast(em(e))}}
+  async function supOpen(r){supCur=r;supLast=0;$n('supMsgs').innerHTML='';$n('supName').textContent=r.emoji+' '+r.room_name+' ('+r.room_code+')';$n('supList').hidden=true;$n('supEmpty').hidden=true;$n('supRoom').hidden=false;await supPull();clearInterval(supT);supT=setInterval(supPull,4000)}
+  function supLeave(){supCur=null;clearInterval(supT);$n('supRoom').hidden=true;$n('supList').hidden=false;pollSupport().then(paintSup)}
+  $n('supBack').onclick=supLeave;
+  $n('supClose').onclick=async function(){if(!supCur||!confirm('Close this request? Pelex Support leaves the chat.'))return;try{await rpc('support_close',{p_room:supCur.room_id});supLeave()}catch(e){toast(em(e))}};
+  async function supSend(){var t=$n('supIn').value.trim();if(!t||!supCur)return;$n('supIn').value='';try{await rpc('support_post',{p_room:supCur.room_id,p_text:t});await supPull()}catch(e){$n('supIn').value=t;toast(em(e))}}
+  $n('supSend').onclick=supSend;$n('supIn').addEventListener('keydown',function(e){if(e.key==='Enter')supSend()});
+  /* ---------- Ignitor on the right edge ---------- */
+  var ie=$n('ignEdge');ie.onclick=function(){$n('ignBtn').click()};
+  setInterval(function(){var on=!!window.__ign;ie.classList.toggle('on',on);var sp=ie.querySelector('span'),t=on?'Private chat on':'Ignitor';if(sp.textContent!==t)sp.textContent=t},500);
+  /* ---------- Pitch Agent: pick countries and location from lists ---------- */
+  var C=['Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Congo','Costa Rica','Cote d\'Ivoire','Croatia','Cuba','Cyprus','Czech Republic','Democratic Republic of the Congo','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Macedonia','Norway','Oman','Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe'];
+  var dl=$n('pCtyList');C.forEach(function(n){var o=document.createElement('option');o.value=n;dl.appendChild(o)});
+  function pick(v){v=String(v||'').trim().toLowerCase();for(var i=0;i<C.length;i++)if(C[i].toLowerCase()===v)return C[i];return ''}
+  function ctys(){return String($n('pCountries').value||'').split(',').map(function(x){return x.trim()}).filter(Boolean)}
+  function ctyRender(){var box=$n('pCtyChips');box.innerHTML='';ctys().forEach(function(n){var c=document.createElement('span');c.className='pchip';c.appendChild(document.createTextNode(n));var x=document.createElement('button');x.type='button';x.setAttribute('aria-label','Remove '+n);x.textContent='\u00d7';
+      x.onclick=function(){$n('pCountries').value=ctys().filter(function(k){return k!==n}).join(', ');ctyRender()};c.appendChild(x);box.appendChild(c)})}
+  function ctyAdd(){var n=pick($n('pCtyIn').value);if(!n)return;var cur=ctys();if(cur.indexOf(n)<0&&cur.length<30){cur.push(n);$n('pCountries').value=cur.join(', ')}$n('pCtyIn').value='';ctyRender()}
+  $n('pCtyIn').addEventListener('input',ctyAdd);$n('pCtyIn').addEventListener('change',ctyAdd);
+  $n('pCtyIn').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();ctyAdd()}});
+  function locJoin(){var c=$n('pLocCity').value.trim(),k=pick($n('pLocCty').value)||$n('pLocCty').value.trim();$n('pLoc').value=[c,k].filter(Boolean).join(', ')}
+  function locRender(){var v=String($n('pLoc').value||''),i=v.lastIndexOf(',');if(i<0){var k=pick(v);$n('pLocCity').value=k?'':v;$n('pLocCty').value=k||''}else{$n('pLocCity').value=v.slice(0,i).trim();$n('pLocCty').value=v.slice(i+1).trim()}}
+  $n('pLocCity').addEventListener('input',locJoin);$n('pLocCty').addEventListener('input',locJoin);$n('pLocCty').addEventListener('change',locJoin);
+  window.pCtyRender=ctyRender;window.pLocRender=locRender;
+  /* ---------- screens and sign-in changes ---------- */
+  var _g=go;go=function(v,t){_g(v,t);$n('ignEdge').hidden=(v!=='chat');if(v==='business')loadBusiness();if(v==='support'){supLeave();}};
+  var _uc=window.onUserChange;window.onUserChange=function(u){if(_uc)_uc(u);loadPlans()};
+  paintPlans();
 })();
 </script>
 <script>
@@ -2767,6 +3017,14 @@ window.openPreview=function(html){
   o.querySelector('.pvx').onclick=function(){o.remove()};
   o.addEventListener('click',function(e){if(e.target===o)o.remove()});
   document.body.appendChild(o)};
+</script>
+<script>
+(function(){var _g3=go;go=function(v,t){_g3(v,t);if(v==='personal')paintPersonal()};
+async function paintPersonal(){var st=document.getElementById('pbStatus'),o=document.getElementById('pbOpen'),b=document.getElementById('pbStart');o.hidden=true;b.hidden=true;
+  if(!signedIn){st.textContent='Sign in to use the Personal Bot.';return}
+  var on=false;try{on=await personalOn()}catch(e){}
+  if(on){st.textContent='On. Your new chats now go to your Personal Bot.';o.hidden=false}else{st.textContent='Off. Start the plan to switch it on.';b.hidden=false}}
+document.getElementById('pbOpen').onclick=function(){go('chat')}})();
 </script>
 </body>
 </html>
