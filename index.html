@@ -147,7 +147,8 @@ aside{position:fixed;z-index:20;left:0;top:0;height:100%;height:100dvh;overflow-
 .top{display:flex}
 .two{grid-template-columns:1fr}
 }
-.msg{max-width:85%;padding:12px 14px;border-radius:16px;margin:10px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+.msg{max-width:min(92%,860px);min-width:0;box-sizing:border-box;padding:16px 18px;border-radius:16px;margin:14px 0;background:var(--card);border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;line-height:1.6}
+.msg:not(.me):not(.sys){padding:20px 22px}.msg .txtp{display:block;margin:0 0 12px}.msg .txtp:last-child{margin-bottom:0}
 .msg.me{margin-left:auto;background:var(--ink);color:var(--bg);border-color:transparent}
 .msg.live{border-color:#0A89F4;box-shadow:0 0 0 3px rgba(10,137,244,.22),0 0 24px rgba(10,137,244,.45);animation:breathe 1.4s ease-in-out infinite}
 @keyframes breathe{50%{box-shadow:0 0 0 5px rgba(10,137,244,.3),0 0 34px rgba(10,137,244,.6)}}
@@ -667,10 +668,14 @@ button.gav{cursor:pointer}.gav.sm{width:38px;height:38px;font-size:21px}
 .ignedge{position:fixed;right:0;top:44%;z-index:40;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-right:0;background:var(--panel);color:var(--ink);border-radius:14px 0 0 14px;padding:10px 12px 10px 11px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .ignedge svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ignedge.on{background:#0f1530;color:#f59e0b;border-color:#0f1530}.ignedge[hidden]{display:none}
 @media(max-width:820px){.ignedge{display:none}}
-.md{white-space:normal;word-break:break-word}.md>*:last-child{margin-bottom:0}.md p{margin:0 0 8px}.md ul,.md ol{margin:0 0 8px;padding-left:22px}.md li{margin:2px 0}
-.md .mdh{font-weight:700;font-size:16px;margin:12px 0 6px}.md hr{border:0;border-top:1px solid var(--line);margin:10px 0}
-.md table{border-collapse:collapse;font-size:13.5px;margin:8px 0;display:block;overflow-x:auto;max-width:100%}.md th,.md td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.md th{background:var(--soft)}
-.md img{max-width:100%;border-radius:10px;margin:6px 0;display:block}.md a{color:var(--btn);text-decoration:underline}.md code{background:var(--soft);padding:1px 5px;border-radius:6px;font-size:.92em}
+.md{white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.68;min-width:0}.md>*:last-child{margin-bottom:0}.md p{margin:0 0 14px;line-height:1.72}.md ul,.md ol{margin:0 0 16px;padding-left:24px}.md li{margin:5px 0;padding-left:2px}
+.md .mdh{font-weight:750;font-size:clamp(16px,2.2vw,19px);line-height:1.35;letter-spacing:-.015em;margin:24px 0 10px}.md .mdh:first-child{margin-top:2px}.md hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.md table{border-collapse:separate;border-spacing:0;font-size:13.5px;margin:14px 0 20px;width:max-content;min-width:100%;max-width:none;table-layout:auto;display:table;white-space:normal}
+.md th,.md td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top;min-width:92px;max-width:280px;overflow-wrap:normal;word-break:normal;line-height:1.5}
+.md th:first-child,.md td:first-child{border-left:1px solid var(--line)}.md tr:first-child th{border-top:1px solid var(--line)}.md th{background:var(--soft);font-weight:700;white-space:normal}
+.md table{border-radius:10px;overflow:hidden}.md table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.md img{max-width:100%;border-radius:12px;margin:12px 0;display:block}.md a{color:var(--btn);text-decoration:underline}.md code{background:var(--soft);padding:1px 5px;border-radius:6px;font-size:.92em}
+@media(max-width:600px){.msg{max-width:100%;padding:14px 13px;border-radius:14px}.md{font-size:14.5px}.md th,.md td{min-width:110px;padding:9px 10px}.md .mdh{margin-top:20px}}
 .stask .res{white-space:normal;max-height:340px;overflow:auto}
 .pchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:4px 6px 4px 12px;font-size:14px}.pchip button{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;padding:0 4px;color:inherit}
 .bgate[hidden]{display:none}.bmsgs{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:8px 2px}
@@ -698,9 +703,10 @@ details.actlog summary::before{content:"\25B8 "}details.actlog[open] summary::be
 .badge[hidden]{display:none}
 .oauthbtn[hidden],#pkCard[hidden]{display:none}
 
-/* Pelex refinement: calm navy visual system, lighter type and responsive project workspace */
-:root{--bg:#f5f7fb;--panel:#fff;--ink:#17243b;--muted:#68758c;--line:#e3e8f1;--soft:#f0f3f8;--btn:#142b52;--btnink:#fff;--teal:#c5d3e8}
-:root[data-theme="dark"]{--bg:#0c1423;--panel:#121e31;--ink:#e8eef8;--muted:#a1aec2;--line:#26364d;--soft:#17263d;--btn:#203b65;--btnink:#fff;--teal:#536d93}
+/* ===== Pelex refinement (navy visual system, project workspace) ===== */
+:root{--bg:#f5f7fb;--panel:#fff;--ink:#17243b;--muted:#68758c;--line:#e3e8f1;--soft:#f0f3f8;--btn:#142b52;--btnink:#fff;--teal:#c5d3e8;--card:#fff}
+:root[data-theme="dark"]{--bg:#0c1423;--panel:#121e31;--ink:#e8eef8;--muted:#a1aec2;--line:#26364d;--soft:#17263d;--btn:#203b65;--btnink:#fff;--teal:#536d93;--card:#121e31}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1423;--panel:#121e31;--ink:#e8eef8;--muted:#a1aec2;--line:#26364d;--soft:#17263d;--btn:#203b65;--btnink:#fff;--teal:#536d93;--card:#121e31}}
 body{font-size:14.5px;line-height:1.55;letter-spacing:0}
 h1,h2,h3,h4{letter-spacing:-.025em;font-weight:650}
 h1{font-size:clamp(25px,3vw,32px);line-height:1.2}
@@ -731,6 +737,130 @@ strong,b{font-weight:600}
 #projectsEmpty{padding:24px;border:1px dashed var(--line);border-radius:14px;background:var(--panel)}
 @media(max-width:700px){#v-projects .wrap{padding-left:16px;padding-right:16px}#projectsGrid{grid-template-columns:1fr;gap:13px}#projectsGrid .project-card{min-height:0;padding:18px}.project-modal{padding:19px;border-radius:16px}.project-modal-actions button{flex:1}}
 @media(prefers-reduced-motion:reduce){#projectsGrid .project-card{transition:none}}
+.file-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--soft);white-space:normal}.file-card-info{display:flex;flex-direction:column;gap:4px;min-width:0}.file-card-info strong{font-size:13px;overflow-wrap:anywhere}.file-card-info span{font-size:11px;color:var(--muted)}.file-card-actions{display:flex;gap:7px}.file-card-actions a{padding:8px 12px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:inherit;background:var(--card);font-size:12px;cursor:pointer}@media(max-width:520px){.file-card-actions{width:100%}.file-card-actions a{flex:1;text-align:center}}
+
+/* ===== Sidebar: one collapsible "Agents" group ===== */
+aside{gap:2px}
+.agentsgrp{display:flex;flex-direction:column}
+.agentsbtn .chev{width:16px;height:16px;margin-left:auto;transition:transform .2s}
+.agentsgrp.open .agentsbtn .chev{transform:rotate(180deg)}
+.agentsbtn[data-active="1"]::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--btn);margin-left:6px;flex:none}
+.agentsgrp.open .agentsbtn[data-active="1"]::after{display:none}
+.agentspanel{display:none;flex-direction:column;gap:2px;margin:2px 0 6px 21px;padding-left:8px;border-left:1px solid var(--line)}
+.agentsgrp.open .agentspanel{display:flex}
+.agentspanel .nav{min-height:40px;font-size:14px;padding:0 8px}
+.agentspanel .nav svg{width:17px;height:17px}
+
+/* ===== Chat: roomier, centred column, clear sides ===== */
+#chat{padding-left:max(clamp(14px,4vw,48px),calc((100% - 860px)/2));padding-right:max(clamp(14px,4vw,48px),calc((100% - 860px)/2));padding-top:12px;padding-bottom:12px}
+#chat>.msg{align-self:flex-start;width:fit-content;max-width:min(94%,820px)}
+#chat>.msg.me{align-self:flex-end;background:#142b52;color:#fff;border-color:transparent;border-radius:18px 18px 6px 18px}
+:root[data-theme="dark"] #chat>.msg.me{background:#203b65}
+#chat>.msg:not(.me):not(.sys){border-radius:18px 18px 18px 6px;box-shadow:0 2px 12px rgba(19,39,72,.05)}
+#chat>.msg.sys{align-self:flex-start;margin:8px 0}
+#chat>.msg.me .msgactions button{background:rgba(255,255,255,.1);color:#dbe5f7;border-color:rgba(255,255,255,.22)}
+.msg .msgactions{margin-top:14px;padding-top:2px}
+.msg .actlog{margin-bottom:12px}
+.msg .imgs{margin-bottom:10px}
+.barwrap{padding-left:clamp(14px,4vw,48px);padding-right:clamp(14px,4vw,48px);gap:10px}
+.barwrap .field{min-height:54px;box-shadow:0 2px 12px rgba(19,39,72,.06)}
+.chatbody{padding:28px 18px;gap:10px}
+@media(max-width:820px){
+  #chat{padding-left:12px;padding-right:12px}
+  #chat>.msg{max-width:100%}
+  #chat>.msg.me{max-width:88%}
+  .msg:not(.me):not(.sys){padding:16px 15px}
+  .barwrap{padding-left:12px;padding-right:12px}
+  .msg .msgactions button{padding:6px 11px}
+}
+
+/* ===== Image viewer ===== */
+#chat .msg img,.md img,#imgOut img{cursor:zoom-in}
+#chat .msg .imgs img{cursor:zoom-in}
+#lbx{position:fixed;inset:0;z-index:400;background:rgba(6,12,24,.92);display:flex;flex-direction:column}
+#lbx[hidden]{display:none}
+#lbx .lbtop{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px}
+#lbx .lbtop button{min-height:42px;padding:0 16px;border-radius:99px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;font-weight:550;cursor:pointer}
+#lbx .lbtop button.x{width:42px;padding:0;font-size:22px;line-height:1}
+#lbx .lbstage{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:6px 12px calc(16px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+#lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;margin:auto;cursor:zoom-in;display:block}
+#lbx.zoom .lbstage{align-items:flex-start;justify-content:flex-start}
+#lbx.zoom img{max-width:none;max-height:none;width:min(220vw,2600px);cursor:zoom-out}
+#lbx .lbnote{color:#cdd8ee;font-size:13px;text-align:center;padding:0 12px 8px;min-height:18px}
+
+/* fix: the sidebar ".me" account style was leaking into your own chat bubbles */
+#chat>.msg.me{display:block;gap:0;align-items:normal;margin-top:14px;margin-bottom:14px;border:0;padding:16px 18px}
+@media(max-width:820px){#chat>.msg.me{padding:14px 15px}}
+.msg.me .txtp{margin:0}
+
+/* composer: image button icon + roomier phone layout */
+#imgBtn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:820px){
+  .barwrap .bar{flex-wrap:wrap;gap:8px}
+  .barwrap .field{flex:1 1 100%;min-height:52px}
+  .barwrap .talk{flex:1 1 0;min-height:42px;text-align:center;padding:0 14px}
+  .barwrap .plugshortcut{min-height:34px;font-size:12.5px}
+  .barwrap .disclaimer{font-size:11.5px}
+}
+
+/* Pelex responsive chat and navigation refinement */
+:root{--nav-ink:#0b1b4a}
+aside,.nav,.nav:visited,.sidefoot .nav,.top,.top button,.top a,
+#sbName,#sbSub,.srow,.srow span,.settings-nav,.settings-nav span{color:var(--nav-ink)}
+.nav{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav>span:not(.nbadge){min-width:0;overflow:hidden;text-overflow:ellipsis}
+.top{min-width:0;flex-wrap:nowrap;overflow:visible}
+.top>*{min-width:0}
+.top strong,.top button,.top a{color:var(--nav-ink)}
+.top button{flex:0 0 auto}
+.barwrap .bar{width:min(100%,900px);box-sizing:border-box;padding-left:clamp(8px,2vw,16px);padding-right:clamp(8px,2vw,16px)}
+.barwrap .field{align-items:flex-end;min-width:0}
+.barwrap .field textarea#in{display:block;flex:1 1 180px;width:100%;min-width:0;min-height:44px;max-height:min(42vh,320px);height:44px;resize:none;overflow-y:auto;box-sizing:border-box;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;line-height:1.45;padding:11px 4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.barwrap .field textarea#in:focus{outline:0}
+#chat,.chatbody,.msg,.msg .txtp,.msg pre,.msg code{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+.msg{white-space:pre-wrap}
+.msg img,.imgs img{max-width:100%;height:auto;object-fit:contain}
+.chatbody>*{max-width:100%;min-width:0}
+.chatbody table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+.chatbody svg{max-width:100%;height:auto}
+.file-card{align-items:flex-start;flex-wrap:nowrap}
+.file-card-info{flex:1 1 auto}
+.file-card-actions{flex:0 0 auto}
+.file-card-actions button{min-width:38px;min-height:38px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--nav-ink);cursor:pointer}
+@media(max-width:820px){
+ .top{gap:5px;padding:6px 8px}
+ .top .iconbtn{min-width:38px;min-height:38px}
+ .top button,.top a{max-width:42px}
+ .barwrap .bar{padding-left:8px;padding-right:8px}
+ .barwrap .field textarea#in{max-height:35vh}
+ .msg{max-width:100%;padding:13px 14px}
+ .file-card{gap:8px}
+ .file-card-actions{flex:0 0 auto}
+}
+@media(min-width:821px) and (max-width:1100px){
+ .app{grid-template-columns:238px minmax(0,1fr)}
+ aside{width:238px}
+ .top{gap:6px}
+}
+@media(max-width:420px){
+ .file-card{align-items:center}
+ .file-card-info strong{font-size:12px}
+ .file-card-actions button{min-width:36px;padding:6px}
+}
+
+
+.file-card{flex-wrap:nowrap;align-items:center}.file-card-info{flex:1 1 auto;min-width:0}
+.file-name-preview{padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:650;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.file-name-preview:hover{text-decoration:underline}.file-card-actions{flex:0 0 auto}
+.file-card-actions button{display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer}
+.file-download-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#pelexFilePreview{position:fixed;z-index:180;inset:0 0 0 auto;width:min(680px,94vw);height:100dvh;background:var(--panel);border-left:1px solid var(--line);box-shadow:-18px 0 50px rgba(8,18,35,.18);display:flex;flex-direction:column;transform:translateX(105%);transition:transform .22s ease}
+#pelexFilePreview.open{transform:translateX(0)}#pelexFilePreview[hidden]{display:none}
+#pelexFilePreview .pf-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);min-height:58px}
+#pelexFilePreview .pf-title{font-weight:650;min-width:0;flex:1;overflow-wrap:anywhere;color:var(--ink)}
+#pelexFilePreview button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;min-width:38px;min-height:38px;cursor:pointer}
+#pelexFilePreview iframe{border:0;flex:1;width:100%;background:#fff}#pelexFilePreview .pf-note{padding:8px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+@media(max-width:700px){#pelexFilePreview{width:100vw}}
 
 </style>
 </head>
@@ -749,11 +879,12 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
 <button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
-<button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
 <button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups<span class="nbadge" id="gBadge" hidden aria-label="Groups with new messages"></span></button>
+<div class="agentsgrp" id="agentsGrp"><button type="button" class="nav agentsbtn" id="agentsBtn" aria-expanded="false" aria-controls="agentsPanel"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="10" rx="3"/><path d="M12 8V5M9 13h.01M15 13h.01M3 13v2M21 13v2"/></svg>Agents<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="agentspanel" id="agentsPanel"><button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
 <button class="nav" data-go="personal"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg>Personal Bot</button>
 <button class="nav" data-go="gmail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Gmail Bot</button>
 <button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Bot</button>
+</div></div>
 <button class="nav" data-go="support" id="navSupport" hidden><svg viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 13h3v5H4zM17 13h3v5h-3zM17 18c0 2-2 3-5 3"/></svg>Support<span class="nbadge" id="supBadge" hidden></span></button>
 <button class="nav" data-go="ads"><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1zM18 9a4 4 0 0 1 0 6"/></svg>Run ads <span class="badge soon">Soon</span></button>
 <div id="recPinned"></div>
@@ -800,7 +931,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="barwrap"><div class="bar"><div class="field">
 <div class="attach" id="attach" hidden><div class="th" id="attachTh"></div><span class="nm" id="attachNm"></span><button class="x" id="attachX" type="button" aria-label="Remove attachment">×</button></div>
 <label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" multiple hidden></label>
-<input id="in" type="text" placeholder="Ask anything" aria-label="Message">
+<textarea id="in" rows="1" placeholder="Ask anything" aria-label="Message" aria-multiline="true"></textarea>
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
 <button class="ic" id="imgBtn" type="button" aria-label="Create an image" title="Create an image" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg></button> <button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 </div><button class="talk" id="talk">Talk live</button><button class="talk sec" id="muteBtn" hidden>Mute</button><button class="talk sec" id="stopSpeak">Stop reply</button></div>
@@ -816,7 +947,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div style="margin-top:16px"><button class="btn alt" id="libClear">Clear library</button></div>
 </div></section>
 
-<section class="view" id="v-pitch" hidden><div class="wrap"><div class="abanner" data-agent="pitch" hidden></div>
+<section class="view" id="v-pitch" hidden><div class="wrap"><div class="abanner" data-agent="pitch" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="pitch">Schedule a task for this agent</button></div>
 <h1>Pitch Agent</h1><div class="muted">Finds jobs and clients, writes in your tone, and asks you before anything is sent.</div>
 <div id="pMsg" class="muted" role="status" style="min-height:20px;margin-top:8px"></div>
 <div class="pfun" id="pFun"></div>
@@ -862,12 +993,12 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </section>
 <div class="lp-toast" id="gToast" role="status" aria-live="polite" hidden></div>
 <section class="view" id="v-personal" hidden><div class="wrap">
-<div class="abanner" data-agent="personal" hidden></div><h1>Personal Bot</h1><div class="muted">Your own assistant. It remembers what matters to you, keeps your notes and tasks, and works with your email once Gmail is connected.</div>
+<div class="abanner" data-agent="personal" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="personal">Schedule a task for this agent</button></div><h1>Personal Bot</h1><div class="muted">Your own assistant. It remembers what matters to you, keeps your notes and tasks, and works with your email once Gmail is connected.</div>
 <div class="card" style="margin-top:18px"><h2>Status</h2><div id="pbStatus" class="muted">Checking...</div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="pbOpen" hidden>Open chat</button><button class="btn" type="button" data-plan="personal" id="pbStart" hidden>Start 2-day trial</button><button class="btn" type="button" data-go="plugins">Connect email</button></div></div>
 </div></section>
 <section class="view" id="v-gmail" hidden><div class="wrap">
-<div class="abanner" data-agent="gmail" hidden></div>
+<div class="abanner" data-agent="gmail" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="gmail">Schedule a task for this agent</button></div>
 <h1>Gmail Bot</h1><div class="muted">Write better emails with AI and voice. You always review a message before anything is sent.</div>
 <div class="card" style="margin-top:18px"><h2>Write with AI</h2>
 <div class="muted">Say or type what the email is about. Pelex drafts it with a subject line, then you can improve it and open it in Gmail.</div>
@@ -883,7 +1014,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="card" style="margin-top:14px"><h2>How your privacy is handled</h2>
 <div class="muted">Pelex drafts for you to review and never sends on its own. Attachments and images are not read. Voice input uses your browser's speech service, which may send audio to your device maker. Sign-in tokens are kept on the server, never in your browser.</div></div>
 </div></section>
-<section class="view" id="v-business" hidden><div class="wrap"><div class="abanner" data-agent="business" hidden></div>
+<section class="view" id="v-business" hidden><div class="wrap"><div class="abanner" data-agent="business" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="business">Schedule a task for this agent</button></div>
 <h1>Business Bot</h1><div class="muted">Tell Pelex about your business. Your bot answers customers in your tone and stays inside the limits you set.</div>
 <div class="card bgate" id="bGate" style="margin-top:18px" hidden><h2>Start the Business Bot plan first</h2><span class="muted">Switch the plan on, then set up your bot here.</span><button class="btn" type="button" data-plan="business">Start 2-day trial</button></div>
 <div id="bForm" hidden>
@@ -926,7 +1057,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div id="sDayWrap" hidden><label for="sDay" class="muted">On</label><select class="inp" id="sDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></div>
 <div><label for="sTime" class="muted">At</label><input class="inp" id="sTime" type="time" value="08:00"><div class="muted" id="sTzNote" style="font-size:12px;margin-top:4px"></div></div>
 <div><label for="sChan" class="muted">Send to</label><select class="inp" id="sChan"><option value="website">This app</option><option value="telegram" disabled data-chan="telegram">Telegram (turns on when connected)</option><option value="whatsapp" disabled data-chan="whatsapp">WhatsApp (turns on when connected)</option></select></div>
-<div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="personal">Personal assistant</option><option value="business">Business assistant</option></select></div>
+<div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="general">General Agent</option><option value="personal">Personal Agent</option><option value="business">Business Agent</option><option value="pitch">Pitch Agent</option><option value="gmail">Gmail Bot (Mailbot)</option></select></div>
 </div>
 <div style="margin-bottom:12px"><label for="sSrc" class="muted">Website to pull from (optional)</label><input class="inp" id="sSrc" type="url" inputmode="url" placeholder="Paste a website link"></div>
 <div id="sMsg" class="muted" style="min-height:20px;font-size:13px;margin-bottom:8px" role="status"></div>
@@ -1201,6 +1332,21 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   }else{if(!cls&&window.mdRender)textNode.appendChild(window.mdRender(t));else textNode.textContent=t}
   if(!cls&&window.__lastSteps&&window.__lastSteps.length&&!window.__stepsDone){window.__stepsDone=true;var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary'),sn=window.__lastSteps.length;sm.textContent='Activity \u00b7 '+sn+(sn===1?' step':' steps');dt.appendChild(sm);window.__lastSteps.forEach(function(x){var r=document.createElement('div');r.textContent='\u2713 '+x;dt.appendChild(r)});d.appendChild(dt)}
   d.appendChild(textNode);
+  if(!cls&&typeof t==='string'){
+    var dlRe=/\[Download ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,pvRe=/\[Preview ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,mF,files=[];
+    while((mF=dlRe.exec(t))!==null)files.push({name:mF[1],downloadUrl:mF[2],previewUrl:null});
+    while((mF=pvRe.exec(t))!==null){var fnd=files.filter(function(f){return f.name===mF[1]})[0];if(fnd)fnd.previewUrl=mF[2];else files.push({name:mF[1],previewUrl:mF[2],downloadUrl:mF[2]})}
+    if(files.length){var clean=t.replace(/\[(?:Download|Preview) [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\n{3,}/g,'\n\n').trim();textNode.textContent='';if(window.mdRender&&clean)textNode.appendChild(window.mdRender(clean));else textNode.textContent=clean}
+    files.forEach(function(file){
+      var card=document.createElement('div');card.className='file-card';
+      var info=document.createElement('div');info.className='file-card-info';
+      var title=document.createElement('button');title.type='button';title.className='file-name-preview';title.textContent=file.name;title.setAttribute('data-preview-url',file.previewUrl||file.downloadUrl);title.setAttribute('data-preview-name',file.name);
+      var lab=document.createElement('span');lab.textContent='Select filename to preview';info.appendChild(title);info.appendChild(lab);
+      var actions=document.createElement('div');actions.className='file-card-actions';
+      var dn=document.createElement('button');dn.type='button';dn.className='file-download-icon';dn.setAttribute('aria-label','Download '+file.name);dn.title='Download file';dn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16"/></svg>';dn.setAttribute('data-download-url',file.downloadUrl||file.previewUrl);dn.setAttribute('data-download-name',file.name);
+      actions.appendChild(dn);card.appendChild(info);card.appendChild(actions);d.appendChild(card);
+    });
+  }
   if(!cls){ // bot reply: add copy / thumbs / retry row
     var row=document.createElement('div');row.className='msgactions';
     var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='Copy';
@@ -1466,7 +1612,7 @@ async function sendTyped(){
   } else await turn(q);
 }
 $('send').onclick=sendTyped;
-input.addEventListener('keydown',function(e){if(e.key==='Enter')sendTyped()});
+input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendTyped()}});
 
 // ---- voice recording ----
 function setLive(on){live=on;silent=0;$('muteBtn').hidden=!on;if(!on){muted=false;$('muteBtn').textContent='Mute'}$('talk').classList.toggle('on',on);document.body.classList.toggle('live',on);$('talk').textContent=on?'Stop':'Talk live';
@@ -2112,7 +2258,7 @@ $('newProjectBtn').onclick=function(){
   $('projectCreateForm').onsubmit=async function(e){
     e.preventDefault();var n=$('projectName').value.trim(),d=$('projectDescription').value.trim();
     if(!n){$('projectName').focus();return}
-    var save=$('projectSave');save.disabled=true;save.textContent='Creating…';
+    var save=$('projectSave');save.disabled=true;save.textContent='Creating\u2026';
     var row={name:n.slice(0,60)};if(d)row.description=d.slice(0,400);
     var r=await sb.from('projects').insert(row);
     if(r.error&&row.description){delete row.description;r=await sb.from('projects').insert(row)}
@@ -2122,13 +2268,30 @@ $('newProjectBtn').onclick=function(){
 };
 
 // ---- Scheduled board ----
+var AGL={general:'General Agent',personal:'Personal Agent',business:'Business Agent',pitch:'Pitch Agent',gmail:'Gmail Bot'};
+function schedStatusLine(t){
+  var st=t.last_status,when=t.last_run_at?new Date(t.last_run_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'';
+  if(t.run_state==='running')return 'Running now...';
+  if(t.retry_at&&st==='failed')return 'Last run failed ('+(t.last_error||'error')+'). Trying again '+new Date(t.retry_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'})+'.';
+  if(st==='delivered')return 'Delivered '+(t.delivered_at?new Date(t.delivered_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):when);
+  if(st==='delivery_failed')return 'The result is saved here, but sending it failed: '+(t.last_error||'delivery problem');
+  if(st==='pending_approval')return 'Waiting for your approval. Nothing has been sent.';
+  if(st==='skipped')return 'Skipped. It runs again at the next scheduled time.';
+  if(st==='failed')return 'The last run failed ('+(t.last_error||'error')+'). It will try again at the next scheduled time.';
+  if(t.delivered_at)return 'Last sent '+new Date(t.delivered_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'});
+  return ''}
 var FREQ={daily:'Every day',weekdays:'Weekdays',weekly:'Every week',every2days:'Every 2 days',every3days:'Every 3 days',biweekly:'Every 2 weeks',monthly:'Every month',once:'Once'};
 function sMsg(t,bad){var m=$('sMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
 function nextRunFrom(freq,time,day){
-  var p=String(time||'08:00').split(':'),d=new Date();d.setHours(+p[0]||0,+p[1]||0,0,0);
+  var p=String(time||'08:00').split(':'),now=new Date(),d=new Date(now);
+  d.setHours(Number(p[0])||0,Number(p[1])||0,0,0);
   var wk=(freq==='weekly'||freq==='biweekly');
-  if(wk)d.setDate(d.getDate()+((+day-d.getDay()+7)%7));
-  if(d<=new Date())d.setDate(d.getDate()+(wk?7:1));
+  if(wk)d.setDate(d.getDate()+((Number(day)-d.getDay()+7)%7));
+  if(freq==='monthly'){
+    var targetDay=now.getDate(),month=new Date(now.getFullYear(),now.getMonth()+1,1);
+    var lastDay=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
+    d=new Date(month.getFullYear(),month.getMonth(),Math.min(targetDay,lastDay),Number(p[0])||0,Number(p[1])||0,0,0);
+  }else if(d<=now)d.setDate(d.getDate()+(wk?7:1));
   if(freq==='weekdays'){while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1)}
   return d.toISOString();
 }
@@ -2144,25 +2307,36 @@ async function loadTasks(){
   var box=$('sList'),em=$('sEmpty');
   if(!dbOk()){box.innerHTML='';em.hidden=false;em.textContent='Sign in to schedule tasks.';return}
   var r=await sb.from('scheduled_tasks').select('*').order('created_at',{ascending:false});
-  if(r.error)return;
+  if(r.error){em.hidden=false;em.textContent='Could not load scheduled tasks: '+(r.error.message||'Please refresh and try again.');return}
   var list=r.data||[];box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
   list.forEach(function(t){
-    var c=document.createElement('div');c.className='stask'+(t.active?'':' off');
+    var status=String(t.status||'scheduled').toLowerCase(),closed=status==='closed';
+    var state=closed?(t.last_error?'Failed':(t.last_result?'Completed':'Closed')):(!t.active?'Paused':(status==='running'?'Running':'Scheduled'));
+    var c=document.createElement('div');c.className='stask'+(!t.active||closed?' off':'');
     var h=document.createElement('strong');h.textContent=t.instruction;c.appendChild(h);
     var nx=t.next_run?new Date(t.next_run):null;
-    var when=(FREQ[t.frequency]||t.frequency)+(nx?' at '+nx.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'');
+    var when=(FREQ[t.frequency]||t.frequency)+(nx?' · '+nx.toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');
     var meta=document.createElement('div');meta.className='meta';
-    meta.textContent=when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
+    meta.textContent='Status: '+state+' · '+when+' · '+(t.channel==='website'?'Website inbox':t.channel);
     c.appendChild(meta);
+    if(t.last_error){
+      var er=document.createElement('div');er.className='meta';er.style.color='#b3261e';er.textContent='Last error: '+t.last_error;c.appendChild(er);
+      var attempts=document.createElement('div');attempts.className='meta';attempts.textContent='Attempts: '+(Number(t.attempts)||0);c.appendChild(attempts);
+    }
     if(t.last_result){
       var lr=document.createElement('div');lr.className='res';if(window.mdRender)lr.appendChild(window.mdRender(t.last_result.slice(0,6000)));else lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
-      var ld=document.createElement('div');ld.className='meta';ld.textContent='Last sent '+(t.delivered_at?new Date(t.delivered_at).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');c.appendChild(ld)}
+      var ld=document.createElement('div');ld.className='meta';ld.textContent='Last run started '+(t.last_run?new Date(t.last_run).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');c.appendChild(ld)
+    }
     var a=document.createElement('div');a.className='acts';
-    var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
-    pb.onclick=async function(){pb.disabled=true;await sb.from('scheduled_tasks').update({active:!t.active}).eq('id',t.id);loadTasks()};
+    if(!closed){
+      var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
+      pb.onclick=async function(){pb.disabled=true;var changed=await sb.from('scheduled_tasks').update({active:!t.active}).eq('id',t.id);if(changed.error){sMsg('Could not update this task: '+changed.error.message,true);pb.disabled=false;return}loadTasks()};
+      a.appendChild(pb);
+    }
     var db=document.createElement('button');db.className='btn alt';db.textContent='Delete';
-    db.onclick=async function(){if(!confirm('Delete this scheduled task?'))return;await sb.from('scheduled_tasks').delete().eq('id',t.id);loadTasks()};
-    a.appendChild(pb);a.appendChild(db);c.appendChild(a);box.appendChild(c)})
+    db.onclick=async function(){if(!confirm('Delete this scheduled task?'))return;var removed=await sb.from('scheduled_tasks').delete().eq('id',t.id);if(removed.error){sMsg('Could not delete this task: '+removed.error.message,true);return}loadTasks()};
+    a.appendChild(db);c.appendChild(a);box.appendChild(c)
+  })
 }
 var MOVIE_RE=/\b(netflix|prime video|amazon prime|disney\+?|showmax|hulu|hbo|apple tv|movies?|films?|nollywood|series|tv shows?|trailers?|box office|streaming)\b/i;
 function movieGuard(){var f=$('sFreq'),t=$('sInstr').value+' '+($('sSrc')?$('sSrc').value:'');
@@ -2175,7 +2349,7 @@ $('sAdd').onclick=async function(){
   if(src){if(!/^https?:\/\//i.test(src))src='https://'+src;try{var uu=new URL(src);if(!uu.hostname.includes('.'))throw 0;src=uu.href}catch(e){sMsg('That website link does not look right.',true);return}ins+='\nSource website: '+src}
   movieGuard();var f=$('sFreq').value,tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(e){}
   var btn=this;btn.disabled=true;sMsg('Saving...');
-  var r=await sb.from('scheduled_tasks').insert({bot:$('sBot').value,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
+  var selectedBot=$('sBot').value;if(selectedBot!=='general'){btn.disabled=false;sMsg('That agent is not connected to scheduled execution yet. Choose General Agent for now.',true);return}var r=await sb.from('scheduled_tasks').insert({bot:selectedBot,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
   btn.disabled=false;
   if(r.error){sMsg('Could not save that. Please try again.',true);return}
   $('sInstr').value='';$('sSrc').value='';document.querySelectorAll('#sChips .qchip').forEach(function(x){x.classList.remove('on')});sMsg(f==='every2days'&&MOVIE_RE.test(ins)?'Added. Movie and TV updates are checked every 2 days.':'Added to your schedule.');loadTasks();
@@ -3260,6 +3434,113 @@ document.getElementById('pbOpen').onclick=function(){go('chat')}})();
     catch(e){$('imgMsg').textContent=(e&&!e.backend&&e.message)?e.message:'Could not do that right now. Please try again.'}
     $('imgCreate').disabled=$('imgFind').disabled=false}
   if($('imgCreate')){$('imgCreate').onclick=function(){run('/image')};$('imgFind').onclick=function(){run('/examples')}}
+})();
+</script>
+<script>
+(function(){
+  function scheduleFor(a){if(typeof go==='function')go('scheduled');setTimeout(function(){var sel=document.getElementById('sBot');if(sel)sel.value=a;var i=document.getElementById('sInstr');if(i)i.focus()},120)}
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sched-agent]');if(b)scheduleFor(b.getAttribute('data-sched-agent'))});
+  window.pelexScheduleFor=scheduleFor;
+  var BASE={general:'General Agent',personal:'Personal Agent',business:'Business Agent',pitch:'Pitch Agent',gmail:'Gmail Bot (Mailbot)'};
+  function labels(){var st=window.__status,sel=document.getElementById('sBot');if(!st||!sel)return;[].forEach.call(sel.options,function(o){var a=st.agents&&st.agents[o.value];o.textContent=BASE[o.value]+((a&&!a.ready&&o.value!=='general')?' (connecting, starts by itself)':'')})}
+  setInterval(labels,1500);
+})();
+</script>
+<script>
+/* ===== Agents group in the sidebar + image viewer + real downloads ===== */
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  /* --- Agents drop-down --- */
+  var grp=$('agentsGrp'),btn=$('agentsBtn'),AG=['pitch','personal','gmail','business'];
+  function lsg(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lss(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function setOpen(o,keep){if(!grp)return;grp.classList.toggle('open',!!o);btn.setAttribute('aria-expanded',o?'true':'false');if(!keep)lss('pelex_agents_open',o?'1':'0');mark()}
+  function mark(){if(!grp)return;var on=!!grp.querySelector('.agentspanel .nav[aria-current="true"]');btn.setAttribute('data-active',on?'1':'0')}
+  if(grp){
+    setOpen(lsg('pelex_agents_open')==='1',true);
+    btn.addEventListener('click',function(){setOpen(!grp.classList.contains('open'))});
+    var _go=go;
+    go=function(v,t){_go(v,t);if(AG.indexOf(v)>-1&&!grp.classList.contains('open'))setOpen(true,true);mark()};
+  }
+  /* --- download any file or image, without leaving the page --- */
+  var EXT={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif','image/svg+xml':'svg','application/pdf':'pdf'};
+  function nameOf(u,def){try{var p=decodeURIComponent(new URL(u,location.href).pathname.split('/').pop()||'');return p||def}catch(e){return def}}
+  async function saveUrl(u,name,note){
+    /* Pelex media links answer with an attachment, so a plain anchor saves the file and the page stays put */
+    if(/\/media\/download\?/.test(u)){
+      try{var du=u.replace(/([?&])view=1(&|$)/,function(m,a,b){return b==='&'?a:''}).replace(/[?&]$/,'');
+        var a0=document.createElement('a');a0.href=du;a0.setAttribute('download',name||'pelex-file');a0.rel='noopener';a0.style.display='none';document.body.appendChild(a0);a0.click();setTimeout(function(){a0.remove()},1500);
+        if(note)note.textContent='Saving to your device...';return true}catch(e0){}
+    }
+    try{
+      var r=await fetch(u,{mode:'cors'});if(!r.ok)throw new Error('http '+r.status);
+      var b=await r.blob(),nm=name||nameOf(u,'pelex-file');
+      if(!/\.[a-z0-9]{2,5}$/i.test(nm)&&EXT[b.type])nm+='.'+EXT[b.type];
+      var o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download=nm;document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(o);a.remove()},2000);
+      if(note)note.textContent='Saved to your device.';return true
+    }catch(e){
+      if(note)note.textContent='Your browser blocked a direct save. Press and hold the picture, then choose Save image.';
+      return false}}
+  /* --- viewer --- */
+  var lb=document.createElement('div');lb.id='lbx';lb.hidden=true;lb.setAttribute('role','dialog');lb.setAttribute('aria-modal','true');lb.setAttribute('aria-label','Picture viewer');
+  lb.innerHTML='<div class="lbtop"><button type="button" id="lbDl">Download</button><button type="button" class="x" id="lbX" aria-label="Close">\u00d7</button></div><div class="lbstage"><img alt="Picture"></div><div class="lbnote" id="lbNote">Tap the picture to zoom.</div>';
+  document.body.appendChild(lb);
+  var lbImg=lb.querySelector('img'),lbNote=$('lbNote'),cur='',curName='';
+  function openLb(src,name){cur=src;curName=name||nameOf(src,'pelex-image');lbImg.src=src;lb.classList.remove('zoom');lbNote.textContent='Tap the picture to zoom.';lb.hidden=false;document.body.style.overflow='hidden'}
+  function closeLb(){lb.hidden=true;lbImg.removeAttribute('src');document.body.style.overflow=''}
+  $('lbX').onclick=closeLb;
+  lb.addEventListener('click',function(e){if(e.target===lb||e.target.classList.contains('lbstage'))closeLb()});
+  lbImg.addEventListener('click',function(e){e.stopPropagation();lb.classList.toggle('zoom');lbNote.textContent=lb.classList.contains('zoom')?'Scroll to look around. Tap again to fit.':'Tap the picture to zoom.'});
+  $('lbDl').onclick=function(){saveUrl(cur,curName,lbNote)};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!lb.hidden)closeLb()});
+  /* --- clicks in chat, scheduled results, Images screen --- */
+  var IMGX=/\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i;
+  document.addEventListener('click',function(e){
+    var t=e.target;if(!t||!t.closest)return;
+    if(t.closest('#lbx'))return;
+    var fc=t.closest('a[data-fc]');
+    if(fc){e.preventDefault();var u=fc.href,nm=fc.getAttribute('data-name')||nameOf(u,'pelex-file');
+      if(fc.getAttribute('data-fc')==='download'){var o=fc.textContent;fc.textContent='Saving...';saveUrl(u,nm).then(function(ok){fc.textContent=ok?'Saved':o;setTimeout(function(){fc.textContent=o},1800);if(!ok)try{window.open(u,'_blank','noopener')}catch(x){}})}
+      else if(IMGX.test(nm)||IMGX.test(u))openLb(u,nm);else window.open(u,'_blank','noopener');return}
+    var im=t.closest('#chat .msg img,.md img,#imgOut img,.stask .res img');
+    if(im&&im.src&&!im.closest('#attachTh')){e.preventDefault();e.stopPropagation();openLb(im.currentSrc||im.src,im.getAttribute('data-name')||'');return}
+    var a=t.closest('.md a,#chat .msg a');
+    if(a&&a.href){
+      var wrapImg=a.querySelector('img');
+      if(wrapImg){e.preventDefault();openLb(a.href,'');return}
+      var txt=(a.textContent||'').trim(),dl=/^download\b/i.test(txt)||/[?&]download=/.test(a.href)||/\/storage\/v1\/object\//.test(a.href);
+      if(dl){e.preventDefault();var old=a.textContent;a.textContent='Saving...';saveUrl(a.href,'').then(function(ok){a.textContent=ok?'Saved':old;setTimeout(function(){a.textContent=old},1800);if(!ok)try{window.open(a.href,'_blank','noopener')}catch(x){}});return}
+      if(IMGX.test(a.href)){e.preventDefault();openLb(a.href,'')}
+    }
+  },true);
+})();
+</script>
+<section id="pelexFilePreview" hidden aria-label="File preview"><div class="pf-head"><strong class="pf-title" id="pfTitle">File preview</strong><button type="button" id="pfClose" aria-label="Close preview">×</button></div><iframe id="pfFrame" title="File preview"></iframe><div class="pf-note">Preview only · Use the download icon on the file card to save the file.</div></section><script>
+(function(){
+ var panel=document.getElementById('pelexFilePreview'),frame=document.getElementById('pfFrame'),title=document.getElementById('pfTitle');
+ function close(){panel.classList.remove('open');setTimeout(function(){panel.hidden=true;frame.src='about:blank'},220)}
+ function preview(url,name){if(!url)return;title.textContent=name||'File preview';frame.src=url;panel.hidden=false;requestAnimationFrame(function(){panel.classList.add('open')})}
+ document.addEventListener('click',function(e){
+  var p=e.target.closest&&e.target.closest('.file-name-preview');
+  if(p){preview(p.getAttribute('data-preview-url'),p.getAttribute('data-preview-name'));return}
+  var b=e.target.closest&&e.target.closest('.file-download-icon');
+  if(b){var url=b.getAttribute('data-download-url'),name=b.getAttribute('data-download-name');if(url){var a=document.createElement('a');a.href=url;a.setAttribute('data-fc','download');a.setAttribute('data-name',name||'pelex-file');a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},1800)}return}
+ });
+ document.getElementById('pfClose').addEventListener('click',close);
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel&&!panel.hidden)close()});
+})();
+</script>
+<script>
+/* Responsive auto-growing message composer: pasted text remains reviewable before sending. */
+(function(){
+ var box=document.getElementById('in');if(!box||box.tagName!=='TEXTAREA')return;
+ var maxHeight=function(){return Math.min(window.innerHeight*.42,320)};
+ function resize(){box.style.height='44px';var cap=maxHeight(),h=Math.min(box.scrollHeight,cap);box.style.height=Math.max(44,h)+'px';box.style.overflowY=box.scrollHeight>cap?'auto':'hidden'}
+ box.addEventListener('input',resize);
+ box.addEventListener('paste',function(){requestAnimationFrame(resize);setTimeout(resize,40)});
+ window.addEventListener('resize',resize);
+ resize();
 })();
 </script>
 </body>
