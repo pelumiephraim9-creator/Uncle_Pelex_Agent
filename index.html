@@ -803,65 +803,124 @@ aside{gap:2px}
   .barwrap .disclaimer{font-size:11.5px}
 }
 
-/* Pelex responsive chat and navigation refinement */
+/* ===== FIX PASS: readable text in dark mode + clean mobile composer ===== */
 :root{--nav-ink:#0b1b4a}
-aside,.nav,.nav:visited,.sidefoot .nav,.top,.top button,.top a,
-#sbName,#sbSub,.srow,.srow span,.settings-nav,.settings-nav span{color:var(--nav-ink)}
-.nav{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nav>span:not(.nbadge){min-width:0;overflow:hidden;text-overflow:ellipsis}
-.top{min-width:0;flex-wrap:nowrap;overflow:visible}
-.top>*{min-width:0}
-.top strong,.top button,.top a{color:var(--nav-ink)}
-.top button{flex:0 0 auto}
-.barwrap .bar{width:min(100%,900px);box-sizing:border-box;padding-left:clamp(8px,2vw,16px);padding-right:clamp(8px,2vw,16px)}
-.barwrap .field{align-items:flex-end;min-width:0}
-.barwrap .field textarea#in{display:block;flex:1 1 180px;width:100%;min-width:0;min-height:44px;max-height:min(42vh,320px);height:44px;resize:none;overflow-y:auto;box-sizing:border-box;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;line-height:1.45;padding:11px 4px;white-space:pre-wrap;overflow-wrap:anywhere}
-.barwrap .field textarea#in:focus{outline:0}
-#chat,.chatbody,.msg,.msg .txtp,.msg pre,.msg code{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:normal}
-.msg{white-space:pre-wrap}
-.msg img,.imgs img{max-width:100%;height:auto;object-fit:contain}
-.chatbody>*{max-width:100%;min-width:0}
-.chatbody table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
-.chatbody svg{max-width:100%;height:auto}
-.file-card{align-items:flex-start;flex-wrap:nowrap}
-.file-card-info{flex:1 1 auto}
-.file-card-actions{flex:0 0 auto}
-.file-card-actions button{min-width:38px;min-height:38px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--nav-ink);cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nav-ink:#e8eef8}}
+:root[data-theme="dark"]{--nav-ink:#e8eef8}
+:root[data-theme="light"]{--nav-ink:#0b1b4a}
+.mark polygon,.hdrmark polygon{stroke:var(--nav-ink)}
+.mark circle,.mark rect,.hdrmark circle,.hdrmark rect{fill:var(--btn)}
+.mark text,.hdrmark text{fill:var(--btnink)}
+aside .nav,aside .sback,.srow,.srow span,.srow h2,.ctext h2,.settings-nav,.settings-nav span,.top strong,.top button{color:var(--nav-ink)}
+.srow svg,.nav svg{stroke:var(--nav-ink)}
+.srow .chev{stroke:var(--muted)}
+.cstat,.muted{color:var(--muted)}
+.nav[aria-current="true"],.srow:hover{color:var(--nav-ink)}
+
 @media(max-width:820px){
- .top{gap:5px;padding:6px 8px}
- .top .iconbtn{min-width:38px;min-height:38px}
- .top button,.top a{max-width:42px}
- .barwrap .bar{padding-left:8px;padding-right:8px}
- .barwrap .field textarea#in{max-height:35vh}
- .msg{max-width:100%;padding:13px 14px}
- .file-card{gap:8px}
- .file-card-actions{flex:0 0 auto}
+ #v-chat .barwrap{align-items:stretch;gap:6px;padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));max-height:52vh}
+ #v-chat .barwrap .bar{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:none;margin:0;padding:0}
+ #v-chat .barwrap,#v-chat .barwrap .bar,#v-chat .barwrap .field,#v-chat .barwrap .talk{box-sizing:border-box;max-width:100%}
+ #v-chat .barwrap .field{display:flex;flex-wrap:wrap;align-items:center;gap:4px;width:100%;flex:none;min-height:0;border-radius:24px;padding:8px 10px}
+ #v-chat .barwrap .field > .ic{flex:none}
+ #v-chat .barwrap .field textarea#in{order:1;flex:1 1 100%;width:100%;min-width:0;height:auto;min-height:40px;max-height:24vh;padding:8px 6px;overflow-y:auto}
+ #v-chat .barwrap .field > label.ic{order:2;width:40px;height:40px}
+ #v-chat .barwrap .field > #imgBtn{order:3;margin-left:auto;width:40px;height:40px}
+ #v-chat .barwrap .field > #mic{order:4;width:44px;height:44px}
+ #v-chat .barwrap .field > #send{order:5;width:44px;height:44px}
+ #v-chat .barwrap .talk{order:2;width:100%;min-height:46px;padding:0 14px;text-align:center}
+ #v-chat .barwrap .talk.sec{width:auto;flex:1 1 0}
+ #v-chat .barwrap .disclaimer{order:3;text-align:center;font-size:11.5px;padding:0;color:var(--muted)}
+ #v-chat .barwrap .plugshortcut{order:4;align-self:center;display:flex;min-height:36px;font-size:13px;margin:0}
 }
-@media(min-width:821px) and (max-width:1100px){
- .app{grid-template-columns:238px minmax(0,1fr)}
- aside{width:238px}
- .top{gap:6px}
+#ignEdge{display:none!important}
+#v-chat .barwrap .field textarea#in{resize:none}
+#v-chat .barwrap .field textarea#in{min-height:44px;max-height:40vh;line-height:1.45;padding:11px 6px}
+@media(min-width:821px){
+ #v-chat .barwrap .field{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;width:100%;min-height:56px;padding:6px 10px 6px 8px;border-radius:28px}
+ #v-chat .barwrap .field textarea#in{flex:1 1 auto;width:auto;min-width:0;height:auto;min-height:44px;margin:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent;padding:10px 6px;order:0}
+ #v-chat .barwrap .field textarea#in:focus{outline:0!important;box-shadow:none!important;border:0!important}
+ #v-chat .barwrap .field > label.ic,#v-chat .barwrap .field > #imgBtn,#v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #send{order:0;margin:0;width:40px;height:40px;flex:none}
+ #v-chat .barwrap .field > #mic{width:42px;height:42px}
+ #v-chat .barwrap .field > #send{width:42px;height:42px}
 }
-@media(max-width:420px){
- .file-card{align-items:center}
- .file-card-info strong{font-size:12px}
- .file-card-actions button{min-width:36px;padding:6px}
+#sbSub{color:var(--muted)!important;background:var(--soft)!important}
+#sbName{color:var(--nav-ink)}
+.badge.soon{background:var(--soft);color:var(--nav-ink)}
+
+/* ===== ROUND 4: one chat bar on every screen; Talk live beside send and voice ===== */
+#v-chat .barwrap .bar{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-end;gap:8px;width:100%;max-width:900px;margin:0 auto;padding:0}
+#v-chat .barwrap .field{flex:1 1 auto!important;min-width:0;width:auto!important;display:flex;flex-wrap:nowrap!important;align-items:center;gap:4px;padding:4px 6px 4px 8px;border-radius:28px;min-height:52px}
+#v-chat .barwrap .field:has(.attach:not([hidden])){flex-wrap:wrap!important}
+#v-chat .barwrap .field textarea#in{order:0!important;flex:1 1 auto!important;width:auto!important;min-width:0;height:auto;min-height:40px;margin:0;padding:10px 4px;font-size:16px}
+#v-chat .barwrap .field > label.ic,#v-chat .barwrap .field > #imgBtn,#v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #send{order:0!important;margin:0!important;flex:none!important;width:36px!important;height:36px!important}
+#v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #send{width:40px!important;height:40px!important}
+#v-chat .barwrap .talk{order:0!important;width:auto!important;flex:none!important;min-height:44px;padding:0 16px;white-space:nowrap;border-radius:99px}
+#v-chat .barwrap .talk.sec{display:none}
+#v-chat .barwrap .disclaimer,#v-chat .barwrap .plugshortcut{order:0}
+@media(max-width:820px){
+ #v-chat .barwrap{padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px));gap:6px}
+ #v-chat .barwrap .bar{gap:6px}
+ #v-chat .barwrap .field{padding:3px 4px 3px 6px;min-height:48px}
+ #v-chat .barwrap .field > label.ic,#v-chat .barwrap .field > #imgBtn{width:32px!important;height:32px!important}
+ #v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #send{width:38px!important;height:38px!important}
+ #v-chat .barwrap .talk{padding:0 12px;font-size:12.5px;min-height:44px}
 }
+/* ===== Ignitor: a panel that opens from the right side of the chat ===== */
+#ignEdge{display:none!important}
+#ignPanel{position:fixed;top:64px;right:12px;z-index:130;width:290px;max-width:calc(100vw - 24px);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(8,18,35,.22);padding:16px 16px 14px;transform:translateX(calc(100% + 24px));transition:transform .22s ease;pointer-events:none}
+#ignPanel.open{transform:none;pointer-events:auto}
+#ignPanel .ip-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#ignPanel .ip-head b{font-size:16px;flex:1}
+#ignPanel .ip-x{border:0;background:var(--soft);color:var(--ink);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}
+#ignPanel p{margin:0 0 10px;color:var(--muted);font-size:13.5px;line-height:1.5}
+#ignPanel ul{margin:0 0 12px;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.6}
+#ignPanel .ip-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+#ignPanel .ip-row span{font-weight:600;font-size:14px}
+#ignPanel .sw{flex:none}
+/* round-4 fit: field shrinks, Talk live stays on the row; Ignitor chip on desktop */
+#v-chat .barwrap .field{flex:1 1 0!important}
+#v-chat .barwrap .field textarea#in{flex:1 1 0!important;width:0!important}
+#v-chat .barwrap .talk{flex:0 0 auto!important}
+#v-chat{position:relative}
+#ignChip{display:none;position:absolute;top:14px;right:18px;z-index:20;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:13px;font-weight:600;cursor:pointer}
+#ignChip svg{width:16px;height:16px}
+#ignChip.on{background:#0f1530;color:#f59e0b;border-color:#0f1530}
+@media(min-width:821px){#ignChip{display:inline-flex}#ignPanel{top:58px}}
+@media(max-width:820px){#v-chat .barwrap .talk{padding:0 10px;font-size:12px}}
+/* round-4 final fit */
+#v-chat .barwrap .bar{align-items:center!important}
+#v-chat .barwrap .field textarea#in{flex:1 1 auto!important;width:auto!important;min-width:0!important;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;resize:none}
+#v-chat .barwrap .field textarea#in:focus{border:0!important;outline:0!important;box-shadow:none!important}
+#ignPanel{visibility:hidden;box-shadow:none}
+#ignPanel.open{visibility:visible;box-shadow:0 18px 50px rgba(8,18,35,.22)}
+@media(max-width:820px){#v-chat .barwrap .talk{font-size:11.5px;padding:0 10px}#v-chat .barwrap .field > label.ic,#v-chat .barwrap .field > #imgBtn{width:30px!important;height:30px!important}#v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #send{width:36px!important;height:36px!important}}
 
-
-.file-card{flex-wrap:nowrap;align-items:center}.file-card-info{flex:1 1 auto;min-width:0}
-.file-name-preview{padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:650;text-align:left;cursor:pointer;overflow-wrap:anywhere}
-.file-name-preview:hover{text-decoration:underline}.file-card-actions{flex:0 0 auto}
-.file-card-actions button{display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer}
-.file-download-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#pelexFilePreview{position:fixed;z-index:180;inset:0 0 0 auto;width:min(680px,94vw);height:100dvh;background:var(--panel);border-left:1px solid var(--line);box-shadow:-18px 0 50px rgba(8,18,35,.18);display:flex;flex-direction:column;transform:translateX(105%);transition:transform .22s ease}
-#pelexFilePreview.open{transform:translateX(0)}#pelexFilePreview[hidden]{display:none}
-#pelexFilePreview .pf-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);min-height:58px}
-#pelexFilePreview .pf-title{font-weight:650;min-width:0;flex:1;overflow-wrap:anywhere;color:var(--ink)}
-#pelexFilePreview button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;min-width:38px;min-height:38px;cursor:pointer}
-#pelexFilePreview iframe{border:0;flex:1;width:100%;background:#fff}#pelexFilePreview .pf-note{padding:8px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
-@media(max-width:700px){#pelexFilePreview{width:100vw}}
-
+/* ===== ROUND 5: simple composer as the reference ===== */
+#v-chat{--cb-bg:#ffffff;--cb-line:#e3e8f1;--cb-circle:#eef1f6;--cb-ink:#14202f;--cb-muted:#8a93a3;--cb-hi:#14202f;--cb-hi-ink:#ffffff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #v-chat{--cb-bg:#1f1f1f;--cb-line:#333333;--cb-circle:#2c2c2c;--cb-ink:#f2f2f2;--cb-muted:#9a9a9a;--cb-hi:#f8f8f5;--cb-hi-ink:#111111}}
+:root[data-theme="dark"] #v-chat{--cb-bg:#1f1f1f;--cb-line:#333333;--cb-circle:#2c2c2c;--cb-ink:#f2f2f2;--cb-muted:#9a9a9a;--cb-hi:#f8f8f5;--cb-hi-ink:#111111}
+#v-chat .barwrap{padding:10px clamp(12px,3vw,24px) 6px;gap:8px;align-items:center}
+#v-chat .barwrap .bar{display:flex!important;align-items:center;justify-content:center;width:100%;max-width:760px;margin:0 auto;padding:0;gap:0}
+#v-chat .barwrap .field{flex:1 1 auto!important;width:100%!important;display:flex!important;flex-wrap:nowrap!important;align-items:flex-end;gap:8px;min-height:64px;padding:9px 9px 9px 9px;box-sizing:border-box;background:var(--cb-bg)!important;border:1px solid var(--cb-line)!important;border-radius:32px!important;box-shadow:none!important}
+#v-chat .barwrap .field:has(.attach:not([hidden])){flex-wrap:wrap!important}
+#v-chat .barwrap .field > label.ic{order:0!important;width:46px!important;height:46px!important;min-width:46px;border-radius:50%!important;background:var(--cb-circle)!important;color:var(--cb-ink)!important;font-size:28px;font-weight:300;line-height:1;display:grid!important;place-items:center;margin:0!important;flex:none}
+#v-chat .barwrap .field textarea#in{order:0!important;flex:1 1 0!important;width:0!important;min-width:0!important;min-height:46px;height:46px;max-height:40vh;margin:0;padding:12px 6px;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:var(--cb-ink);font-size:16px;line-height:1.4;resize:none;overflow-y:auto;align-self:center}
+#v-chat .barwrap .field textarea#in::placeholder{color:var(--cb-muted);opacity:1}
+#v-chat .barwrap .field > #imgBtn{display:none!important}
+#v-chat .barwrap .field > #mic{order:0!important;width:46px!important;height:46px!important;min-width:46px;border-radius:50%!important;background:var(--cb-circle)!important;color:var(--cb-ink)!important;box-shadow:none!important;flex:none;margin:0!important}
+#v-chat .barwrap .field > #mic svg{stroke:var(--cb-ink)!important;width:20px;height:20px}
+#v-chat .barwrap .field > #mic .wv i{background:var(--cb-ink)!important}
+#v-chat .barwrap .field > #talk,#v-chat .barwrap .field > #send{order:0!important;width:46px!important;height:46px!important;min-width:46px;min-height:0!important;padding:0!important;border-radius:50%!important;border:0!important;background:var(--cb-hi)!important;color:var(--cb-hi-ink)!important;box-shadow:none!important;flex:none;margin:0!important;display:grid!important;place-items:center}
+#v-chat .barwrap .field > #talk svg,#v-chat .barwrap .field > #send svg{stroke:var(--cb-hi-ink)!important;width:22px;height:22px;stroke-width:2.4}
+#v-chat .barwrap .field > #talk.on{background:#d6453d!important;color:#fff!important}
+#v-chat .barwrap .field > #send{display:none!important}
+#v-chat .barwrap .field.has-text > #send{display:grid!important}
+#v-chat .barwrap .field.has-text > #talk{display:none!important}
+#v-chat .barwrap .talk.sec,#v-chat .barwrap > .bar > #muteBtn,#v-chat .barwrap > .bar > #stopSpeak{display:none!important}
+#v-chat .barwrap .disclaimer{text-align:center;font-size:12px;color:var(--cb-muted)}
+#v-chat .barwrap .plugshortcut{align-self:center}
+@media(max-width:820px){#v-chat .barwrap{padding:8px 10px 6px}#v-chat .barwrap .field{min-height:58px;padding:7px}#v-chat .barwrap .field > label.ic,#v-chat .barwrap .field > #mic,#v-chat .barwrap .field > #talk,#v-chat .barwrap .field > #send{width:44px!important;height:44px!important;min-width:44px}}
 </style>
 </head>
 <body>
@@ -931,7 +990,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="barwrap"><div class="bar"><div class="field">
 <div class="attach" id="attach" hidden><div class="th" id="attachTh"></div><span class="nm" id="attachNm"></span><button class="x" id="attachX" type="button" aria-label="Remove attachment">×</button></div>
 <label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" multiple hidden></label>
-<textarea id="in" rows="1" placeholder="Ask anything" aria-label="Message" aria-multiline="true"></textarea>
+<textarea id="in" rows="1" placeholder="Reply or hold to talk" aria-label="Message" aria-multiline="true"></textarea>
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
 <button class="ic" id="imgBtn" type="button" aria-label="Create an image" title="Create an image" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg></button> <button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 </div><button class="talk" id="talk">Talk live</button><button class="talk sec" id="muteBtn" hidden>Mute</button><button class="talk sec" id="stopSpeak">Stop reply</button></div>
@@ -1336,15 +1395,16 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
     var dlRe=/\[Download ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,pvRe=/\[Preview ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,mF,files=[];
     while((mF=dlRe.exec(t))!==null)files.push({name:mF[1],downloadUrl:mF[2],previewUrl:null});
     while((mF=pvRe.exec(t))!==null){var fnd=files.filter(function(f){return f.name===mF[1]})[0];if(fnd)fnd.previewUrl=mF[2];else files.push({name:mF[1],previewUrl:mF[2],downloadUrl:mF[2]})}
-    if(files.length){var clean=t.replace(/\[(?:Download|Preview) [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\n{3,}/g,'\n\n').trim();textNode.textContent='';if(window.mdRender&&clean)textNode.appendChild(window.mdRender(clean));else textNode.textContent=clean}
     files.forEach(function(file){
       var card=document.createElement('div');card.className='file-card';
       var info=document.createElement('div');info.className='file-card-info';
-      var title=document.createElement('button');title.type='button';title.className='file-name-preview';title.textContent=file.name;title.setAttribute('data-preview-url',file.previewUrl||file.downloadUrl);title.setAttribute('data-preview-name',file.name);
-      var lab=document.createElement('span');lab.textContent='Select filename to preview';info.appendChild(title);info.appendChild(lab);
+      var title=document.createElement('strong');title.textContent=file.name;
+      var lab=document.createElement('span');lab.textContent='Generated file';
+      info.appendChild(title);info.appendChild(lab);
       var actions=document.createElement('div');actions.className='file-card-actions';
-      var dn=document.createElement('button');dn.type='button';dn.className='file-download-icon';dn.setAttribute('aria-label','Download '+file.name);dn.title='Download file';dn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16"/></svg>';dn.setAttribute('data-download-url',file.downloadUrl||file.previewUrl);dn.setAttribute('data-download-name',file.name);
-      actions.appendChild(dn);card.appendChild(info);card.appendChild(actions);d.appendChild(card);
+      var pv=document.createElement('a');pv.href=file.previewUrl||file.downloadUrl;pv.target='_blank';pv.rel='noopener noreferrer';pv.textContent='Preview';pv.setAttribute('data-fc','preview');pv.setAttribute('data-name',file.name);actions.appendChild(pv);
+      var dn=document.createElement('a');dn.href=file.downloadUrl||file.previewUrl;dn.rel='noopener noreferrer';dn.textContent='Download';dn.setAttribute('data-fc','download');dn.setAttribute('data-name',file.name);actions.appendChild(dn);
+      card.appendChild(info);card.appendChild(actions);d.appendChild(card);
     });
   }
   if(!cls){ // bot reply: add copy / thumbs / retry row
@@ -1615,7 +1675,7 @@ $('send').onclick=sendTyped;
 input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendTyped()}});
 
 // ---- voice recording ----
-function setLive(on){live=on;silent=0;$('muteBtn').hidden=!on;if(!on){muted=false;$('muteBtn').textContent='Mute'}$('talk').classList.toggle('on',on);document.body.classList.toggle('live',on);$('talk').textContent=on?'Stop':'Talk live';
+function setLive(on){live=on;silent=0;$('muteBtn').hidden=!on;if(!on){muted=false;$('muteBtn').textContent='Mute'}$('talk').classList.toggle('on',on);document.body.classList.toggle('live',on);$('talk').setAttribute('aria-label',on?'Stop talking':'Talk live');
   if(!on){stopSpeaking();clearInterval(timer);heard=false;
     if(rec&&rec.state==='recording')rec.stop();
     $('mic').classList.remove('recording');busy=false;closeMic()}}
@@ -1679,9 +1739,9 @@ $('talk').onclick=function(){unlockAudio();if(live){setLive(false)}else{setLive(
 // ---- images and documents ----
 function shrink(file){return new Promise(function(res,rej){
   var img=new Image(),u=URL.createObjectURL(file);
-  img.onload=function(){var m=1280,s=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
+  img.onload=function(){var m=1024,s=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
     c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-    URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82))};
+    URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.8))};
   img.onerror=function(){rej(new Error('That image could not be opened.'))};img.src=u})}
 async function readPdf(file){
   if(!window.pdfjsLib) throw new Error('The PDF reader did not load. Check your connection and try again.');
@@ -2283,15 +2343,10 @@ function schedStatusLine(t){
 var FREQ={daily:'Every day',weekdays:'Weekdays',weekly:'Every week',every2days:'Every 2 days',every3days:'Every 3 days',biweekly:'Every 2 weeks',monthly:'Every month',once:'Once'};
 function sMsg(t,bad){var m=$('sMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
 function nextRunFrom(freq,time,day){
-  var p=String(time||'08:00').split(':'),now=new Date(),d=new Date(now);
-  d.setHours(Number(p[0])||0,Number(p[1])||0,0,0);
+  var p=String(time||'08:00').split(':'),d=new Date();d.setHours(+p[0]||0,+p[1]||0,0,0);
   var wk=(freq==='weekly'||freq==='biweekly');
-  if(wk)d.setDate(d.getDate()+((Number(day)-d.getDay()+7)%7));
-  if(freq==='monthly'){
-    var targetDay=now.getDate(),month=new Date(now.getFullYear(),now.getMonth()+1,1);
-    var lastDay=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
-    d=new Date(month.getFullYear(),month.getMonth(),Math.min(targetDay,lastDay),Number(p[0])||0,Number(p[1])||0,0,0);
-  }else if(d<=now)d.setDate(d.getDate()+(wk?7:1));
+  if(wk)d.setDate(d.getDate()+((+day-d.getDay()+7)%7));
+  if(d<=new Date())d.setDate(d.getDate()+(wk?7:1));
   if(freq==='weekdays'){while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1)}
   return d.toISOString();
 }
@@ -2307,36 +2362,28 @@ async function loadTasks(){
   var box=$('sList'),em=$('sEmpty');
   if(!dbOk()){box.innerHTML='';em.hidden=false;em.textContent='Sign in to schedule tasks.';return}
   var r=await sb.from('scheduled_tasks').select('*').order('created_at',{ascending:false});
-  if(r.error){em.hidden=false;em.textContent='Could not load scheduled tasks: '+(r.error.message||'Please refresh and try again.');return}
+  if(r.error)return;
   var list=r.data||[];box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
+  try{var rr=await sb.from('scheduled_task_runs').select('task_id,status,started_at,error').order('started_at',{ascending:false}).limit(120);window.__runs={};((rr&&rr.data)||[]).forEach(function(x){(window.__runs[x.task_id]=window.__runs[x.task_id]||[]).push(x)})}catch(e){window.__runs={}}
   list.forEach(function(t){
-    var status=String(t.status||'scheduled').toLowerCase(),closed=status==='closed';
-    var state=closed?(t.last_error?'Failed':(t.last_result?'Completed':'Closed')):(!t.active?'Paused':(status==='running'?'Running':'Scheduled'));
-    var c=document.createElement('div');c.className='stask'+(!t.active||closed?' off':'');
+    var c=document.createElement('div');c.className='stask'+(t.active?'':' off');
     var h=document.createElement('strong');h.textContent=t.instruction;c.appendChild(h);
     var nx=t.next_run?new Date(t.next_run):null;
-    var when=(FREQ[t.frequency]||t.frequency)+(nx?' · '+nx.toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');
+    var when=(FREQ[t.frequency]||t.frequency)+(nx?' at '+nx.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'');
     var meta=document.createElement('div');meta.className='meta';
-    meta.textContent='Status: '+state+' · '+when+' · '+(t.channel==='website'?'Website inbox':t.channel);
+    meta.textContent=(AGL[t.agent||t.bot]||'General Agent')+' · '+when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
     c.appendChild(meta);
-    if(t.last_error){
-      var er=document.createElement('div');er.className='meta';er.style.color='#b3261e';er.textContent='Last error: '+t.last_error;c.appendChild(er);
-      var attempts=document.createElement('div');attempts.className='meta';attempts.textContent='Attempts: '+(Number(t.attempts)||0);c.appendChild(attempts);
-    }
     if(t.last_result){
       var lr=document.createElement('div');lr.className='res';if(window.mdRender)lr.appendChild(window.mdRender(t.last_result.slice(0,6000)));else lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
-      var ld=document.createElement('div');ld.className='meta';ld.textContent='Last run started '+(t.last_run?new Date(t.last_run).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'');c.appendChild(ld)
-    }
+      }
+    var sl=schedStatusLine(t);if(sl){var ld=document.createElement('div');ld.className='meta';ld.textContent=sl;c.appendChild(ld)}
+    var hr=(window.__runs||{})[t.id];if(hr&&hr.length){var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary');sm.textContent='History · '+hr.length+(hr.length===1?' run':' runs');dt.appendChild(sm);hr.slice(0,5).forEach(function(x){var rw=document.createElement('div');rw.textContent=new Date(x.started_at).toLocaleString([],{dateStyle:'short',timeStyle:'short'})+' · '+String(x.status).replace(/_/g,' ')+(x.error?' · '+x.error:'');dt.appendChild(rw)});c.appendChild(dt)}
     var a=document.createElement('div');a.className='acts';
-    if(!closed){
-      var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
-      pb.onclick=async function(){pb.disabled=true;var changed=await sb.from('scheduled_tasks').update({active:!t.active}).eq('id',t.id);if(changed.error){sMsg('Could not update this task: '+changed.error.message,true);pb.disabled=false;return}loadTasks()};
-      a.appendChild(pb);
-    }
+    var pb=document.createElement('button');pb.className='btn alt';pb.textContent=t.active?'Pause':'Resume';
+    pb.onclick=async function(){pb.disabled=true;await sb.from('scheduled_tasks').update({active:!t.active}).eq('id',t.id);loadTasks()};
     var db=document.createElement('button');db.className='btn alt';db.textContent='Delete';
-    db.onclick=async function(){if(!confirm('Delete this scheduled task?'))return;var removed=await sb.from('scheduled_tasks').delete().eq('id',t.id);if(removed.error){sMsg('Could not delete this task: '+removed.error.message,true);return}loadTasks()};
-    a.appendChild(db);c.appendChild(a);box.appendChild(c)
-  })
+    db.onclick=async function(){if(!confirm('Delete this scheduled task?'))return;await sb.from('scheduled_tasks').delete().eq('id',t.id);loadTasks()};
+    a.appendChild(pb);a.appendChild(db);c.appendChild(a);box.appendChild(c)})
 }
 var MOVIE_RE=/\b(netflix|prime video|amazon prime|disney\+?|showmax|hulu|hbo|apple tv|movies?|films?|nollywood|series|tv shows?|trailers?|box office|streaming)\b/i;
 function movieGuard(){var f=$('sFreq'),t=$('sInstr').value+' '+($('sSrc')?$('sSrc').value:'');
@@ -2349,7 +2396,7 @@ $('sAdd').onclick=async function(){
   if(src){if(!/^https?:\/\//i.test(src))src='https://'+src;try{var uu=new URL(src);if(!uu.hostname.includes('.'))throw 0;src=uu.href}catch(e){sMsg('That website link does not look right.',true);return}ins+='\nSource website: '+src}
   movieGuard();var f=$('sFreq').value,tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(e){}
   var btn=this;btn.disabled=true;sMsg('Saving...');
-  var selectedBot=$('sBot').value;if(selectedBot!=='general'){btn.disabled=false;sMsg('That agent is not connected to scheduled execution yet. Choose General Agent for now.',true);return}var r=await sb.from('scheduled_tasks').insert({bot:selectedBot,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
+  var r=await sb.from('scheduled_tasks').insert({bot:$('sBot').value,agent:$('sBot').value,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
   btn.disabled=false;
   if(r.error){sMsg('Could not save that. Please try again.',true);return}
   $('sInstr').value='';$('sSrc').value='';document.querySelectorAll('#sChips .qchip').forEach(function(x){x.classList.remove('on')});sMsg(f==='every2days'&&MOVIE_RE.test(ins)?'Added. Movie and TV updates are checked every 2 days.':'Added to your schedule.');loadTasks();
@@ -2439,7 +2486,7 @@ $('ignBtn').onclick=function(){window.__ign?ignOff():ignOn()};$('ignOff').onclic
 window.addEventListener('pagehide',function(){if(window.__ign)wipe()});
 // ---------- How long to keep a chat ----------
 var ask=document.createElement('div');ask.id='keepAsk';ask.hidden=true;ask.innerHTML='<span>How long should Pelex keep this chat?</span><button type="button" class="btn" id="kaStd">Standard, 30 days</button><button type="button" class="btn alt" id="kaPick">Choose</button><button type="button" class="btn alt" id="kaNo">Not now</button>';document.body.appendChild(ask);
-async function setKeep(key){if(!dbOk()||!curChatId)return false;var r=await sb.from('chats').update({retention:key}).eq('id',curChatId);return !r.error}
+async function setKeep(key){if(!dbOk())return false;var ok=false;if(curChatId){var r=await sb.from('chats').update({retention:key}).eq('id',curChatId);ok=!r.error}try{await sb.auth.updateUser({data:{keep_default:key}})}catch(e){}return true}
 function sheet(){if(!dbOk()||!curChatId||window.__ign)return;
   var o=document.createElement('div');o.className='pvmodal';o.innerHTML='<div class="pvbox" style="height:auto;max-width:460px"><div class="pvtop"><b>Keep this chat for</b><button type="button" class="pvx" aria-label="Close">\u00d7</button></div><div style="padding:12px 14px 16px;color:#111"><div id="keepMsg" class="muted" style="min-height:18px;font-size:13px"></div><div id="keepList"></div></div></div>';
   document.body.appendChild(o);o.querySelector('.pvx').onclick=function(){o.remove()};o.addEventListener('click',function(e){if(e.target===o)o.remove()});
@@ -2457,14 +2504,12 @@ setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},
 var imgMode=false,ta=$('send').parentElement.querySelector('textarea,input[type=text]'),ph=ta?ta.placeholder:'';
 $('imgBtn').onclick=function(){imgMode=!imgMode;this.classList.toggle('on',imgMode);this.setAttribute('aria-pressed',imgMode);if(ta)ta.placeholder=imgMode?'Describe the image you want':ph;if(ta)ta.focus()};
 async function makeImage(prompt){
-  if(!dbOk()){add('Sign in to create images.','sys');return}
   add(prompt,'me');var w=add('Creating your image...','sys');
-  try{var ss=await sb.auth.getSession(),tok=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
-    var r=await fetch('/.netlify/functions/image',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({prompt:prompt})});
-    var j={};try{j=await r.json()}catch(e){}w.remove();
-    if(!r.ok||!j.image){add(j.error||'I could not create that image. Please try again.','sys');return}
-    add(j.remaining==null?'Here is your image.':'Here is your image. You have '+j.remaining+' left today.','',j.image)
-  }catch(e){try{w.remove()}catch(x){}add('I could not create that image. Please try again.','sys')}}
+  try{stepWait(w);
+    var out=await askPublicAgent('/image '+prompt,Object.assign({},agentMeta(),{__sid:'img-'+sid}));
+    w.remove();add(String(out));
+  }catch(err){w.remove();await showErr(err)}
+}
 function grab(){var t=ta.value.trim();if(!t)return false;ta.value='';ta.dispatchEvent(new Event('input'));makeImage(t);return true}
 document.addEventListener('click',function(e){if(imgMode&&e.target.closest&&e.target.closest('#send')){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
 document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e.key==='Enter'&&!e.shiftKey){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
@@ -3516,320 +3561,102 @@ document.getElementById('pbOpen').onclick=function(){go('chat')}})();
   },true);
 })();
 </script>
-<section id="pelexFilePreview" hidden aria-label="File preview"><div class="pf-head"><strong class="pf-title" id="pfTitle">File preview</strong><button type="button" id="pfClose" aria-label="Close preview">×</button></div><iframe id="pfFrame" title="File preview"></iframe><div class="pf-note">Preview only · Use the download icon on the file card to save the file.</div></section><script>
+<script>
+/* composer: grows with the text, Shift+Enter for a new line, full pasted text stays visible */
 (function(){
- var panel=document.getElementById('pelexFilePreview'),frame=document.getElementById('pfFrame'),title=document.getElementById('pfTitle');
- function close(){panel.classList.remove('open');setTimeout(function(){panel.hidden=true;frame.src='about:blank'},220)}
- function preview(url,name){if(!url)return;title.textContent=name||'File preview';frame.src=url;panel.hidden=false;requestAnimationFrame(function(){panel.classList.add('open')})}
- document.addEventListener('click',function(e){
-  var p=e.target.closest&&e.target.closest('.file-name-preview');
-  if(p){preview(p.getAttribute('data-preview-url'),p.getAttribute('data-preview-name'));return}
-  var b=e.target.closest&&e.target.closest('.file-download-icon');
-  if(b){var url=b.getAttribute('data-download-url'),name=b.getAttribute('data-download-name');if(url){var a=document.createElement('a');a.href=url;a.setAttribute('data-fc','download');a.setAttribute('data-name',name||'pelex-file');a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},1800)}return}
- });
- document.getElementById('pfClose').addEventListener('click',close);
- document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel&&!panel.hidden)close()});
+ var box=document.getElementById('in');if(!box)return;
+ function fit(){box.style.height='auto';var cap=Math.min(window.innerHeight*.4,340);var h=Math.min(box.scrollHeight+2,cap);box.style.height=Math.max(44,h)+'px';box.style.overflowY=(box.scrollHeight+2>cap)?'auto':'hidden'}
+ window.resizeComposer=fit;
+ box.addEventListener('input',fit);
+ box.addEventListener('paste',function(){setTimeout(fit,0);setTimeout(fit,60)});
+ document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#send,#imgBtn'))setTimeout(fit,0)},true);
+ box.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey)setTimeout(fit,0)});
+ window.addEventListener('resize',fit);
+ fit();
 })();
 </script>
 <script>
-/* Responsive auto-growing message composer: pasted text remains reviewable before sending. */
+/* Ignitor panel (opens from the right side of the chat) + account-synced privacy and keep-chat defaults */
 (function(){
- var box=document.getElementById('in');if(!box||box.tagName!=='TEXTAREA')return;
- var maxHeight=function(){return Math.min(window.innerHeight*.42,320)};
- function resize(){box.style.height='44px';var cap=maxHeight(),h=Math.min(box.scrollHeight,cap);box.style.height=Math.max(44,h)+'px';box.style.overflowY=box.scrollHeight>cap?'auto':'hidden'}
- box.addEventListener('input',resize);
- box.addEventListener('paste',function(){requestAnimationFrame(resize);setTimeout(resize,40)});
- window.addEventListener('resize',resize);
- resize();
+ var ib=document.getElementById('ignBtn');if(!ib)return;
+ var origIgn=ib.onclick;
+ var panel=document.createElement('div');panel.id='ignPanel';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Ignitor');
+ panel.innerHTML='<div class="ip-head"><b>Ignitor</b><button type="button" class="ip-x" aria-label="Close">&times;</button></div>'+
+ '<p>A private chat. Nothing is saved, and it is wiped when you close it.</p>'+
+ '<ul><li>Chats are not kept in your history</li><li>Memory is not used or updated</li><li>Turn it off to go back to a normal chat</li></ul>'+
+ '<div class="ip-row"><span id="ipState">Off</span><button type="button" class="sw" role="switch" aria-checked="false" aria-label="Ignitor on or off"></button></div>';
+ document.body.appendChild(panel);
+ var sw=panel.querySelector('.sw'),st=panel.querySelector('#ipState');
+ function paint(){var on=!!window.__ign;sw.setAttribute('aria-checked',on?'true':'false');st.textContent=on?'On':'Off';ib.classList.toggle('on',on)}
+ function open(o){panel.classList.toggle('open',o)}
+ ib.onclick=function(e){open(!panel.classList.contains('open'));paint()};
+ panel.querySelector('.ip-x').onclick=function(){open(false)};
+ sw.onclick=function(){if(origIgn)origIgn.call(ib,new Event('click'));setTimeout(paint,60)};
+ document.addEventListener('keydown',function(e){if(e.key==='Escape')open(false)});
+ document.addEventListener('click',function(e){if(panel.classList.contains('open')&&!panel.contains(e.target)&&!e.target.closest('#ignBtn'))open(false)},true);
+ setInterval(paint,700);
+ // privacy toggles and keep-chat default follow the account (works on a new device)
+ function applyAcct(u){
+  var md=(u&&u.user_metadata)||{},pv=md.privacy||null;
+  if(pv){if(typeof pv.hist==='boolean'){try{localStorage.setItem('pelex_hist',pv.hist?'on':'off')}catch(e){}var a=document.getElementById('pvHist');if(a)a.checked=pv.hist}
+    if(typeof pv.pers==='boolean'){try{localStorage.setItem('pelex_pers',pv.pers?'on':'off')}catch(e){}var b=document.getElementById('pvPers');if(b)b.checked=pv.pers}}
+  if(md.keep_default){try{localStorage.setItem('pelex_keep',md.keep_default)}catch(e){}}
+ }
+ var prev=window.onUserChange;window.onUserChange=function(u){if(prev)prev(u);applyAcct(u)};
+ if(window.sb&&window.sb.auth&&window.sb.auth.getSession){window.sb.auth.getSession().then(function(r){applyAcct(r.data&&r.data.session?r.data.session.user:null)}).catch(function(){})}
+ ['pvHist','pvPers'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.addEventListener('change',function(){
+   if(!(window.sb&&window.curUser))return;
+   window.sb.auth.updateUser({data:{privacy:{hist:document.getElementById('pvHist').checked,pers:document.getElementById('pvPers').checked}}}).catch(function(){})})});
 })();
 </script>
-
-<style>
-<!-- Pelex chart layout and theme visibility corrections -->
-/* Keep the existing composer, Connectors, Talk live control and disclaimer unchanged.
-   Limit these corrections to assistant-rendered charts and tables. */
-#chat>.msg:has(.md svg),#chat>.msg:has(.md table){
-  width:min(100%,1120px);max-width:min(100%,1120px);box-sizing:border-box
-}
-#chat .md{min-width:0;max-width:100%;overflow-wrap:normal;word-break:normal;hyphens:none}
-#chat .md svg{display:block;width:100%;max-width:100%;height:auto;overflow:visible;box-sizing:border-box}
-#chat .md svg text{fill:var(--ink)!important;overflow-wrap:normal;word-break:normal}
-#chat .md table{width:100%;min-width:0;max-width:100%;table-layout:auto;display:table;white-space:normal;overflow-wrap:normal;word-break:normal}
-#chat .md th,#chat .md td{max-width:none;overflow-wrap:normal;word-break:normal;hyphens:none}
-@media(min-width:821px){
-  #chat .md svg{min-height:220px}
-  #chat .md table{font-size:14px}
-}
-@media(max-width:820px){
-  #chat>.msg:has(.md svg),#chat>.msg:has(.md table){width:100%;max-width:100%}
-  #chat .md svg{min-height:0}
-  #chat .md table{display:block;width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-}
-:root[data-theme="dark"] #chat .md svg text{fill:var(--ink)!important}
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) #chat .md svg text{fill:var(--ink)!important}
-}
-</style>
-
-<style>
-/* Pelex corrective pass 2: desktop chart room + complete dark-theme contrast */
-/* Desktop charts must escape the narrow chat-bubble sizing; mobile keeps its own flow. */
-@media (min-width:821px){
-  #chat{width:100%;min-width:0}
-  #chat>.msg:has(.md svg),
-  #chat>.msg:has(.md table){
-    display:block;
-    align-self:stretch;
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    box-sizing:border-box;
-  }
-  #chat>.msg:has(.md svg) .md,
-  #chat>.msg:has(.md table) .md{
-    display:block;
-    width:100%;
-    max-width:100%;
-    min-width:0;
-  }
-  #chat>.msg:has(.md svg) svg{
-    width:100%!important;
-    max-width:100%!important;
-    height:auto!important;
-    min-height:260px;
-  }
-  #chat>.msg:has(.md table) table{
-    width:100%;
-    max-width:100%;
-    table-layout:auto;
-  }
-}
-/* Avoid forced narrow/mobile typography and mid-word wrapping in chart content. */
-#chat .md{overflow-wrap:normal;word-break:normal;hyphens:none}
-#chat .md svg text{font-family:inherit;overflow-wrap:normal;word-break:normal}
-#chat .md th,#chat .md td{overflow-wrap:normal;word-break:normal;hyphens:none}
-@media(max-width:820px){
-  #chat>.msg:has(.md svg),#chat>.msg:has(.md table){width:100%;max-width:100%;align-self:stretch}
-  #chat>.msg:has(.md svg) svg{width:100%;max-width:100%;height:auto;min-height:0}
-}
-/* Dark theme: override the fixed navy navigation text and make interface icons legible. */
-:root[data-theme="dark"]{color-scheme:dark;--nav-ink:#f4f7ff}
-:root[data-theme="dark"] body,
-:root[data-theme="dark"] aside,
-:root[data-theme="dark"] aside .nav,
-:root[data-theme="dark"] aside .nav span,
-:root[data-theme="dark"] .top,
-:root[data-theme="dark"] .top strong,
-:root[data-theme="dark"] .top button,
-:root[data-theme="dark"] .top a,
-:root[data-theme="dark"] #sbName,
-:root[data-theme="dark"] #sbSub,
-:root[data-theme="dark"] .srow,
-:root[data-theme="dark"] .srow span,
-:root[data-theme="dark"] .settings-nav,
-:root[data-theme="dark"] .settings-nav span,
-:root[data-theme="dark"] .nav,
-:root[data-theme="dark"] .nav:visited{
-  color:var(--ink)!important;
-}
-:root[data-theme="dark"] aside svg,
-:root[data-theme="dark"] button svg,
-:root[data-theme="dark"] a svg,
-:root[data-theme="dark"] .top svg,
-:root[data-theme="dark"] .nav svg,
-:root[data-theme="dark"] .settings-nav svg{
-  color:var(--ink)!important;
-}
-:root[data-theme="dark"] aside svg [stroke="currentColor"],
-:root[data-theme="dark"] button svg [stroke="currentColor"],
-:root[data-theme="dark"] a svg [stroke="currentColor"],
-:root[data-theme="dark"] .top svg [stroke="currentColor"],
-:root[data-theme="dark"] .nav svg [stroke="currentColor"],
-:root[data-theme="dark"] .settings-nav svg [stroke="currentColor"]{
-  stroke:var(--ink)!important;
-}
-:root[data-theme="dark"] #chat .md svg text{fill:var(--ink)!important}
-:root[data-theme="dark"] #chat .md,
-:root[data-theme="dark"] #chat .md p,
-:root[data-theme="dark"] #chat .md li,
-:root[data-theme="dark"] #chat .md th,
-:root[data-theme="dark"] #chat .md td{color:var(--ink)}
-</style>
-
-<style>
-/* Pelex chart visibility final override: actual .msg containers and theme tokens */
-/* Chart output is rendered inside .msg, not necessarily inside .md. */
-@media(min-width:821px){
-  #chat{padding-left:clamp(24px,3vw,52px)!important;padding-right:clamp(24px,3vw,52px)!important}
-  #chat>.msg:has(svg),#chat>.msg:has(canvas),#chat>.msg:has(table),
-  #chat>.msg:has(figure),#chat>.msg:has([class*="chart"]){
-    align-self:stretch!important;
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-  }
-  #chat>.msg:has(svg)>*,#chat>.msg:has(canvas)>*,#chat>.msg:has(table)>*,
-  #chat>.msg:has(figure)>*,#chat>.msg:has([class*="chart"])*{
-    max-width:100%;min-width:0;box-sizing:border-box
-  }
-}
-#chat>.msg:has(svg),#chat>.msg:has(canvas),#chat>.msg:has(table),
-#chat>.msg:has(figure),#chat>.msg:has([class*="chart"]){overflow:visible}
-#chat .msg svg,#chat .msg canvas,#chat .msg figure,
-#chat .msg [class*="chart"]{max-width:100%;box-sizing:border-box}
-#chat .msg svg{display:block;width:100%;height:auto;overflow:visible}
-#chat .msg canvas{display:block;max-width:100%;height:auto}
-#chat .msg table{max-width:100%;table-layout:auto}
-#chat .msg{overflow-wrap:normal;word-break:normal}
-#chat .msg .md,#chat .msg .md p,#chat .msg .md li,
-#chat .msg .md th,#chat .msg .md td{overflow-wrap:normal;word-break:normal;hyphens:none}
-:root:not([data-theme="dark"]) #chat .msg svg text{fill:#111827!important}
-:root[data-theme="dark"] #chat .msg,
-:root[data-theme="dark"] #chat .msg .md,
-:root[data-theme="dark"] #chat .msg .md p,
-:root[data-theme="dark"] #chat .msg .md li,
-:root[data-theme="dark"] #chat .msg .md strong,
-:root[data-theme="dark"] #chat .msg .md em,
-:root[data-theme="dark"] #chat .msg .md th,
-:root[data-theme="dark"] #chat .msg .md td,
-:root[data-theme="dark"] #chat .msg svg text{color:#f7f9ff!important;fill:#f7f9ff!important}
-:root[data-theme="dark"] #chat .msg svg [stroke="currentColor"]{stroke:#f7f9ff!important}
-:root[data-theme="dark"] #chat .msg svg [fill="currentColor"]{fill:#f7f9ff!important}
-:root:not([data-theme="dark"]) #chat .msg svg [stroke="currentColor"]{stroke:#111827}
-:root:not([data-theme="dark"]) #chat .msg svg [fill="currentColor"]{fill:#111827}
-@media(max-width:820px){
-  #chat{padding-left:12px!important;padding-right:12px!important}
-  #chat>.msg:has(svg),#chat>.msg:has(canvas),#chat>.msg:has(table),
-  #chat>.msg:has(figure),#chat>.msg:has([class*="chart"]){
-    align-self:stretch!important;width:100%!important;max-width:100%!important
-  }
-  #chat .msg svg,#chat .msg canvas{width:100%;max-width:100%;height:auto}
-}
-/* Option highlight is interaction-only: blue in light theme, white in dark theme. */
-#chat [data-chart-option],#chat [data-chart-control]{background:transparent}
-:root:not([data-theme="dark"]) #chat [data-chart-option]:hover,
-:root:not([data-theme="dark"]) #chat [data-chart-option]:focus-visible,
-:root:not([data-theme="dark"]) #chat [data-chart-option][aria-pressed="true"],
-:root:not([data-theme="dark"]) #chat [data-chart-option][aria-selected="true"],
-:root:not([data-theme="dark"]) #chat [data-chart-control]:hover,
-:root:not([data-theme="dark"]) #chat [data-chart-control]:focus-visible,
-:root:not([data-theme="dark"]) #chat [data-chart-control][aria-pressed="true"]{background:rgba(37,99,235,.14)!important}
-:root[data-theme="dark"] #chat [data-chart-option]:hover,
-:root[data-theme="dark"] #chat [data-chart-option]:focus-visible,
-:root[data-theme="dark"] #chat [data-chart-option][aria-pressed="true"],
-:root[data-theme="dark"] #chat [data-chart-option][aria-selected="true"],
-:root[data-theme="dark"] #chat [data-chart-control]:hover,
-:root[data-theme="dark"] #chat [data-chart-control]:focus-visible,
-:root[data-theme="dark"] #chat [data-chart-control][aria-pressed="true"]{background:rgba(255,255,255,.18)!important;color:#fff!important}
-</style>
-<style id="pelex-responsive-chat-frame-and-interaction-hover">
-/* Pelex responsive chat frame: keep every chat element inside the visible app column. */
-.view.chat{
-  box-sizing:border-box;
-  width:auto;
-  max-width:100%;
-  min-width:0;
-  min-height:0;
-  margin:12px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  overflow:hidden;
-  background:var(--bg);
-}
-.view.chat #chat{
-  display:flex;
-  flex:1 1 auto;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  min-height:0;
-  box-sizing:border-box;
-  overflow-x:hidden;
-}
-.view.chat #chat>*{min-width:0;max-width:100%;box-sizing:border-box}
-.view.chat #chat>.msg{
-  flex:0 1 auto;
-  width:fit-content;
-  max-width:min(100%,860px);
-  min-width:0;
-  box-sizing:border-box;
-  overflow-wrap:anywhere;
-  word-break:normal;
-}
-.view.chat #chat>.msg.me{align-self:flex-end;margin-left:auto}
-.view.chat .barwrap,
-.view.chat .bar,
-.view.chat .field{
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  box-sizing:border-box;
-}
-.view.chat .bar{display:flex;flex-wrap:nowrap}
-.view.chat .field{flex:1 1 0}
-.view.chat #in{
-  display:block;
-  flex:1 1 0;
-  width:100%;
-  min-width:0;
-  max-width:100%;
-  box-sizing:border-box;
-  overflow-wrap:anywhere;
-  white-space:pre-wrap;
-}
-.view.chat .msg img,
-.view.chat .msg video,
-.view.chat .msg iframe,
-.view.chat .msg table,
-.view.chat .msg svg,
-.view.chat .msg canvas{
-  max-width:100%;
-  box-sizing:border-box;
-}
-.view.chat .msg table{display:block;overflow-x:auto}
-@media(max-width:820px){
-  .view.chat{margin:8px;border-radius:14px}
-  .view.chat #chat{padding-left:12px!important;padding-right:12px!important}
-  .view.chat .barwrap{padding-left:10px;padding-right:10px}
-  .view.chat #chat>.msg{max-width:100%}
-}
-@media(min-width:821px){
-  .view.chat{margin:14px;min-height:0}
-  .view.chat #chat{padding-left:clamp(18px,3vw,40px)!important;padding-right:clamp(18px,3vw,40px)!important}
-}
-/* Sidebar navigation: no permanently painted hover/selection surface.
-   Light mode interaction = navy; dark mode interaction = white. */
-aside .nav:not(.newchat){background:transparent!important;transition:background-color .14s ease,color .14s ease}
-aside .nav:not(.newchat)[aria-current="true"]{background:transparent!important}
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):hover,
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):focus-visible,
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):active{
-  background:#0B2A5B!important;color:#fff!important
-}
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):hover svg,
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):focus-visible svg,
-:root:not([data-theme="dark"]) aside .nav:not(.newchat):active svg{color:#fff!important;stroke:#fff!important}
-:root[data-theme="dark"] aside .nav:not(.newchat):hover,
-:root[data-theme="dark"] aside .nav:not(.newchat):focus-visible,
-:root[data-theme="dark"] aside .nav:not(.newchat):active{
-  background:#fff!important;color:#0B2A5B!important
-}
-:root[data-theme="dark"] aside .nav:not(.newchat):hover svg,
-:root[data-theme="dark"] aside .nav:not(.newchat):focus-visible svg,
-:root[data-theme="dark"] aside .nav:not(.newchat):active svg{color:#0B2A5B!important;stroke:#0B2A5B!important}
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):hover,
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):focus-visible,
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):active{
-    background:#fff!important;color:#0B2A5B!important
-  }
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):hover svg,
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):focus-visible svg,
-  :root:not([data-theme="light"]) aside .nav:not(.newchat):active svg{color:#0B2A5B!important;stroke:#0B2A5B!important}
-}
-@media(prefers-reduced-motion:reduce){
-  aside .nav:not(.newchat){transition:none}
-}
-</style>
+<script>
+(function(){var ib=document.getElementById('ignBtn'),v=document.getElementById('v-chat');if(!ib||!v)return;
+ var c=document.createElement('button');c.id='ignChip';c.type='button';c.setAttribute('aria-label','Ignitor private chat');
+ c.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3l-2 7h6l-8 11 2-8H5z"/></svg><span>Ignitor</span>';
+ v.appendChild(c);c.onclick=function(){ib.click()};
+ setInterval(function(){c.classList.toggle('on',!!window.__ign)},500);})();
+</script>
+<script>
+/* composer: waveform talk button sits inside the bar; it becomes a send arrow once there is text */
+(function(){
+ var box=document.getElementById('in'),f=box&&box.closest('.field'),t=document.getElementById('talk'),s=document.getElementById('send'),m=document.getElementById('mic');if(!box||!f||!t||!s)return;
+ var im=document.getElementById('imgBtn');if(im)im.style.display='none';
+ f.appendChild(m);f.appendChild(t);f.appendChild(s);
+ t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>';
+ t.setAttribute('aria-label','Talk live');
+ function sync(){var has=box.value.trim().length>0||(typeof pendingImgs!=='undefined'&&pendingImgs.length>0);f.classList.toggle('has-text',has)}
+ box.addEventListener('input',sync);
+ box.addEventListener('keydown',function(){setTimeout(sync,0)});
+ document.addEventListener('click',function(){setTimeout(sync,0)},true);
+ setInterval(sync,400);sync();
+})();
+</script>
+<script>
+/* Reply sound and notifications: plays a chime when a reply arrives (if notifications are on),
+   and shows a phone notification through the service worker when the app is in the background. */
+(function(){
+ var ctx=null;
+ function audio(){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();return ctx}catch(e){return null}}
+ ['pointerdown','keydown','touchstart'].forEach(function(ev){document.addEventListener(ev,audio,{passive:true,capture:true})});
+ function chime(){var c=audio();if(!c)return;var t=c.currentTime;
+  [[660,0],[880,0.14]].forEach(function(n){var o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=n[0];
+   g.gain.setValueAtTime(0.0001,t+n[1]);g.gain.exponentialRampToValueAtTime(0.2,t+n[1]+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+n[1]+0.42);
+   o.connect(g);g.connect(c.destination);o.start(t+n[1]);o.stop(t+n[1]+0.45)})}
+ function on(){var el=document.getElementById('pvPush');return !!(el&&el.checked)}
+ window.notifyReply=function(text){
+  if(!on())return;
+  chime();
+  if(!document.hidden)return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  var body=String(text||'').replace(/\s+/g,' ').slice(0,140)||'Your reply is ready.';
+  var opts={body:body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'pelex-reply',renotify:true,vibrate:[120,60,120],data:{url:'/'}};
+  if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(function(r){return r.showNotification('Pelex replied',opts)}).catch(function(){try{new Notification('Pelex replied',opts)}catch(e){}});
+  }else{try{new Notification('Pelex replied',opts)}catch(e){}}
+ };
+ var pushEl=document.getElementById('pvPush');
+ if(pushEl)pushEl.addEventListener('change',function(){if(pushEl.checked){audio();chime()}});
+})();
+</script>
 </body>
 </html>
