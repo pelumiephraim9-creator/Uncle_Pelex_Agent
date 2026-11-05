@@ -1047,6 +1047,29 @@ aside .nav,aside .sback,.srow,.srow span,.srow h2,.ctext h2,.settings-nav,.setti
 .upcard:hover{transform:translateY(-2px);box-shadow:0 16px 30px -18px rgba(11,27,74,.5)}
 :root[data-theme="dark"] .upcard{color:#d6e4ff}
 #upActs[hidden],#upReview[hidden],#upCur[hidden],#mtBox[hidden]{display:none!important}
+
+/* ===== PHASE 3: ledger analysis dashboard ===== */
+.ls-wrap{display:flex;flex-direction:column;gap:14px}
+.ls-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ls-kpi{border-radius:16px;padding:14px;background:linear-gradient(145deg,#142b52,#24457f);color:#fff;box-shadow:0 18px 30px -18px rgba(11,27,74,.7)}
+.ls-kpi b{display:block;font-size:20px;letter-spacing:-.02em}
+.ls-kpi span{font-size:12px;color:#c9d9f5}
+.ls-kpi.warn{background:linear-gradient(145deg,#7a2e1f,#b5543b)}
+.ls-bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding:8px 4px 22px;border-bottom:1px solid var(--line);position:relative}
+.ls-bar{flex:1;min-width:10px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#5b8ae8,#2f63c4 50%,#142b52);box-shadow:inset 3px 0 0 rgba(255,255,255,.25),8px 10px 14px -8px rgba(11,27,74,.55);position:relative;transition:height .5s ease}
+.ls-bar span{position:absolute;bottom:-18px;left:-6px;right:-6px;text-align:center;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-empty{color:var(--muted);font-size:13px;padding:14px 0}
+.ls-tl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.ls-tl input[type=range]{flex:1;min-width:160px;accent-color:#2f63c4}
+.ls-tl input[type=date],.ls-tl select{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit}
+.ls-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ls-table th,.ls-table td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+.ls-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:3px 9px}
+.ls-pill.ok{background:#d9f5e4;color:#146c43}.ls-pill.warn{background:#fff1cf;color:#8a5a00}.ls-pill.bad{background:#fde2dd;color:#b3261e}.ls-pill.open{background:#e6edfb;color:#142b52}
+details.ls-more{margin-top:8px}details.ls-more summary{cursor:pointer;font-weight:600;color:#2f63c4;list-style:none}details.ls-more summary::-webkit-details-marker{display:none}
+.ls-chat-log{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;margin-top:8px}
+.ls-chat-log .m{border-radius:14px;padding:9px 12px;font-size:13.5px;max-width:92%}
+.ls-chat-log .m.u{align-self:flex-end;background:#142b52;color:#fff}.ls-chat-log .m.a{align-self:flex-start;background:var(--soft);border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -4180,14 +4203,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function parseEntries(text){
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0,currencies:[]};
   var hdr=splitCsv(lines[0]).map(function(x){return x.toLowerCase()});
-  var cd=findCol(hdr,/date/),ca=findCol(hdr,/amount|total|value|sum|price/),cc=findCol(hdr,/currency|curr/),cp=findCol(hdr,/customer|client|vendor|party|name|item|description/),ct=findCol(hdr,/type|category/);
+  var cd=findCol(hdr,/date/),ca=findCol(hdr,/amount|total|value|sum|price/),cc=findCol(hdr,/currency|curr/),cp=findCol(hdr,/customer|client|vendor|party|name|item|description/),ct=findCol(hdr,/type|category/),cdue=findCol(hdr,/due/);
   var rows=[],skipped=0,curs={};
   for(var i=1;i<lines.length;i++){
     var c=splitCsv(lines[i]);
     var date=cd>=0?toDate(c[cd]):null, amt=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
     if(!date||isNaN(amt)){skipped++;continue}
     var cur=cc>=0&&c[cc]?c[cc].toUpperCase().slice(0,3):null; if(cur) curs[cur]=1;
-    rows.push({date:date,type:ct>=0&&c[ct]?c[ct].toLowerCase():'other',amount:amt,currency:cur,party:cp>=0?c[cp]:null});
+    var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';var dd=cdue>=0?toDate(c[cdue]):null;rows.push({date:date,type:tv,amount:amt,currency:cur,party:cp>=0?c[cp]:null,due:dd});
   }
   return {rows:rows,skipped:skipped,currencies:Object.keys(curs)};
  }
@@ -4239,6 +4262,127 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'&&ready())setTimeout(loadWs,150)};
  window.addEventListener('load',function(){if(ready())setTimeout(loadWs,400)});
+})();
+</script>
+<script>
+/* PHASE 3: ledger-driven analysis. Reads ledger_entries and uploads for the workspace; nothing is shown that is not in the ledger. */
+(function(){
+ function $l(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ var T=[],U=[],rep=null,DAY=864e5;
+ function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function money(n,c){try{return (c||'')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}catch(e){return String(n)}}
+ function iso(d){return d.toISOString().slice(0,10)}
+ function parseD(s){return s?new Date(s+'T00:00:00'):null}
+ function weekStart(s){var d=parseD(s);var day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return iso(d)}
+ function bars(el,labels,vals,fmt){
+  var max=Math.max.apply(null,vals.concat([1]));
+  el.innerHTML='';
+  if(!vals.some(function(v){return v>0})){el.innerHTML='<div class="ls-empty">No entries up to this date.</div>';return}
+  el.className='ls-bars';
+  labels.forEach(function(lb,i){var b=document.createElement('div');b.className='ls-bar';b.style.height=Math.max(4,Math.round(vals[i]/max*120))+'px';b.title=lb+': '+fmt(vals[i]);var s=document.createElement('span');s.textContent=(i%3===0||i===labels.length-1)?lb:'';b.appendChild(s);el.appendChild(b)});
+ }
+ function asOf(){var v=$l('lsDate')&&$l('lsDate').value;return v||maxDate()}
+ function maxDate(){var all=T.map(function(x){return x.entry_date}).concat(T.map(function(x){return x.due_date}).filter(Boolean));all.sort();return all.length?all[all.length-1]:iso(new Date())}
+ function minDate(){var all=T.map(function(x){return x.entry_date});all.sort();return all.length?all[0]:iso(new Date())}
+ function setSliderFromDate(d){var s=$l('lsSlider');var a=parseD(minDate()),b=parseD(maxDate()),c=parseD(d);if(!s||isNaN(a)||isNaN(b))return;var days=Math.round((b-a)/DAY);s.max=Math.max(0,days);s.value=Math.max(0,Math.min(days,Math.round((c-a)/DAY)))}
+ function render(){
+  var wrap=$l('lsWrap');if(!wrap)return;
+  var curs=[];T.forEach(function(x){if(x.currency&&curs.indexOf(x.currency)<0)curs.push(x.currency)});
+  var sel=$l('lsCur');
+  if(!rep||curs.indexOf(rep)<0)rep=curs[0]||null;
+  sel.innerHTML=curs.map(function(c){return '<option'+(c===rep?' selected':'')+'>'+esc(c)+'</option>'}).join('')||'<option>No currency yet</option>';
+  if(!T.length){$l('lsEmpty').hidden=false;$l('lsBody').hidden=true;return}
+  $l('lsEmpty').hidden=true;$l('lsBody').hidden=false;
+  var a=asOf();
+  var rows=T.filter(function(x){return x.entry_date<=a&&x.currency===rep});
+  var inv=rows.filter(function(x){return x.entry_type==='invoice'}), rec=rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'});
+  var invT=inv.reduce(function(s,x){return s+Number(x.amount)},0), recT=rec.reduce(function(s,x){return s+Number(x.amount)},0);
+  var outT=Math.max(0,invT-recT);
+  // overdue: per customer, invoices past due with less received than invoiced
+  var parties={};inv.forEach(function(x){var k=x.party||'Unnamed';parties[k]=parties[k]||{inv:0,rec:0,due:null,n:0};parties[k].inv+=Number(x.amount);parties[k].n++;if(x.due_date&&(!parties[k].due||x.due_date<parties[k].due))parties[k].due=x.due_date});
+  rec.forEach(function(x){var k=x.party||'Unnamed';parties[k]=parties[k]||{inv:0,rec:0,due:null,n:0};parties[k].rec+=Number(x.amount)});
+  var overdue=Object.keys(parties).filter(function(k){var p=parties[k];return p.due&&p.due<a&&p.rec<p.inv}).map(function(k){return {name:k,amount:parties[k].inv-parties[k].rec,due:parties[k].due}});
+  var overdueT=overdue.reduce(function(s,x){return s+x.amount},0);
+  $l('lsKpis').innerHTML=
+   '<div class="ls-kpi"><b>'+money(invT,rep)+'</b><span>Invoiced</span></div>'+
+   '<div class="ls-kpi"><b>'+money(recT,rep)+'</b><span>Received</span></div>'+
+   '<div class="ls-kpi"><b>'+money(outT,rep)+'</b><span>Outstanding</span></div>'+
+   '<div class="ls-kpi '+(overdue.length?'warn':'')+'"><b>'+overdue.length+' overdue</b><span>'+(overdue.length?money(overdueT,rep)+' past due':'Nothing past due')+'</span></div>';
+  // revenue by week (invoices), last 12 weeks to the chosen date
+  var end=parseD(a),weeks=[];for(var w=11;w>=0;w--){var d=new Date(end);d.setDate(d.getDate()-w*7);weeks.push(weekStart(iso(d)))}
+  var rev=weeks.map(function(ws){return inv.filter(function(x){return weekStart(x.entry_date)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
+  var vol=weeks.map(function(ws){return rows.filter(function(x){return weekStart(x.entry_date)===ws}).length});
+  var lbl=weeks.map(function(s){return s.slice(5)});
+  bars($l('lsRev'),lbl,rev,function(v){return money(v,rep)});
+  bars($l('lsVol'),lbl,vol,function(v){return v+' entries'});
+  // counts by type
+  var types={};rows.forEach(function(x){types[x.entry_type]=(types[x.entry_type]||0)+1});
+  $l('lsTypes').innerHTML=Object.keys(types).map(function(t){return '<div class="irow">'+esc(t)+': <b>'+types[t]+'</b></div>'}).join('')||'<div class="ls-empty">No entries yet.</div>';
+  // workflow from invoices
+  var flow=inv.slice().sort(function(p,q){return (p.due_date||'').localeCompare(q.due_date||'')});
+  $l('lsFlow').innerHTML=flow.length?'<table class="ls-table"><tr><th>Customer</th><th>Amount</th><th>Due</th><th>Status</th></tr>'+flow.map(function(x){
+    var p=parties[x.party||'Unnamed'];var paid=p&&p.rec>=p.inv;var late=x.due_date&&x.due_date<a;
+    var st=paid?'<span class="ls-pill ok">Paid</span>':late?'<span class="ls-pill bad">Overdue</span>':'<span class="ls-pill open">Open</span>';
+    return '<tr><td>'+esc(x.party||'Unnamed')+'</td><td>'+money(x.amount,rep)+'</td><td>'+esc(x.due_date||'-')+'</td><td>'+st+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No invoices up to this date.</div>';
+  // data entry: each upload
+  var cnt={};T.forEach(function(x){if(x.upload_id)cnt[x.upload_id]=(cnt[x.upload_id]||0)+1});
+  $l('lsUploads').innerHTML=U.length?'<table class="ls-table"><tr><th>File</th><th>Type</th><th>Rows</th><th>Status</th></tr>'+U.map(function(u){
+    var s=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';
+    return '<tr><td>'+esc(u.file_name)+'</td><td>'+esc(u.detected_type||'-')+' <small class="muted">('+esc(u.confidence||'-')+')</small></td><td>'+(cnt[u.id]||0)+'</td><td>'+s+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No uploads yet.</div>';
+  $l('lsCount').textContent=T.length+' ledger rows \u00b7 '+U.length+' uploads \u00b7 as of '+a;
+  var sl=$l('lsSlider');setSliderFromDate(a);
+  window.__lsSummary={asof:a,currency:rep,invoiced:invT,received:recT,outstanding:outT,overdue_count:overdue.length,overdue_amount:overdueT,overdue:overdue.slice(0,10),entries_by_type:types,uploads:U.length,ledger_rows:T.length};
+ }
+ async function load(){
+  var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
+  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id').eq('workspace_id',w).order('entry_date',{ascending:true}).limit(5000);
+  var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at').eq('workspace_id',w).order('created_at',{ascending:false}).limit(50);
+  if(e.error||u.error){$l('lsCount').textContent='Ledger is not connected yet. Run phase2_workspace.sql and phase3_ledger.sql in Supabase.';return}
+  T=e.data||[];U=u.data||[];render();
+ }
+ /* chat with the agent about this ledger */
+ async function ask(){
+  var q=$l('lsAsk').value.trim();if(!q)return;
+  var log=$l('lsLog');var u=document.createElement('div');u.className='m u';u.textContent=q;log.appendChild(u);
+  $l('lsAsk').value='';
+  var a=document.createElement('div');a.className='m a';a.textContent='Thinking...';log.appendChild(a);log.scrollTop=log.scrollHeight;
+  try{
+    var out=await askPublicAgent(q,Object.assign({},agentMeta(),{intent:'analyse',ledger:window.__lsSummary||{},__sid:'biz-'+wsId()}));
+    a.innerHTML='';a.appendChild(window.mdRender(String(out)));
+  }catch(err){a.textContent=(err&&!err.backend&&err.message)?err.message:'The assistant could not answer right now. Please try again.'}
+  log.scrollTop=log.scrollHeight;
+ }
+ /* hide the old revenue card (it read the old table) and build the new dashboard inside the business view */
+ function build(){
+  var old=$l('bChart');if(old){var card=old.closest('.dcard');if(card)card.style.display='none'}
+  var dash=$l('bDash');if(!dash||$l('lsWrap'))return;
+  var wrap=document.createElement('div');wrap.id='lsWrap';wrap.className='ls-wrap';
+  wrap.innerHTML=
+   '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
+   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
+   '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
+   '<div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
+   '<div id="lsBody" hidden><div class="ls-kpis" id="lsKpis"></div>'+
+   '<div class="dnote" style="margin-top:12px"><b>Revenue, last 12 weeks</b></div><div id="lsRev"></div>'+
+   '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div></details>'+
+   '<div class="dnote" style="margin-top:12px"><b>Volume, last 12 weeks</b></div><div id="lsVol"></div>'+
+   '<details class="ls-more"><summary>Show more</summary><div id="lsTypes"></div></details></div></div>'+
+   '<div class="dcard"><h2>Project management</h2><div class="dnote">Each invoice becomes a workflow step: issued, due, then paid or overdue.</div><div id="lsFlow"></div>'+
+   '<details class="ls-more"><summary>Show more</summary><div class="dnote">Overdue means the due date has passed and less than the invoiced amount has been received for that customer.</div></details></div>'+
+   '<div class="dcard"><h2>Data entry</h2><div class="dnote">Every upload, with the type Pelex detected and how many rows were saved.</div><div id="lsUploads"></div></div>'+
+   '<div class="dcard"><h2>Ask Pelex about this data</h2><div class="dnote">Ask anything about your ledger: what is overdue, which customers pay late, what to chase first.</div>'+
+   '<div class="ls-chat-log" id="lsLog"></div>'+
+   '<div class="supbar"><input class="inp" id="lsAsk" placeholder="For example: which invoices should I chase first?" maxlength="500"><button class="btn" id="lsSend" type="button">Ask</button></div></div>';
+  dash.insertBefore(wrap,dash.firstChild);
+  $l('lsCur').onchange=function(){rep=this.value;render()};
+  $l('lsDate').onchange=function(){render()};
+  $l('lsSlider').oninput=function(){var a=parseD(minDate());a.setDate(a.getDate()+Number(this.value));$l('lsDate').value=iso(a);render()};
+  $l('lsSend').onclick=ask;$l('lsAsk').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}});
+ }
+ window.__lsSet=function(t,u){T=t;U=u;rep=null;render()};
+ var _go=go;go=function(v,t){_go(v,t);if(v==='business'){build();setTimeout(load,200)}};
+ window.addEventListener('load',function(){setTimeout(function(){build();load()},600)});
 })();
 </script>
 </body>
