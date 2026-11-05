@@ -1070,6 +1070,52 @@ details.ls-more{margin-top:8px}details.ls-more summary{cursor:pointer;font-weigh
 .ls-chat-log{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;margin-top:8px}
 .ls-chat-log .m{border-radius:14px;padding:9px 12px;font-size:13.5px;max-width:92%}
 .ls-chat-log .m.u{align-self:flex-end;background:#142b52;color:#fff}.ls-chat-log .m.a{align-self:flex-start;background:var(--soft);border:1px solid var(--line)}
+
+/* ===== ANALYTICS: metric tiles and full-screen detail ===== */
+.an-cats{display:flex;flex-direction:column;gap:14px}
+.an-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.an-tile{text-align:left;border:1px solid var(--line);border-radius:16px;padding:12px;background:linear-gradient(150deg,var(--panel),var(--soft));cursor:pointer;color:var(--ink);font:inherit;min-width:0;transition:transform .3s,box-shadow .3s,border-color .3s}
+.an-tile:hover{transform:translateY(-2px);box-shadow:0 16px 30px -20px rgba(11,27,74,.6);border-color:#2f63c4}
+.an-tile b{display:block;font-size:14px;margin-bottom:4px;overflow-wrap:anywhere}
+.an-tile .v{font-size:18px;font-weight:700;letter-spacing:-.01em;color:#142b52}
+:root[data-theme="dark"] .an-tile .v{color:#d6e4ff}
+.an-tile small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
+.an-tile.need .v{font-size:13px;font-weight:600;color:var(--muted)}
+.an-flow{display:flex;flex-direction:column;gap:8px}
+.an-flow div{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.an-flow b{min-width:22px;height:22px;border-radius:50%;background:#142b52;color:#fff;display:grid;place-items:center;font-size:11px;flex:none}
+#anDetail{position:fixed;inset:0;z-index:310;background:var(--bg);color:var(--ink);overflow-y:auto;-webkit-overflow-scrolling:touch}
+#anDetail[hidden]{display:none}
+.an-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
+.an-top .t{flex:1;min-width:0}.an-top .t b{display:block;font-size:17px;overflow-wrap:anywhere}.an-top .t small{color:var(--muted);font-size:12px}
+.an-back{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:12px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer;flex:none}
+.an-body{padding:16px 14px calc(30px + env(safe-area-inset-bottom,0px));max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.an-big{font-size:34px;font-weight:800;letter-spacing:-.03em;color:#142b52}
+:root[data-theme="dark"] .an-big{color:#d6e4ff}
+.an-svg{width:100%;height:auto;display:block}
+.an-card{border:1px solid var(--line);border-radius:18px;padding:14px;background:linear-gradient(150deg,var(--panel),var(--soft))}
+/* mobile: nothing may run off the screen */
+.dash,.dash *{min-width:0}
+.dash .supbar{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+.dash .supbar input{flex:1 1 0;min-width:0;width:auto}
+.dash .supbar .btn{flex:none}
+.ls-chat-log .m{max-width:92%;overflow-wrap:anywhere;word-break:break-word}
+.ls-chat-log .m img,.ls-chat-log .m table{max-width:100%}
+@media(max-width:420px){.an-grid{grid-template-columns:1fr}.an-big{font-size:28px}}
+/* SCROLL FIX: views inside the app shell must shrink and scroll, so bottoms (theme picker, bot test chat) are reachable on phones */
+main{min-height:0;height:100%;overflow:hidden}
+.view{flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+@media(max-width:820px){
+ .app{height:100dvh;height:-webkit-fill-available}
+ .view:not(#v-chat){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ===== PHASE 4: alerts and document review ===== */
+.al-item{border:1px solid #f1d58a;background:linear-gradient(90deg,#fff8e6,#fff3d6);color:#6b4a00;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5}
+:root[data-theme="dark"] .al-item{background:#3a2e10;color:#f5dca0;border-color:#6b5520}
+.rv-table td input{width:100%;min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 7px;font:inherit;font-size:12.5px}
+.rv-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.rv-table th,.rv-table td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
 </style>
 </head>
 <body>
@@ -4282,6 +4328,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   el.className='ls-bars';
   labels.forEach(function(lb,i){var b=document.createElement('div');b.className='ls-bar';b.style.height=Math.max(4,Math.round(vals[i]/max*120))+'px';b.title=lb+': '+fmt(vals[i]);var s=document.createElement('span');s.textContent=(i%3===0||i===labels.length-1)?lb:'';b.appendChild(s);el.appendChild(b)});
  }
+ function fxKey(){return 'pelex_fx_'+wsId()}
+ function loadFx(){try{return JSON.parse(localStorage.getItem(fxKey())||'{}')}catch(e){return {}}}
+ function saveFx(f){try{localStorage.setItem(fxKey(),JSON.stringify(f))}catch(e){}}
  function asOf(){var v=$l('lsDate')&&$l('lsDate').value;return v||maxDate()}
  function maxDate(){var all=T.map(function(x){return x.entry_date}).concat(T.map(function(x){return x.due_date}).filter(Boolean));all.sort();return all.length?all[all.length-1]:iso(new Date())}
  function minDate(){var all=T.map(function(x){return x.entry_date});all.sort();return all.length?all[0]:iso(new Date())}
@@ -4292,10 +4341,16 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var sel=$l('lsCur');
   if(!rep||curs.indexOf(rep)<0)rep=curs[0]||null;
   sel.innerHTML=curs.map(function(c){return '<option'+(c===rep?' selected':'')+'>'+esc(c)+'</option>'}).join('')||'<option>No currency yet</option>';
-  if(!T.length){$l('lsEmpty').hidden=false;$l('lsBody').hidden=true;return}
+  var fx=loadFx(),Tc=[],skipped={};
+  T.forEach(function(x){if(!x.currency)return;if(x.currency===rep){Tc.push(x);return}var r=Number(fx[x.currency]);if(r>0){Tc.push(Object.assign({},x,{amount:Number(x.amount)*r,currency:rep,converted:true}))}else{skipped[x.currency]=(skipped[x.currency]||0)+1}});
+  var skippedN=Object.keys(skipped).reduce(function(s,k){return s+skipped[k]},0);
+  $l('lsFxNote').textContent=skippedN?(skippedN+' row(s) in '+Object.keys(skipped).join(', ')+' have no exchange rate and are not counted. Enter the rate below.'):(Tc.some(function(x){return x.converted})?'Other currencies are converted at the rates you entered.':'');
+  $l('lsFx').innerHTML=curs.filter(function(c){return c!==rep}).map(function(c){return '<div class="irow" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>1 '+esc(c)+' = </span><input type="number" min="0" step="any" data-fx="'+esc(c)+'" value="'+(fx[c]||'')+'" style="width:120px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit" aria-label="Rate for '+esc(c)+'"><span>'+esc(rep)+'</span></div>'}).join('')||'<div class="ls-empty">Only one currency in the ledger. No rates needed.</div>';
+  document.querySelectorAll('#lsFx input[data-fx]').forEach(function(inp){inp.onchange=function(){var f=loadFx();f[inp.getAttribute('data-fx')]=Number(inp.value)||0;saveFx(f);render()}});
+  if(!Tc.length){$l('lsEmpty').hidden=false;$l('lsBody').hidden=true;return}
   $l('lsEmpty').hidden=true;$l('lsBody').hidden=false;
   var a=asOf();
-  var rows=T.filter(function(x){return x.entry_date<=a&&x.currency===rep});
+  var rows=Tc.filter(function(x){return x.entry_date<=a});
   var inv=rows.filter(function(x){return x.entry_type==='invoice'}), rec=rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'});
   var invT=inv.reduce(function(s,x){return s+Number(x.amount)},0), recT=rec.reduce(function(s,x){return s+Number(x.amount)},0);
   var outT=Math.max(0,invT-recT);
@@ -4315,6 +4370,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var vol=weeks.map(function(ws){return rows.filter(function(x){return weekStart(x.entry_date)===ws}).length});
   var lbl=weeks.map(function(s){return s.slice(5)});
   bars($l('lsRev'),lbl,rev,function(v){return money(v,rep)});
+  $l('lsRevTable').innerHTML='<table class="ls-table"><tr><th>Week starting</th><th>Invoiced</th></tr>'+weeks.map(function(w,i){return '<tr><td>'+esc(w)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</table>';
   bars($l('lsVol'),lbl,vol,function(v){return v+' entries'});
   // counts by type
   var types={};rows.forEach(function(x){types[x.entry_type]=(types[x.entry_type]||0)+1});
@@ -4332,6 +4388,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     return '<tr><td>'+esc(u.file_name)+'</td><td>'+esc(u.detected_type||'-')+' <small class="muted">('+esc(u.confidence||'-')+')</small></td><td>'+(cnt[u.id]||0)+'</td><td>'+s+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No uploads yet.</div>';
   $l('lsCount').textContent=T.length+' ledger rows \u00b7 '+U.length+' uploads \u00b7 as of '+a;
   var sl=$l('lsSlider');setSliderFromDate(a);
+  window.__lsData={T:Tc,U:U,rep:rep,asof:a};if(window.__anRender)window.__anRender();
   window.__lsSummary={asof:a,currency:rep,invoiced:invT,received:recT,outstanding:outT,overdue_count:overdue.length,overdue_amount:overdueT,overdue:overdue.slice(0,10),entries_by_type:types,uploads:U.length,ledger_rows:T.length};
  }
  async function load(){
@@ -4363,9 +4420,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
    '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
    '<div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
-   '<div id="lsBody" hidden><div class="ls-kpis" id="lsKpis"></div>'+
+   '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
    '<div class="dnote" style="margin-top:12px"><b>Revenue, last 12 weeks</b></div><div id="lsRev"></div>'+
-   '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div></details>'+
+   '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div><div id="lsRevTable"></div></details>'+
    '<div class="dnote" style="margin-top:12px"><b>Volume, last 12 weeks</b></div><div id="lsVol"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div id="lsTypes"></div></details></div></div>'+
    '<div class="dcard"><h2>Project management</h2><div class="dnote">Each invoice becomes a workflow step: issued, due, then paid or overdue.</div><div id="lsFlow"></div>'+
@@ -4383,6 +4440,232 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  window.__lsSet=function(t,u){T=t;U=u;rep=null;render()};
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){build();setTimeout(load,200)}};
  window.addEventListener('load',function(){setTimeout(function(){build();load()},600)});
+})();
+</script>
+<script>
+/* ANALYTICS: metric tiles by category; each opens a full-screen view with a back button. Figures come from the ledger; metrics that need outside data say so. */
+(function(){
+ function $a(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ var DAY=864e5;
+ function iso(d){return d.toISOString().slice(0,10)}
+ function dt(s){return new Date(s+'T00:00:00')}
+ function addDays(s,n){var d=dt(s);d.setDate(d.getDate()+n);return iso(d)}
+ function money(n,c){return (c?c+' ':'')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}
+ function pct(n){return (isFinite(n)?Number(n).toFixed(1):'0')+'%'}
+ function sum(a){return a.reduce(function(s,x){return s+Number(x.amount)},0)}
+ function wk(s){var d=dt(s),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return iso(d)}
+ function ctx(){
+  var d=window.__lsData;if(!d||!d.T)return null;
+  var rows=d.T.filter(function(x){return x.entry_date<=d.asof&&x.currency===d.rep});
+  var sales=rows.filter(function(x){return x.entry_type==='invoice'||x.entry_type==='sale'});
+  return {asof:d.asof,rep:d.rep,rows:rows,sales:sales,
+   inv:rows.filter(function(x){return x.entry_type==='invoice'}),
+   rec:rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'}),
+   exp:rows.filter(function(x){return x.entry_type==='expense'}),
+   U:d.U||[]};
+ }
+ function weeks(c,n){var out=[];for(var w=n-1;w>=0;w--){out.push(wk(addDays(c.asof,-w*7)))}return out}
+ function weekly(c,list,agg){var ws=weeks(c,12);return {labels:ws.map(function(s){return s.slice(5)}),values:ws.map(function(w){var rs=list.filter(function(x){return wk(x.entry_date)===w});return agg(rs)})}}
+ function window30(c,list){var end=c.asof,start=addDays(end,-29),prevEnd=addDays(start,-1),prevStart=addDays(prevEnd,-29);
+  return {cur:list.filter(function(x){return x.entry_date>=start&&x.entry_date<=end}),prev:list.filter(function(x){return x.entry_date>=prevStart&&x.entry_date<=prevEnd})}}
+ function customers(list){var m={};list.forEach(function(x){var k=x.party||'Unnamed';m[k]=(m[k]||[]).concat([x])});return m}
+ var NEED_MKT='Needs marketing data (ad impressions and clicks). Not in your ledger yet, so it cannot be calculated honestly.';
+ var NEED_WEB='Needs website analytics (visits, sessions). Not in your ledger yet, so it cannot be calculated honestly.';
+ var METRICS=[
+  {id:'rev',cat:'Sales dashboard',title:'Revenue',icon:'\ud83d\udcb0',fmt:'money',calc:function(c){var v=sum(c.sales);return{v:v,sub:'Invoices and sales to date',series:weekly(c,c.sales,sum),form:'Sum of invoice and sale amounts in '+c.rep+' up to the as-of date.',table:topCustomers(c.sales,c.rep)}}},
+  {id:'ord',cat:'Sales dashboard',title:'Orders',icon:'\ud83d\uded2',fmt:'count',calc:function(c){var v=c.sales.length;return{v:v,sub:'Invoices and sales',series:weekly(c,c.sales,function(r){return r.length}),form:'Count of invoice and sale rows up to the as-of date.'}}},
+  {id:'aov',cat:'Sales dashboard',title:'Average order value',icon:'\ud83e\uddfe',fmt:'money',calc:function(c){var v=c.sales.length?sum(c.sales)/c.sales.length:0;return{v:v,sub:'Revenue divided by orders',series:weekly(c,c.sales,function(r){return r.length?sum(r)/r.length:0}),form:'Revenue \u00f7 number of orders.'}}},
+  {id:'grow',cat:'Sales dashboard',title:'Sales growth',icon:'\ud83d\udcc8',fmt:'pct',calc:growth},
+  {id:'imp',cat:'Marketing dashboard',title:'Impressions',icon:'\ud83d\udc41\ufe0f',need:NEED_MKT},
+  {id:'clk',cat:'Marketing dashboard',title:'Clicks',icon:'\ud83d\uddb1\ufe0f',need:NEED_MKT},
+  {id:'ctr',cat:'Marketing dashboard',title:'Click-through rate',icon:'\ud83c\udfaf',need:NEED_MKT},
+  {id:'conv',cat:'Marketing dashboard',title:'Conversions',icon:'\u2705',need:NEED_MKT},
+  {id:'uv',cat:'Website analytics',title:'Unique visitors',icon:'\ud83d\udc64',need:NEED_WEB},
+  {id:'ses',cat:'Website analytics',title:'Sessions',icon:'\ud83d\udd01',need:NEED_WEB},
+  {id:'bnc',cat:'Website analytics',title:'Bounce rate',icon:'\u21a9\ufe0f',need:NEED_WEB},
+  {id:'dur',cat:'Website analytics',title:'Average session duration',icon:'\u23f1\ufe0f',need:NEED_WEB},
+  {id:'newc',cat:'Customer analytics',title:'New customers',icon:'\ud83c\udd95',fmt:'count',calc:function(c){var cu=customers(c.sales),start=addDays(c.asof,-29),n=0;Object.keys(cu).forEach(function(k){var first=cu[k].map(function(x){return x.entry_date}).sort()[0];if(first>=start)n++});return{v:n,sub:'First purchase in the last 30 days',form:'Customers whose first sale falls in the 30 days up to the as-of date.'}}},
+  {id:'retc',cat:'Customer analytics',title:'Returning customers',icon:'\ud83d\udd01',fmt:'count',calc:function(c){var cu=customers(c.sales),n=0;Object.keys(cu).forEach(function(k){if(cu[k].length>1)n++});return{v:n,sub:'Customers with more than one purchase',form:'Customers with two or more sale rows.'}}},
+  {id:'rpr',cat:'Customer analytics',title:'Repeat purchase rate',icon:'\ud83d\udd01',fmt:'pct',calc:function(c){var cu=customers(c.sales),keys=Object.keys(cu),n=0;keys.forEach(function(k){if(cu[k].length>1)n++});return{v:keys.length?n/keys.length*100:0,sub:'Returning \u00f7 all customers',form:'Customers with 2+ purchases \u00f7 all customers \u00d7 100.'}}},
+  {id:'clv',cat:'Customer analytics',title:'Customer lifetime value',icon:'\ud83d\udc8e',fmt:'money',calc:function(c){var cu=Object.keys(customers(c.sales)).length;var v=cu?sum(c.sales)/cu:0;return{v:v,sub:'Average revenue per customer (approximate)',form:'Total revenue \u00f7 number of customers. An approximation; it does not forecast future purchases.'}}},
+  {id:'kpirev',cat:'Power BI KPI cards',title:'Revenue KPI',icon:'\ud83d\udcca',fmt:'money',calc:function(c){var v=sum(c.sales);return{v:v,sub:'Total sales',form:'Same as Revenue.'}}},
+  {id:'kpiprof',cat:'Power BI KPI cards',title:'Profit KPI',icon:'\ud83d\udcb5',fmt:'money',calc:function(c){var v=sum(c.sales)-sum(c.exp);return{v:v,sub:'Revenue minus expenses',form:'Sum of sales minus sum of expense rows, in '+c.rep+'.'}}},
+  {id:'kpigrow',cat:'Power BI KPI cards',title:'Growth KPI',icon:'\ud83d\ude80',fmt:'pct',calc:growth},
+  {id:'kpiperf',cat:'Power BI KPI cards',title:'Performance KPI (collection rate)',icon:'\ud83c\udfc1',fmt:'pct',calc:function(c){var i=sum(c.inv),r=sum(c.rec);return{v:i?Math.min(100,r/i*100):0,sub:'Received \u00f7 invoiced',form:'Receipts and payments \u00f7 invoices \u00d7 100 (capped at 100%).'}}},
+  {id:'mix',cat:'Data visualization types',title:'Entry mix (pie)',icon:'\ud83e\udd67',fmt:'count',calc:function(c){var m={};c.rows.forEach(function(x){m[x.entry_type]=(m[x.entry_type]||0)+1});return{v:c.rows.length,sub:'Rows by type. Tap to see the chart.',pie:m,form:'Count of ledger rows grouped by type.'}}},
+  {id:'mgn',cat:'Common analyst KPIs',title:'Profit margin',icon:'\ud83d\udcb9',fmt:'pct',calc:function(c){var r=sum(c.sales),p=r-sum(c.exp);return{v:r?p/r*100:0,sub:'Profit \u00f7 revenue',form:'(Revenue \u2212 expenses) \u00f7 revenue \u00d7 100.'}}},
+  {id:'roi',cat:'Common analyst KPIs',title:'Return on investment',icon:'\ud83c\udfaf',fmt:'pct',calc:function(c){var e=sum(c.exp),r=sum(c.sales);return{v:e?(r-e)/e*100:0,sub:'(Revenue \u2212 expenses) \u00f7 expenses',form:'(Revenue \u2212 expenses) \u00f7 expenses \u00d7 100. Needs expense rows.'}}},
+  {id:'ret',cat:'Common analyst KPIs',title:'Customer retention',icon:'\ud83d\udd01',fmt:'pct',calc:function(c){var w=window30(c,c.sales),cuP=Object.keys(customers(w.prev)),cuC=customers(w.cur),kept=cuP.filter(function(k){return cuC[k]}).length;return{v:cuP.length?kept/cuP.length*100:0,sub:'Customers who bought in both of the last two 30-day periods',form:'Customers active in both periods \u00f7 customers active in the previous 30 days \u00d7 100.'}}},
+  {id:'cvr',cat:'Common analyst KPIs',title:'Conversion rate',icon:'\ud83d\udd04',need:NEED_MKT},
+ ];
+ function growth(c){var w=window30(c,c.sales),a=sum(w.cur),b=sum(w.prev);return{v:b?(a-b)/b*100:(a?100:0),sub:'Last 30 days against the 30 days before',series:weekly(c,c.sales,sum),form:'(Sales in the last 30 days \u2212 sales in the previous 30 days) \u00f7 previous \u00d7 100.'}}
+ function topCustomers(list,rep){var m={};list.forEach(function(x){var k=x.party||'Unnamed';m[k]=(m[k]||0)+Number(x.amount)});return Object.keys(m).map(function(k){return{k:k,v:m[k]}}).sort(function(p,q){return q.v-p.v}).slice(0,5)}
+ function fmtVal(m,r){if(r.need)return '';return m.fmt==='money'?money(r.v,window.__lsData&&window.__lsData.rep):m.fmt==='pct'?pct(r.v):Number(r.v||0).toLocaleString()}
+ function safeCalc(m,c){try{return m.calc(c)}catch(e){return {v:0,sub:'Could not calculate this yet.',form:''}}}
+ function barsSvg(labels,vals,fmt){var W=320,H=170,pad=24,max=Math.max.apply(null,vals.concat([1])),bw=(W-pad*2)/labels.length;
+  var s='<svg class="an-svg" viewBox="0 0 '+W+' '+(H+20)+'" role="img" aria-label="Bar chart">';
+  vals.forEach(function(v,i){var h=Math.max(2,v/max*(H-30)),x=pad+i*bw+bw*0.15,y=H-h;s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.7).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="6" fill="url(#gB)"><title>'+esc(labels[i])+': '+esc(fmt(v))+'</title></rect>';
+   if(i%3===0||i===labels.length-1)s+='<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(H+14)+'" font-size="9" text-anchor="middle" fill="currentColor" opacity=".6">'+esc(labels[i])+'</text>'});
+  return s+'<defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8ae8"/><stop offset="1" stop-color="#142b52"/></linearGradient></defs></svg>'}
+ function lineSvg(labels,vals,fmt){var W=320,H=170,pad=12,max=Math.max.apply(null,vals.concat([1])),min=Math.min.apply(null,vals.concat([0]));var pts=vals.map(function(v,i){var x=pad+i*(W-pad*2)/Math.max(1,vals.length-1),y=H-((v-min)/((max-min)||1))*(H-30)-10;return [x,y]});
+  var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
+  return '<svg class="an-svg" viewBox="0 0 '+W+' '+(H+20)+'" role="img" aria-label="Line chart"><path d="'+d+'" fill="none" stroke="#2f63c4" stroke-width="3" stroke-linejoin="round"/>'+pts.map(function(p,i){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="#142b52"><title>'+esc(labels[i])+': '+esc(fmt(vals[i]))+'</title></circle>'}).join('')+'</svg>'}
+ function pieSvg(map){var keys=Object.keys(map),tot=keys.reduce(function(s,k){return s+map[k]},0)||1,cols=['#2f63c4','#142b52','#5b8ae8','#b5543b','#2e9e6a','#c9a227'],a0=-Math.PI/2,cx=110,cy=110,r=95,out='<svg class="an-svg" viewBox="0 0 320 220" role="img" aria-label="Pie chart"><g transform="translate(0,0)">';
+  keys.forEach(function(k,i){var a1=a0+map[k]/tot*Math.PI*2,x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),large=a1-a0>Math.PI?1:0;out+='<path d="M'+cx+' '+cy+' L'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+large+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+' Z" fill="'+cols[i%cols.length]+'"><title>'+esc(k)+': '+map[k]+'</title></path>';a0=a1});
+  out+='</g>';keys.forEach(function(k,i){out+='<text x="230" y="'+(30+i*22)+'" font-size="12" fill="currentColor"><tspan fill="'+cols[i%cols.length]+'">\u25a0</tspan> '+esc(k)+' ('+map[k]+')</text>'});return out+'</svg>'}
+ var CUR_CHART='bar';
+ function openMetric(m){
+  var c=ctx();var box=$a('anDetail');
+  $a('anTitle').textContent=m.title;$a('anCat').textContent=m.cat;
+  var body=$a('anBody');
+  if(!c){body.innerHTML='<div class="an-card dnote">Upload an invoice or data sheet and confirm it first, then the figures appear here.</div>';box.hidden=false;return}
+  if(m.need){body.innerHTML='<div class="an-card"><div class="an-big" style="font-size:20px">Not available yet</div><p class="dnote">'+esc(m.need)+'</p><p class="dnote">What we can calculate today: Sales, Customers, Profit, Growth and Performance from your ledger.</p></div>';box.hidden=false;return}
+  var r=safeCalc(m,c),val=m.fmt==='money'?money(r.v,c.rep):m.fmt==='pct'?pct(r.v):Number(r.v||0).toLocaleString();
+  var chartHtml='';
+  if(r.series){
+   var fmt=m.fmt==='money'?function(v){return money(v,c.rep)}:m.fmt==='pct'?pct:function(v){return String(Math.round(v))};
+   var typeSel='<div class="ls-tl"><label class="dnote" for="anType">Chart</label><select id="anType" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="bar"'+(CUR_CHART==='bar'?' selected':'')+'>Bar</option><option value="line"'+(CUR_CHART==='line'?' selected':'')+'>Line</option></select></div>';
+   chartHtml=typeSel+'<div class="an-card" id="anChartBox">'+(CUR_CHART==='line'?lineSvg(r.series.labels,r.series.values,fmt):barsSvg(r.series.labels,r.series.values,fmt))+'<div class="dnote">Last 12 weeks, weekly totals.</div></div>';
+  } else if(r.pie){chartHtml='<div class="an-card">'+pieSvg(r.pie)+'</div>'}
+  var table=r.table?'<div class="an-card"><b>Top customers</b>'+'<table class="ls-table"><tr><th>Customer</th><th>Revenue</th></tr>'+r.table.map(function(t){return '<tr><td>'+esc(t.k)+'</td><td>'+money(t.v,c.rep)+'</td></tr>'}).join('')+'</table></div>':'';
+  body.innerHTML='<div class="an-big">'+esc(val)+'</div><div class="dnote">'+esc(r.sub||'')+'</div>'+chartHtml+table+'<details class="ls-more" style="margin-top:0"><summary>How it is calculated</summary><div class="dnote">'+esc(r.form||'')+'</div></details>';
+  var sel=$a('anType');if(sel)sel.onchange=function(){CUR_CHART=this.value;openMetric(m)};
+  box.hidden=false;box.scrollTop=0;
+ }
+ function renderTiles(){
+  var host=$a('anCats');if(!host)return;host.innerHTML='';
+  var c=ctx();
+  var cats=[];METRICS.forEach(function(m){if(cats.indexOf(m.cat)<0)cats.push(m.cat)});
+  cats.forEach(function(cat){
+   var card=document.createElement('div');card.className='dcard';
+   card.innerHTML='<h2>'+esc(cat)+'</h2><div class="an-grid"></div>';
+   var grid=card.querySelector('.an-grid');
+   METRICS.filter(function(m){return m.cat===cat}).forEach(function(m){
+    var t=document.createElement('button');t.type='button';t.className='an-tile'+(m.need?' need':'');
+    var val=m.need?'Needs data':(c?(m.fmt==='money'?money(safeCalc(m,c).v,c.rep):m.fmt==='pct'?pct(safeCalc(m,c).v):Number(safeCalc(m,c).v||0).toLocaleString()):'\u2014');
+    t.innerHTML='<b>'+m.icon+' '+esc(m.title)+'</b><span class="v">'+esc(val)+'</span>';
+    t.onclick=function(){openMetric(m)};grid.appendChild(t)});
+   host.appendChild(card)});
+  // business flow and design rules
+  var fl=$a('anFlow');if(fl&&c){var up=(window.__lsData&&window.__lsData.U||[]).length,cust=Object.keys(customers(c.sales)).length;
+   fl.innerHTML='<div><b>1</b><span>Raw data: '+up+' upload(s) in the workspace</span></div><div><b>2</b><span>Cleaning: unclear rows are skipped at upload and shown in Data entry</span></div><div><b>3</b><span>Modelling: '+c.rows.length+' ledger rows, '+cust+' customers</span></div><div><b>4</b><span>Visualization: the tiles above</span></div><div><b>5</b><span>Actionable insights: '+(c.inv.length?'chase overdue invoices first (see Project management)':'add invoices to see insights')+'</span></div><div><b>6</b><span>Strategic decisions: compare growth and profit margin each month</span></div>'}
+ }
+ window.__anRender=renderTiles;
+ function build(){
+  var wrap=$a('lsWrap');var dash=$a('bDash');if(!dash||$a('anWrap'))return;
+  var w=document.createElement('div');w.id='anWrap';w.className='an-cats';
+  w.innerHTML='<div class="dcard"><div class="dhead"><h2>Analytics</h2><span class="ttag">Tap any tile for the full view</span></div><p class="dnote">Figures come from your ledger in the chosen currency, as of the date you set above.</p></div><div id="anCats" class="an-cats"></div>'+
+   '<div class="dcard"><h2>Business dashboard flow</h2><div class="an-flow" id="anFlow"></div></div>'+
+   '<div class="dcard"><h2>Dashboard design rules</h2><div class="an-flow"><div><b>\u2713</b><span>Keep it simple: one headline figure per tile</span></div><div><b>\u2713</b><span>Use consistent colours: navy for values, red only for overdue</span></div><div><b>\u2713</b><span>Highlight the KPIs that matter most</span></div><div><b>\u2713</b><span>Avoid visual clutter: details sit under Show more</span></div><div><b>\u2713</b><span>Focus on business goals, not vanity numbers</span></div></div></div>';
+  if(wrap)wrap.parentNode.insertBefore(w,wrap.nextSibling);else dash.insertBefore(w,dash.firstChild);
+  var d=document.createElement('div');d.id='anDetail';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+  d.innerHTML='<div class="an-top"><button type="button" class="an-back" id="anBack">\u2190 Back</button><div class="t"><b id="anTitle"></b><small id="anCat"></small></div></div><div class="an-body" id="anBody"></div>';
+  document.body.appendChild(d);
+  $a('anBack').onclick=function(){d.hidden=true};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')d.hidden=true});
+  renderTiles();
+ }
+ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(build,250)};
+ window.addEventListener('load',function(){setTimeout(function(){if($a('bDash'))build()},900)});
+})();
+</script>
+<script>
+/* PHASE 4: reminders for meeting notes, and reading a document picture into rows for review before saving. */
+(function(){
+ function $p(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function ready(){return !!(window.sb&&window.curUser)}
+
+ /* ---- alerts ---- */
+ function buildAlerts(){
+  var host=$p('bWork');if(!host||$p('alBox'))return;
+  var c=document.createElement('div');c.className='dcard';c.id='alCard';
+  c.innerHTML='<div class="dhead"><h2>Alerts</h2><button class="btn alt" id="alAll" type="button">Mark all read</button></div><div class="ilist" id="alBox"></div><div class="muted dnote" id="alNote"></div>';
+  host.insertBefore(c,host.firstChild);
+  $p('alAll').onclick=async function(){
+   if(!ready())return;
+   var r=await sb.from('workspace_notifications').update({read_at:new Date().toISOString()}).eq('user_id',curUser.id).is('read_at',null);
+   loadAlerts();
+  };
+ }
+ async function loadAlerts(){
+  if(!$p('alBox'))return;
+  if(!ready()){$p('alBox').innerHTML='';$p('alNote').textContent='Sign in to see alerts.';return}
+  var r=await sb.from('workspace_notifications').select('id,body,created_at,kind').eq('user_id',curUser.id).is('read_at',null).order('created_at',{ascending:false}).limit(20);
+  if(r.error){$p('alNote').textContent='Alerts are not connected yet.';return}
+  var list=r.data||[];$p('alBox').innerHTML='';
+  $p('alNote').textContent=list.length?'':'No alerts. You are up to date.';
+  list.forEach(function(n){var d=document.createElement('div');d.className='al-item';d.textContent=n.body;$p('alBox').appendChild(d)});
+ }
+
+ /* ---- document reading ---- */
+ var pendingDoc=null;
+ function rowTable(rows,cur){
+  var h='<table class="rv-table"><tr><th>Date</th><th>Type</th><th>Customer</th><th>Amount</th><th>Currency</th><th>Due</th></tr>';
+  rows.forEach(function(x,i){h+='<tr data-i="'+i+'"><td><input data-k="date" value="'+esc(x.date||'')+'"></td><td><input data-k="type" value="'+esc(x.type||'other')+'"></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input data-k="due" value="'+esc(x.due||'')+'"></td></tr>'});
+  return h+'</table>';
+ }
+ function readReview(){
+  var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('input[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=inp.value.trim()});out.push(o)});return out;
+ }
+ function toRows(list){
+  var ok=[],bad=0;
+  list.forEach(function(x){var d=x.date&&!isNaN(new Date(x.date))?new Date(x.date).toISOString().slice(0,10):null;var a=parseFloat(String(x.amount).replace(/[^0-9.\-]/g,''));
+   if(!d||isNaN(a)){bad++;return}
+   var t=['invoice','receipt','sale','expense','payment','other'].indexOf(String(x.type).toLowerCase())>=0?String(x.type).toLowerCase():'other';
+   ok.push({date:d,type:t,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null})});
+  return {ok:ok,bad:bad};
+ }
+ async function readDoc(){
+  var f=$p('upFile').files[0];if(!f){$p('upMsg').textContent='Choose a document picture first.';return}
+  if(!ready()){$p('upMsg').textContent='Sign in to read documents.';return}
+  $p('upMsg').textContent='Reading the document...';
+  var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result))};r.onerror=rej;r.readAsDataURL(f)});
+  var raw;
+  try{raw=await askPublicAgent('Read this document',Object.assign({},agentMeta(),{images:[dataUrl],intent:'extract',__sid:'read-'+Date.now()}))}
+  catch(e){$p('upMsg').textContent=(e&&!e.backend&&e.message)?e.message:'The document reader is not reachable right now.';return}
+  var parsed=null;try{parsed=JSON.parse(String(raw).replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){}
+  if(!parsed||!Array.isArray(parsed.rows)){$p('upMsg').textContent='The document could not be read. Try a clearer picture.';return}
+  pendingDoc={file:f,type:parsed.document_type||'other',currency:parsed.currency||null,notes:parsed.notes||'',rows:parsed.rows};
+  var box=$p('rvBox');if(!box){box=document.createElement('div');box.id='rvBox';box.className='ilist';$p('upMsg').parentNode.insertBefore(box,$p('upMsg'))}
+  box.innerHTML='<div class="irow"><b>Detected:</b> '+esc(pendingDoc.type)+(pendingDoc.currency?' \u00b7 '+esc(pendingDoc.currency):'')+'</div>'+(pendingDoc.notes?'<div class="muted dnote">'+esc(pendingDoc.notes)+'</div>':'')+'<div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div>'+
+   '<div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and save</button><button class="btn alt" id="rvCancel" type="button">Discard</button></div>';
+  $p('rvSave').onclick=saveReviewed;$p('rvCancel').onclick=function(){box.innerHTML='';pendingDoc=null;$p('upMsg').textContent='Discarded. Nothing was saved.'};
+  $p('upMsg').textContent='Check the rows, then confirm. Nothing is saved until you do.';
+ }
+ async function saveReviewed(){
+  var reviewed=readReview();var t=toRows(reviewed);
+  if(!t.ok.length){$p('upMsg').textContent='No valid rows. Fix the dates or amounts first.';return}
+  var ws=wsId();if(!ws){$p('upMsg').textContent='Create or join a workspace first.';return}
+  var cur=t.ok.map(function(x){return x.currency}).filter(Boolean);var uniq=cur.filter(function(c,i){return cur.indexOf(c)===i});
+  var chosen=(document.querySelector('input[name="upcur"]:checked')||{}).value;
+  var rc=uniq.length===1?uniq[0]:(chosen||(uniq.length?null:null));
+  if(!rc){var w=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();rc=(w.data&&w.data.reporting_currency)||null}
+  if(!rc){$p('upMsg').textContent='Set the currency for these rows first.';return}
+  var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+  var path=ws+'/'+id+'/'+pendingDoc.file.name.replace(/[^A-Za-z0-9._-]/g,'_');
+  $p('upMsg').textContent='Saving...';
+  var up=await sb.storage.from('workspace-uploads').upload(path,pendingDoc.file,{upsert:false});
+  if(up.error){$p('upMsg').textContent='Could not store the file: '+up.error.message;return}
+  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,detected_type:pendingDoc.type,confidence:'Reviewed',currency:rc});
+  if(ins.error){$p('upMsg').textContent='File stored, but its record was not saved: '+ins.error.message;return}
+  var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due}});
+  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
+  if(cf.error){$p('upMsg').textContent='Saved the file, but the rows were not added: '+cf.error.message;return}
+  $p('upMsg').textContent='Saved. '+cf.data+' rows added to the ledger'+(t.bad?' ('+t.bad+' rows skipped: unclear date or amount)':'')+'.';
+  $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
+ }
+ function wireUpload(){
+  var fi=$p('upFile');if(!fi||$p('upReadBtn'))return;
+  var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
+  $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
+  b.onclick=readDoc;
+  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&/^image\//.test(f.type)||f&&/\.(png|jpe?g)$/i.test(f.name))});
+ }
+ var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
+ setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
 })();
 </script>
 </body>
