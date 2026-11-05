@@ -1116,6 +1116,42 @@ main{min-height:0;height:100%;overflow:hidden}
 .rv-table td input{width:100%;min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 7px;font:inherit;font-size:12.5px}
 .rv-table{width:100%;border-collapse:collapse;font-size:12.5px}
 .rv-table th,.rv-table td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+/* WATCH: charts, spotlight */
+.px-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.px-seg{display:inline-flex;background:var(--soft);border-radius:11px;padding:3px}
+.px-seg button{border:0;background:none;color:var(--ink);padding:6px 12px;border-radius:8px;font:inherit;font-size:12.5px;cursor:pointer}
+.px-seg button.on{background:var(--panel);box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:700}
+.px-hint{font-size:11.5px;color:var(--muted)}
+.px-svg{width:100%;height:auto;display:block;touch-action:pan-y;user-select:none}
+.px-grid{stroke:var(--line);stroke-width:1}
+.px-y{font-size:9.5px;fill:var(--muted)}
+.px-x{font-size:9.5px;fill:var(--muted)}
+.px-bar{fill:url(#pxgrad);fill:#2f63c4}
+.px-line{fill:none;stroke:#2f63c4;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.px-dot{fill:#142b52}
+.px-guide{stroke:#2f63c4;stroke-dasharray:3 3;stroke-width:1;opacity:.6}
+.px-cursor{fill:#fff;stroke:#2f63c4;stroke-width:2.5}
+.px-read{margin-top:6px;font-size:12.5px;font-weight:600;color:var(--nav-ink)}
+.px-legend{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.px-legend div{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.px-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.px-legend span{color:var(--muted);font-size:12px}
+
+.spot-list{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.spot-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(150deg,var(--panel),var(--soft));box-shadow:0 18px 34px -22px rgba(11,27,74,.5);transition:transform .3s,box-shadow .3s}
+.spot-card:hover{transform:translateY(-2px);box-shadow:0 24px 40px -22px rgba(11,27,74,.6)}
+.spot-embed{position:relative;padding-top:56.25%;background:#000}
+.spot-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.spot-meta{display:flex;flex-direction:column;gap:4px;padding:12px 14px 14px}
+.spot-meta b{font-size:15px;line-height:1.35}
+.spot-meta span{font-size:12px;color:var(--muted)}
+.spot-meta a{margin-top:6px;color:#2f63c4;font-weight:700;text-decoration:none;font-size:13px}
+#spSheet{position:fixed;inset:0;z-index:320;background:rgba(6,12,24,.45);display:flex;align-items:flex-end}
+#spSheet[hidden]{display:none}
+#spSheet .sheetCard{width:100%;max-width:560px;margin:0 auto;background:var(--panel);border-radius:22px 22px 0 0;padding:14px 16px calc(22px + env(safe-area-inset-bottom,0px));max-height:70vh;overflow-y:auto}
+#spSheet .sheetOpt{display:block;width:100%;text-align:left;padding:14px 6px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+#spSheet .sheetOpt:first-of-type{border-top:0}
+.spot-open{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:12px 18px;background:linear-gradient(145deg,#142b52,#24457f);color:#fff;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 14px 26px -16px rgba(11,27,74,.7)}
 </style>
 </head>
 <body>
@@ -1134,12 +1170,12 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
 <button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
 <button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups<span class="nbadge" id="gBadge" hidden aria-label="Groups with new messages"></span></button>
+<button class="nav" data-go="spotlight"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg>Spotlight</button>
 <div class="agentsgrp" id="agentsGrp"><button type="button" class="nav agentsbtn" id="agentsBtn" aria-expanded="false" aria-controls="agentsPanel"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="10" rx="3"/><path d="M12 8V5M9 13h.01M15 13h.01M3 13v2M21 13v2"/></svg>Agents<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="agentspanel" id="agentsPanel"><button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
 <button class="nav" data-go="gmail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Gmail Bot</button>
 <button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Bot</button>
 </div></div>
 <button class="nav" data-go="support" id="navSupport" hidden><svg viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 13h3v5H4zM17 13h3v5h-3zM17 18c0 2-2 3-5 3"/></svg>Support<span class="nbadge" id="supBadge" hidden></span></button>
-<button class="nav" data-go="ads"><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1zM18 9a4 4 0 0 1 0 6"/></svg>Run ads <span class="badge soon">Soon</span></button>
 <div id="recPinned"></div>
 <div class="rechead" id="recLabel" hidden><button type="button" class="rechtitle" id="recToggle" aria-expanded="true">Chats <svg viewBox="0 0 24 24" class="rchev"><path d="M6 9l6 6 6-6"/></svg></button><span class="rechtools"><button type="button" id="recAll" aria-label="Show all chats" title="Show all"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></button><button type="button" id="recSearchBtn" aria-label="Search chats" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg></button><button type="button" id="recSortBtn" aria-label="Sort chats" title="Sort: Last activity"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16M4 9h4M10 15h4M16 8h4"/></svg></button></span></div>
 <div class="recsearch" id="recSearchWrap" hidden><input id="recSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
@@ -1208,6 +1244,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
  <div class="dcard"><h2>Proposals for your approval</h2>
  <div class="muted dnote">Each proposal is checked against your experience, your location and your preferences. Nothing is sent until you approve it.</div>
  <div id="pProps" class="ilist"></div><div class="muted dnote" id="pPropsNote"></div></div>
+<div class="dcard"><h2>Learn for your niche</h2><div class="dnote">Recent, popular videos for your field, picked from your pitch profile. Play them here or open YouTube.</div><div class="prow" style="margin-top:10px"><button class="btn" id="pnBtn" type="button">Find videos for my field</button></div><div class="spot-list" id="pnList"></div></div>
 <div class="dcard"><h2>Motivation</h2><div id="pVid" class="vlist"></div><div class="muted dnote" id="pVidNote"></div></div>
 </div>
 <div id="pMsg" class="muted" role="status" style="min-height:20px;margin-top:8px"></div>
@@ -1414,7 +1451,6 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="lp-in lp-sec" id="lp-pitch"><h2>Pelex Pitch Agent</h2><p class="lp-lead">Stop chasing clients and jobs. Pelex finds them, you approve.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/></svg></span><b>Finds work for you</b><span class="d">Every day or every 2 days it finds up to 3 companies that need what you do.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"/></svg></span><b>Reads before it applies</b><span class="d">It checks each job against your experience and only picks real fits.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span><b>You approve every message</b><span class="d">It writes in your tone and sends the draft to you first. Nothing goes out until you tap Approve.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6"/></svg></span><b>Sends your resume and portfolio</b><span class="d">After you approve, it sends from your own Gmail with your resume and portfolio attached.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><b>Remote, hybrid or on-site</b><span class="d">Hybrid and on-site search near you. Remote searches the world, in countries you can work for.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Aims at growing companies</b><span class="d">Your experience sets the size of company it looks for, judged from public signals.</span></div></div><div class="lp-plan" style="max-width:420px;margin:20px auto 0"><h3>Pelex Pitch Agent</h3><div class="tag">Add-on for the Business plan</div><div class="pr"><span data-ngn="&#8358;19,500" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Up to 3 companies per run</li><li>You approve every message</li><li>Sends from your own Gmail</li><li>2-day free trial</li></ul></div></div>
 <div class="lp-in lp-sec" id="lp-artcraft"><h2>ArtCraft creative tools</h2><p class="lp-lead">Creative apps built on the open-source ArtCraft engine and run for you by Pelex, so there is nothing extra to log in to. Generated images and videos are deleted after two days, so save what you want to keep.</p><div class="lp-feats"><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L16 8M15 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg></span><b>Image generation <span class="badge soon" data-feat="image">Soon</span></b><span class="d">Describe a picture and get it in the chat.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><b>Video clips <span class="badge soon">Premium</span></b><span class="d">Realistic 15-second clips, with a monthly limit per person.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg></span><b>WordCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">Documents.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg></span><b>GridCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">Data entry, statistics and volume review.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M9 15h6"/></svg></span><b>PdfCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">PDF tools.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span><b>DeckCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">Slide decks.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><b>FilmCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">Video.</span></div><div class="lp-feat"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L16 8M15 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg></span><b>EffectCraft <span class="badge soon" data-feat="artcraft">Soon</span></b><span class="d">Visual effects.</span></div></div></div>
 <div class="lp-in lp-sec" id="lp-connectors"><h2>Connectors</h2><p class="lp-lead">Connect the apps you already use. Each one turns on as its sign-in is approved.</p><p class="lp-sub2">Built in</p><div class="lp-pills"><span class="lp-pl2">Web search <span class="badge ok">Live</span></span><span class="lp-pl2">Weather <span class="badge ok">Live</span></span></div><p class="lp-sub2">Google apps <span class="badge soon" data-feat="connectors">Soon</span></p><div class="lp-pills"><span class="lp-pl2">Gmail</span><span class="lp-pl2">Calendar</span><span class="lp-pl2">Drive</span><span class="lp-pl2">Docs</span><span class="lp-pl2">Sheets</span><span class="lp-pl2">Slides</span><span class="lp-pl2">Forms</span><span class="lp-pl2">Meet</span><span class="lp-pl2">Tasks</span><span class="lp-pl2">Keep</span><span class="lp-pl2">Contacts</span><span class="lp-pl2">Maps</span><span class="lp-pl2">YouTube</span></div><p class="lp-sub2">Other apps <span class="badge soon" data-feat="connectors">Soon</span></p><div class="lp-pills"><span class="lp-pl2">Canva</span><span class="lp-pl2">CapCut</span><span class="lp-pl2">Seedance 2.5</span><span class="lp-pl2">Trello</span></div></div>
-<div class="lp-in lp-sec" id="lp-ads"><h2>Run ads <span class="badge soon">Soon</span></h2><p class="lp-lead">Business and Pitch agent users will be able to run their own ad campaigns through Pelex.</p><div class="lp-pills"><span class="lp-pl2">Meta (Facebook, Instagram)</span><span class="lp-pl2">Google</span><span class="lp-pl2">LinkedIn</span><span class="lp-pl2">YouTube</span><span class="lp-pl2">TikTok</span></div></div>
 <div class="lp-in lp-sec" id="lp-plans"><h2>Explore plans</h2><p class="lp-lead">Start free. Every paid plan begins with a 2-day free trial. A card is taken at the start and you can cancel any time during the trial.</p>
 <div class="lp-tabs" role="tablist"><button class="lp-tab" role="tab" aria-selected="true" data-ptab="ind" type="button">Individual</button><button class="lp-tab" role="tab" aria-selected="false" data-ptab="biz" type="button">Business</button></div>
 <div class="lp-plans" data-p="ind"><div class="lp-plan"><h3>Free</h3><div class="tag">Try Pelex</div><div class="pr">$0</div><div class="psub">Free for everyone</div><button class="btn" data-go="chat" type="button">Try Pelex</button><ul><li>Chat, web search and voice</li><li>Upload images and documents</li><li>Write code and save replies as PDF or Word</li><li>Daily limit, no login needed</li></ul></div><div class="lp-plan"><h3>Premium</h3><div class="tag">For everyday productivity</div><div class="pr"><span data-ngn="&#8358;6,500" data-usd="$5"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;4,000" data-usd="$3"></span> biweekly or <span data-ngn="&#8358;65,000" data-usd="$50"></span> per year</div><button class="btn" data-go="plans" type="button">See Premium</button><ul><li>Everything in Free, plus:</li><li>Unlimited chat (fair use)</li><li>Live guided walkthroughs of your files</li><li>2-day free trial</li></ul></div></div><div class="lp-plans two" data-p="biz" hidden><div class="lp-plan"><h3>Business Bot</h3><div class="tag">Support bot for your business</div><div class="pr"><span data-ngn="&#8358;20,000" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;11,000" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;200,000" data-usd="$150"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Answers customers on your website</li><li>Set to your brand and tone</li><li>Customer inbox on the Pelex site</li><li>2-day free trial</li></ul></div><div class="lp-plan"><h3>Pelex Pitch Agent</h3><div class="tag">Finds jobs and clients for you</div><div class="pr"><span data-ngn="&#8358;19,500" data-usd="$15"></span> <small>/ month</small></div><div class="psub"><span data-ngn="&#8358;10,700" data-usd="$8"></span> biweekly or <span data-ngn="&#8358;195,000" data-usd="$145"></span> per year</div><button class="btn" data-go="plans" type="button">See plan</button><ul><li>Up to 3 companies per run</li><li>You approve every message</li><li>Sends from your own Gmail</li><li>2-day free trial</li></ul></div></div>
@@ -1422,7 +1458,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="lp-in lp-sec" id="lp-faq"><h2>FAQ</h2><div class="lp-faq"><details><summary>What is the Pelex Pitch Agent?</summary><p>You tell it what you do and share your resume and portfolio. It finds a few suitable companies, writes a message in your tone and shows it to you first. It only sends after you approve.</p></details><details><summary>What is Pelex and how does it work?</summary><p>Pelex is an AI agent you talk to by text or voice. Ask it to plan, write, search the web, explain your files and write code. It answers in the chat, and you can save long replies as a PDF or Word file.</p></details><details><summary>What should I use Pelex for?</summary><p>Planning your week, drafting messages and documents, learning something new, researching with web search, and writing code. The Business and Pitch agents work with your own accounts.</p></details><details><summary>How much does it cost?</summary><p>Chat is free with a daily limit and needs no login. Premium and the bots are paid, and every plan starts with a 2-day free trial. A card is taken at the start, and you can cancel any time during the trial. See the plans above.</p></details><details><summary>Do I need an account?</summary><p>No. You can chat without one. Signing in saves your chats and library across your devices.</p></details><details><summary>Can I delete my data?</summary><p>Yes. In Settings you can download your data, delete all your chats, or delete your account.</p></details></div></div>
 <footer class="lp-foot"><div class="lp-in"><div class="cols">
 <div class="fl"><a class="lp-brand" data-go="chat" role="button"><span class="lpmark" role="img" aria-label="Pelex"></span><span>Pelex</span></a>
-<form id="lpAsk"><input id="lpAskIn" type="text" placeholder="How can I help you today?" aria-label="Ask Pelex"><button type="submit" aria-label="Start chat">&#8593;</button></form></div><div><h4>Product</h4><button class="lk" data-go="chat" type="button">Chat</button><button class="lk" data-scroll="lp-plans" type="button">Plans</button><button class="lk" data-scroll="lp-card" type="button">Log in</button><button class="lk" id="lpInstall2" type="button">Download app</button><h4 style="margin-top:22px">Everyday chat</h4><button class="lk" data-fill="Help me plan my week" type="button">Plan my week</button><button class="lk" data-fill="I need advice on " type="button">Get advice</button><button class="lk" data-fill="Teach me something new and useful for my business" type="button">Learn something new</button><button class="lk" data-fill="Write code for " type="button">Write code</button><button class="lk" data-fill="Search the web for " type="button">Search the web</button><button class="lk" data-scroll="lp-features" type="button">Voice chat</button></div><div><h4 style="margin-top:22px">Pelex Pitch Agent</h4><button class="lk" data-scroll="lp-pitch" type="button">Find jobs and clients</button><button class="lk" data-scroll="lp-pitch" type="button">Approve every message</button><h4 style="margin-top:22px">Business Bot</h4><button class="lk" data-scroll="lp-business" type="button">Website support bot</button><button class="lk" data-scroll="lp-business" type="button">Lead alerts</button><button class="lk" data-scroll="lp-business" type="button">Meeting handoff</button><button class="lk" data-scroll="lp-business" type="button">Self-serve setup</button></div><div><h4>ArtCraft</h4><button class="lk" data-scroll="lp-artcraft" type="button">Image generation</button><button class="lk" data-scroll="lp-artcraft" type="button">Video clips</button><button class="lk" data-scroll="lp-artcraft" type="button">WordCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">GridCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">PdfCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">DeckCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">FilmCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">EffectCraft</button><h4 style="margin-top:22px">Connectors</h4><button class="lk" data-scroll="lp-connectors" type="button">Google apps</button><button class="lk" data-scroll="lp-connectors" type="button">Canva and CapCut</button><button class="lk" data-scroll="lp-connectors" type="button">Seedance 2.5</button><button class="lk" data-scroll="lp-connectors" type="button">Trello</button><button class="lk" data-scroll="lp-ads" type="button">Run ads</button></div><div><h4>Company</h4><button class="lk" data-open="lpContact" type="button">Contact us</button><button class="lk" data-scroll="lp-faq" type="button">FAQ</button><h4 style="margin-top:22px">Terms and policies</h4><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of service</a></div></div><div class="wm">PELEX</div>
+<form id="lpAsk"><input id="lpAskIn" type="text" placeholder="How can I help you today?" aria-label="Ask Pelex"><button type="submit" aria-label="Start chat">&#8593;</button></form></div><div><h4>Product</h4><button class="lk" data-go="chat" type="button">Chat</button><button class="lk" data-scroll="lp-plans" type="button">Plans</button><button class="lk" data-scroll="lp-card" type="button">Log in</button><button class="lk" id="lpInstall2" type="button">Download app</button><h4 style="margin-top:22px">Everyday chat</h4><button class="lk" data-fill="Help me plan my week" type="button">Plan my week</button><button class="lk" data-fill="I need advice on " type="button">Get advice</button><button class="lk" data-fill="Teach me something new and useful for my business" type="button">Learn something new</button><button class="lk" data-fill="Write code for " type="button">Write code</button><button class="lk" data-fill="Search the web for " type="button">Search the web</button><button class="lk" data-scroll="lp-features" type="button">Voice chat</button></div><div><h4 style="margin-top:22px">Pelex Pitch Agent</h4><button class="lk" data-scroll="lp-pitch" type="button">Find jobs and clients</button><button class="lk" data-scroll="lp-pitch" type="button">Approve every message</button><h4 style="margin-top:22px">Business Bot</h4><button class="lk" data-scroll="lp-business" type="button">Website support bot</button><button class="lk" data-scroll="lp-business" type="button">Lead alerts</button><button class="lk" data-scroll="lp-business" type="button">Meeting handoff</button><button class="lk" data-scroll="lp-business" type="button">Self-serve setup</button></div><div><h4>ArtCraft</h4><button class="lk" data-scroll="lp-artcraft" type="button">Image generation</button><button class="lk" data-scroll="lp-artcraft" type="button">Video clips</button><button class="lk" data-scroll="lp-artcraft" type="button">WordCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">GridCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">PdfCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">DeckCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">FilmCraft</button><button class="lk" data-scroll="lp-artcraft" type="button">EffectCraft</button><h4 style="margin-top:22px">Connectors</h4><button class="lk" data-scroll="lp-connectors" type="button">Google apps</button><button class="lk" data-scroll="lp-connectors" type="button">Canva and CapCut</button><button class="lk" data-scroll="lp-connectors" type="button">Seedance 2.5</button><button class="lk" data-scroll="lp-connectors" type="button">Trello</button></div><div><h4>Company</h4><button class="lk" data-open="lpContact" type="button">Contact us</button><button class="lk" data-scroll="lp-faq" type="button">FAQ</button><h4 style="margin-top:22px">Terms and policies</h4><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of service</a></div></div><div class="wm">PELEX</div>
 <div class="bot"><span>&copy; 2026 PelexSkillHub</span><div class="lp-soc"><button class="soc" data-soc="instagram" type="button" aria-label="Instagram"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></button><button class="soc" data-soc="linkedin" type="button" aria-label="LinkedIn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 10.5V16M8 8v.01M11.5 16v-3.2a2 2 0 0 1 4 0V16M11.5 10.5V16"/></svg></button><button class="soc" data-soc="youtube" type="button" aria-label="YouTube"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.2 9.2l4.6 2.8-4.6 2.8z" fill="currentColor"/></svg></button></div></div></div></footer>
 <div class="lp-modal" id="lpContact" hidden role="dialog" aria-modal="true" aria-labelledby="lpCT"><div class="lp-mc">
 <button class="lp-x" data-close type="button" aria-label="Close">&times;</button>
@@ -1456,23 +1492,6 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </div>
 </div></div></section>
 
-<section class="view" id="v-ads" hidden><div class="wrap">
-<h1>Run ads</h1><div class="muted">Create and manage ad campaigns from your chat. Each platform connects to your own ad account.</div>
-<div class="grid" id="adgrid">
-<div class="card adcard" role="button" tabindex="0" data-ad="meta" aria-label="Run ads through Meta"><div class="cardtop"><span class="adlogo" style="background:#0866FF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 16c-2 0-3-2-3-4s1-4 3-4c3.5 0 7 8 11 8 2 0 3-2 3-4s-1-4-3-4c-4 0-7.500 8-11 8z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="meta" aria-label="Add Meta ads to my list"></button></div><h2>Run ads through Meta</h2><span class="muted">Facebook and Instagram</span><span class="plugstat">Coming soon.</span></div>
-<div class="card adcard" role="button" tabindex="0" data-ad="google" aria-label="Run ads through Google"><div class="cardtop"><span class="adlogo" style="background:#fff;border:1px solid #dfe4ee"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="18" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#4285F4">G</text></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="google" aria-label="Add Google ads to my list"></button></div><h2>Run ads through Google</h2><span class="muted">Search and display ads</span><span class="plugstat">Coming soon.</span></div>
-<div class="card adcard" role="button" tabindex="0" data-ad="linkedin" aria-label="Run ads through LinkedIn"><div class="cardtop"><span class="adlogo" style="background:#0A66C2"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17.500" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#fff">in</text></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="linkedin" aria-label="Add LinkedIn ads to my list"></button></div><h2>Run ads through LinkedIn</h2><span class="muted">Ads for business audiences</span><span class="plugstat">Coming soon.</span></div>
-<div class="card adcard" role="button" tabindex="0" data-ad="youtube" aria-label="Run ads through YouTube"><div class="cardtop"><span class="adlogo" style="background:#FF0000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 8.500v7l6-3.500z" fill="#fff"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="youtube" aria-label="Add YouTube ads to my list"></button></div><h2>Run ads through YouTube</h2><span class="muted">Video ads</span><span class="plugstat">Coming soon.</span></div>
-<div class="card adcard" role="button" tabindex="0" data-ad="tiktok" aria-label="Run ads through TikTok"><div class="cardtop"><span class="adlogo" style="background:#000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.500 5v9.500a3 3 0 1 1-3-3M13.500 5c.4 2.200 1.800 3.500 4 3.700" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="sw" role="switch" aria-checked="false" data-adsw="tiktok" aria-label="Add TikTok ads to my list"></button></div><h2>Run ads through TikTok</h2><span class="muted">Short video ads</span><span class="plugstat">Coming soon.</span></div>
-</div>
-<dialog class="adsheet" id="adSheet" aria-labelledby="adTitle">
-<div class="sheethead"><span id="adSheetLogo"></span><h2 id="adTitle"></h2><button class="xbtn" id="adClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-<ol id="adSteps"></ol>
-<div class="signs" id="adSigns"></div>
-<div class="muted sheetnote" id="adNote"></div>
-<div class="sheetfoot"><button class="btn" id="adList">Add to my list</button></div>
-</dialog>
-</div></section>
 
 <section class="view" id="v-plans" hidden><div class="wrap">
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Plans</h1><div class="muted">Every plan starts with a 2-day free trial. You are asked to activate only after the trial ends.</div>
@@ -1588,6 +1607,13 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="row"><span>Delete my account</span><button class="btn alt" id="pvDelAcct">Delete</button></div>
 </div><div class="note" id="privNote" role="status"></div></div>
 </div></section>
+<section class="view" id="v-spotlight" hidden><div class="wrap">
+<h1>Spotlight</h1><div class="muted">The most watched recent videos for what you care about. Play them here, or open them on YouTube.</div>
+<div style="margin:16px 0"><button class="spot-open" id="spOpen" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Pick an interest</button></div>
+<h2 id="spTitle" style="margin-top:6px">Your picks</h2>
+<div class="spot-list" id="spList"></div>
+</div></section>
+<div id="spSheet" hidden><div class="sheetCard"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>Choose an interest</b><button type="button" id="spClose" class="iconbtn" aria-label="Close">&#10005;</button></div><div id="spPick"></div></div></div>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.2/dist/umd/supabase.js"></script>
@@ -2200,55 +2226,7 @@ document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click'
   try{if(typeof sb!=='undefined'&&sb&&sb.from){sb.from('connector_status').select('id,active').then(function(r){
     if(!r||!r.data)return;var m={};r.data.forEach(function(x){if(x.active)m[x.id]=1});applyStatus(m)}).catch(function(){})}}catch(e){}
 })();
-(function(){
-  /* Run ads. Each platform's "start" is the URL of the server-side sign-in step.
-     Leave it null until the platform's developer app is approved. When set, the
-     sign-in buttons turn on and send the person there, then the page can show Connected. */
-  var ADS={
-    meta:{name:'Meta',logo:'meta',signs:[{label:'Continue with Facebook',start:null},{label:'Continue with Instagram',start:null}],steps:['Sign in with Facebook or Instagram.','Choose the ad account to use.','Allow Pelex to create and manage campaigns for you.']},
-    google:{name:'Google',logo:'google',signs:[{label:'Continue with Google',start:null}],steps:['Sign in with your Google account.','Choose your Google Ads account.','Allow Pelex to create and manage campaigns for you.']},
-    linkedin:{name:'LinkedIn',logo:'linkedin',signs:[{label:'Continue with LinkedIn',start:null}],steps:['Sign in with LinkedIn.','Choose your Campaign Manager account.','Allow Pelex to create and manage campaigns for you.']},
-    youtube:{name:'YouTube',logo:'youtube',signs:[{label:'Continue with Google',start:null}],steps:['Sign in with the Google account that owns your channel.','Choose your Google Ads account.','Allow Pelex to create and manage video campaigns for you.']},
-    tiktok:{name:'TikTok',logo:'tiktok',signs:[{label:'Continue with TikTok',start:null}],steps:['Sign in with TikTok.','Choose your TikTok Ads account.','Allow Pelex to create and manage campaigns for you.']}
-  };
-  var KEY='pelex_ads_wishlist',saved=[],cur=null;
-  try{saved=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){saved=[]}
-  var sheet=document.getElementById('adSheet');
-  function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}}
-  function paint(k){
-    var on=saved.indexOf(k)>-1,card=document.querySelector('.adcard[data-ad="'+k+'"]');
-    var sw=card.querySelector('.sw');
-    sw.setAttribute('aria-checked',on?'true':'false');
-    sw.setAttribute('aria-label',(on?'Remove ':'Add ')+ADS[k].name+' ads '+(on?'from':'to')+' my list');
-    card.dataset.on=on?'1':'0';
-    card.querySelector('.plugstat').textContent=on?'On your list. Connects when live.':'Inactive. Turns on by itself when connected.';
-    if(cur===k)document.getElementById('adList').textContent=on?'Remove from my list':'Add to my list';
-  }
-  function toggle(k){var i=saved.indexOf(k);if(i>-1)saved.splice(i,1);else saved.push(k);persist();paint(k)}
-  function open(k){
-    cur=k;var a=ADS[k],live=a.signs.some(function(x){return !!x.start});
-    document.getElementById('adSheetLogo').innerHTML=document.querySelector('.adcard[data-ad="'+k+'"] .adlogo').outerHTML;
-    document.getElementById('adTitle').textContent='Run ads through '+a.name;
-    document.getElementById('adSteps').innerHTML=a.steps.map(function(t){return '<li>'+t+'</li>'}).join('');
-    var box=document.getElementById('adSigns');box.innerHTML='';
-    a.signs.forEach(function(x){
-      var b=document.createElement('button');b.type='button';b.textContent=x.label;b.disabled=!x.start;
-      if(x.start)b.addEventListener('click',function(){location.href=x.start});
-      box.appendChild(b)});
-    document.getElementById('adNote').textContent=live?'You will sign in on '+a.name+' and come straight back here.':'Sign-in opens once ads go live. Add this to your list and it will connect as soon as it does.';
-    paint(k);
-    if(typeof sheet.showModal==='function')sheet.showModal();else sheet.setAttribute('open','')}
-  function close(){if(typeof sheet.close==='function')sheet.close();else sheet.removeAttribute('open');cur=null}
-  Object.keys(ADS).forEach(function(k){
-    paint(k);
-    var card=document.querySelector('.adcard[data-ad="'+k+'"]');
-    card.addEventListener('click',function(e){if(e.target.closest('.sw'))return;open(k)});
-    card.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&!e.target.closest('.sw')){e.preventDefault();open(k)}});
-    card.querySelector('.sw').addEventListener('click',function(e){e.stopPropagation();toggle(k)})});
-  document.getElementById('adList').addEventListener('click',function(){if(cur)toggle(cur)});
-  document.getElementById('adClose').addEventListener('click',close);
-  sheet.addEventListener('click',function(e){if(e.target===sheet)close()});
-})();
+
 (function(){
   /* Add a plugin by website address. Saved on this device right away and shown as Coming soon;
      when signed in it is also saved to the plugin_requests table so we can see what people want. */
@@ -4369,9 +4347,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var rev=weeks.map(function(ws){return inv.filter(function(x){return weekStart(x.entry_date)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
   var vol=weeks.map(function(ws){return rows.filter(function(x){return weekStart(x.entry_date)===ws}).length});
   var lbl=weeks.map(function(s){return s.slice(5)});
-  bars($l('lsRev'),lbl,rev,function(v){return money(v,rep)});
+  window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:weeks,values:rev,fmt:function(v){return money(v,rep)},title:'Revenue'});
   $l('lsRevTable').innerHTML='<table class="ls-table"><tr><th>Week starting</th><th>Invoiced</th></tr>'+weeks.map(function(w,i){return '<tr><td>'+esc(w)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</table>';
-  bars($l('lsVol'),lbl,vol,function(v){return v+' entries'});
+  window.pxChart&&window.pxChart($l('lsVol'),{id:'lsVol',labels:lbl,dates:weeks,values:vol,fmt:function(v){return v+' entries'},title:'Volume'});
   // counts by type
   var types={};rows.forEach(function(x){types[x.entry_type]=(types[x.entry_type]||0)+1});
   $l('lsTypes').innerHTML=Object.keys(types).map(function(t){return '<div class="irow">'+esc(t)+': <b>'+types[t]+'</b></div>'}).join('')||'<div class="ls-empty">No entries yet.</div>';
@@ -4443,133 +4421,161 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 })();
 </script>
 <script>
-/* ANALYTICS: metric tiles by category; each opens a full-screen view with a back button. Figures come from the ledger; metrics that need outside data say so. */
+/* ANALYTICS v2: metric tiles by category. Every detail has a dated chart, a change against the previous period, and live figures from the ledger. */
 (function(){
  function $a(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
  var DAY=864e5;
  function iso(d){return d.toISOString().slice(0,10)}
  function dt(s){return new Date(s+'T00:00:00')}
- function addDays(s,n){var d=dt(s);d.setDate(d.getDate()+n);return iso(d)}
+ function addD(s,n){var d=dt(s);d.setDate(d.getDate()+n);return iso(d)}
+ function sum(a){return a.reduce(function(s,x){return s+Number(x.amount)},0)}
  function money(n,c){return (c?c+' ':'')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}
  function pct(n){return (isFinite(n)?Number(n).toFixed(1):'0')+'%'}
- function sum(a){return a.reduce(function(s,x){return s+Number(x.amount)},0)}
- function wk(s){var d=dt(s),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return iso(d)}
- function ctx(){
+ function fmtFor(m,c){return m.fmt==='money'?function(v){return money(v,c.rep)}:m.fmt==='pct'?function(v){return pct(v)}:function(v){return Number(v||0).toLocaleString(undefined,{maximumFractionDigits:1})}}
+ function ctxRange(s,e){
   var d=window.__lsData;if(!d||!d.T)return null;
-  var rows=d.T.filter(function(x){return x.entry_date<=d.asof&&x.currency===d.rep});
+  var rows=d.T.filter(function(x){return x.entry_date>=s&&x.entry_date<=e});
   var sales=rows.filter(function(x){return x.entry_type==='invoice'||x.entry_type==='sale'});
-  return {asof:d.asof,rep:d.rep,rows:rows,sales:sales,
-   inv:rows.filter(function(x){return x.entry_type==='invoice'}),
-   rec:rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'}),
-   exp:rows.filter(function(x){return x.entry_type==='expense'}),
-   U:d.U||[]};
+  return {asof:e,start:s,rep:d.rep,rows:rows,sales:sales,inv:rows.filter(function(x){return x.entry_type==='invoice'}),rec:rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'}),exp:rows.filter(function(x){return x.entry_type==='expense'})};
  }
- function weeks(c,n){var out=[];for(var w=n-1;w>=0;w--){out.push(wk(addDays(c.asof,-w*7)))}return out}
- function weekly(c,list,agg){var ws=weeks(c,12);return {labels:ws.map(function(s){return s.slice(5)}),values:ws.map(function(w){var rs=list.filter(function(x){return wk(x.entry_date)===w});return agg(rs)})}}
- function window30(c,list){var end=c.asof,start=addDays(end,-29),prevEnd=addDays(start,-1),prevStart=addDays(prevEnd,-29);
-  return {cur:list.filter(function(x){return x.entry_date>=start&&x.entry_date<=end}),prev:list.filter(function(x){return x.entry_date>=prevStart&&x.entry_date<=prevEnd})}}
+ // state context: everything up to the date
+ function ctxAt(e){return ctxRange('0000-01-01',e)}
+ function now(){var d=window.__lsData;return d&&d.T?ctxAt(d.asof):null}
+ function win30(list,end){var s=addD(end,-29),ps=addD(s,-1),pss=addD(ps,-29);return {cur:list.filter(function(x){return x.entry_date>=s&&x.entry_date<=end}),prev:list.filter(function(x){return x.entry_date>=pss&&x.entry_date<=ps})}}
  function customers(list){var m={};list.forEach(function(x){var k=x.party||'Unnamed';m[k]=(m[k]||[]).concat([x])});return m}
- var NEED_MKT='Needs marketing data (ad impressions and clicks). Not in your ledger yet, so it cannot be calculated honestly.';
- var NEED_WEB='Needs website analytics (visits, sessions). Not in your ledger yet, so it cannot be calculated honestly.';
+ function growth(c){var w=win30(c.sales,c.asof),a=sum(w.cur),b=sum(w.prev);return{v:b?(a-b)/b*100:(a?100:0),sub:'Last 30 days against the 30 days before',form:'(Sales in the last 30 days \u2212 the previous 30 days) \u00f7 previous 30 days \u00d7 100.'}}
+ // period: true = computed on the rows of one period (flows); false = computed as of the date (states)
  var METRICS=[
-  {id:'rev',cat:'Sales dashboard',title:'Revenue',icon:'\ud83d\udcb0',fmt:'money',calc:function(c){var v=sum(c.sales);return{v:v,sub:'Invoices and sales to date',series:weekly(c,c.sales,sum),form:'Sum of invoice and sale amounts in '+c.rep+' up to the as-of date.',table:topCustomers(c.sales,c.rep)}}},
-  {id:'ord',cat:'Sales dashboard',title:'Orders',icon:'\ud83d\uded2',fmt:'count',calc:function(c){var v=c.sales.length;return{v:v,sub:'Invoices and sales',series:weekly(c,c.sales,function(r){return r.length}),form:'Count of invoice and sale rows up to the as-of date.'}}},
-  {id:'aov',cat:'Sales dashboard',title:'Average order value',icon:'\ud83e\uddfe',fmt:'money',calc:function(c){var v=c.sales.length?sum(c.sales)/c.sales.length:0;return{v:v,sub:'Revenue divided by orders',series:weekly(c,c.sales,function(r){return r.length?sum(r)/r.length:0}),form:'Revenue \u00f7 number of orders.'}}},
-  {id:'grow',cat:'Sales dashboard',title:'Sales growth',icon:'\ud83d\udcc8',fmt:'pct',calc:growth},
-  {id:'imp',cat:'Marketing dashboard',title:'Impressions',icon:'\ud83d\udc41\ufe0f',need:NEED_MKT},
-  {id:'clk',cat:'Marketing dashboard',title:'Clicks',icon:'\ud83d\uddb1\ufe0f',need:NEED_MKT},
-  {id:'ctr',cat:'Marketing dashboard',title:'Click-through rate',icon:'\ud83c\udfaf',need:NEED_MKT},
-  {id:'conv',cat:'Marketing dashboard',title:'Conversions',icon:'\u2705',need:NEED_MKT},
-  {id:'uv',cat:'Website analytics',title:'Unique visitors',icon:'\ud83d\udc64',need:NEED_WEB},
-  {id:'ses',cat:'Website analytics',title:'Sessions',icon:'\ud83d\udd01',need:NEED_WEB},
-  {id:'bnc',cat:'Website analytics',title:'Bounce rate',icon:'\u21a9\ufe0f',need:NEED_WEB},
-  {id:'dur',cat:'Website analytics',title:'Average session duration',icon:'\u23f1\ufe0f',need:NEED_WEB},
-  {id:'newc',cat:'Customer analytics',title:'New customers',icon:'\ud83c\udd95',fmt:'count',calc:function(c){var cu=customers(c.sales),start=addDays(c.asof,-29),n=0;Object.keys(cu).forEach(function(k){var first=cu[k].map(function(x){return x.entry_date}).sort()[0];if(first>=start)n++});return{v:n,sub:'First purchase in the last 30 days',form:'Customers whose first sale falls in the 30 days up to the as-of date.'}}},
-  {id:'retc',cat:'Customer analytics',title:'Returning customers',icon:'\ud83d\udd01',fmt:'count',calc:function(c){var cu=customers(c.sales),n=0;Object.keys(cu).forEach(function(k){if(cu[k].length>1)n++});return{v:n,sub:'Customers with more than one purchase',form:'Customers with two or more sale rows.'}}},
-  {id:'rpr',cat:'Customer analytics',title:'Repeat purchase rate',icon:'\ud83d\udd01',fmt:'pct',calc:function(c){var cu=customers(c.sales),keys=Object.keys(cu),n=0;keys.forEach(function(k){if(cu[k].length>1)n++});return{v:keys.length?n/keys.length*100:0,sub:'Returning \u00f7 all customers',form:'Customers with 2+ purchases \u00f7 all customers \u00d7 100.'}}},
-  {id:'clv',cat:'Customer analytics',title:'Customer lifetime value',icon:'\ud83d\udc8e',fmt:'money',calc:function(c){var cu=Object.keys(customers(c.sales)).length;var v=cu?sum(c.sales)/cu:0;return{v:v,sub:'Average revenue per customer (approximate)',form:'Total revenue \u00f7 number of customers. An approximation; it does not forecast future purchases.'}}},
-  {id:'kpirev',cat:'Power BI KPI cards',title:'Revenue KPI',icon:'\ud83d\udcca',fmt:'money',calc:function(c){var v=sum(c.sales);return{v:v,sub:'Total sales',form:'Same as Revenue.'}}},
-  {id:'kpiprof',cat:'Power BI KPI cards',title:'Profit KPI',icon:'\ud83d\udcb5',fmt:'money',calc:function(c){var v=sum(c.sales)-sum(c.exp);return{v:v,sub:'Revenue minus expenses',form:'Sum of sales minus sum of expense rows, in '+c.rep+'.'}}},
-  {id:'kpigrow',cat:'Power BI KPI cards',title:'Growth KPI',icon:'\ud83d\ude80',fmt:'pct',calc:growth},
-  {id:'kpiperf',cat:'Power BI KPI cards',title:'Performance KPI (collection rate)',icon:'\ud83c\udfc1',fmt:'pct',calc:function(c){var i=sum(c.inv),r=sum(c.rec);return{v:i?Math.min(100,r/i*100):0,sub:'Received \u00f7 invoiced',form:'Receipts and payments \u00f7 invoices \u00d7 100 (capped at 100%).'}}},
-  {id:'mix',cat:'Data visualization types',title:'Entry mix (pie)',icon:'\ud83e\udd67',fmt:'count',calc:function(c){var m={};c.rows.forEach(function(x){m[x.entry_type]=(m[x.entry_type]||0)+1});return{v:c.rows.length,sub:'Rows by type. Tap to see the chart.',pie:m,form:'Count of ledger rows grouped by type.'}}},
-  {id:'mgn',cat:'Common analyst KPIs',title:'Profit margin',icon:'\ud83d\udcb9',fmt:'pct',calc:function(c){var r=sum(c.sales),p=r-sum(c.exp);return{v:r?p/r*100:0,sub:'Profit \u00f7 revenue',form:'(Revenue \u2212 expenses) \u00f7 revenue \u00d7 100.'}}},
-  {id:'roi',cat:'Common analyst KPIs',title:'Return on investment',icon:'\ud83c\udfaf',fmt:'pct',calc:function(c){var e=sum(c.exp),r=sum(c.sales);return{v:e?(r-e)/e*100:0,sub:'(Revenue \u2212 expenses) \u00f7 expenses',form:'(Revenue \u2212 expenses) \u00f7 expenses \u00d7 100. Needs expense rows.'}}},
-  {id:'ret',cat:'Common analyst KPIs',title:'Customer retention',icon:'\ud83d\udd01',fmt:'pct',calc:function(c){var w=window30(c,c.sales),cuP=Object.keys(customers(w.prev)),cuC=customers(w.cur),kept=cuP.filter(function(k){return cuC[k]}).length;return{v:cuP.length?kept/cuP.length*100:0,sub:'Customers who bought in both of the last two 30-day periods',form:'Customers active in both periods \u00f7 customers active in the previous 30 days \u00d7 100.'}}},
-  {id:'cvr',cat:'Common analyst KPIs',title:'Conversion rate',icon:'\ud83d\udd04',need:NEED_MKT},
+  {id:'rev',cat:'Sales dashboard',title:'Revenue',icon:'\ud83d\udcb0',fmt:'money',period:true,calc:function(c){var v=sum(c.sales);return{v:v,sub:'Invoices and sales in the period',form:'Sum of invoice and sale amounts in the chosen currency.'}}},
+  {id:'ord',cat:'Sales dashboard',title:'Orders',icon:'\ud83d\uded2',fmt:'count',period:true,calc:function(c){return{v:c.sales.length,sub:'Invoices and sales in the period',form:'Count of invoice and sale rows.'}}},
+  {id:'aov',cat:'Sales dashboard',title:'Average order value',icon:'\ud83e\uddfe',fmt:'money',period:true,calc:function(c){return{v:c.sales.length?sum(c.sales)/c.sales.length:0,sub:'Revenue divided by orders',form:'Revenue \u00f7 number of orders.'}}},
+  {id:'grow',cat:'Sales dashboard',title:'Sales growth',icon:'\ud83d\udcc8',fmt:'pct',period:false,calc:growth},
+  {id:'newc',cat:'Customer analytics',title:'New customers',icon:'\ud83c\udd95',fmt:'count',period:true,calc:function(c){var cu=customers(c.sales),n=0;Object.keys(cu).forEach(function(k){var first=cu[k].map(function(x){return x.entry_date}).sort()[0];if(first>=c.start)n++});return{v:n,sub:'Customers whose first purchase fell in this period',form:'Customers whose first sale is within the period.'}}},
+  {id:'retc',cat:'Customer analytics',title:'Returning customers',icon:'\ud83d\udd01',fmt:'count',period:false,calc:function(c){var cu=customers(c.sales),n=0;Object.keys(cu).forEach(function(k){if(cu[k].length>1)n++});return{v:n,sub:'Customers with more than one purchase',form:'Customers with two or more sale rows, up to the date.'}}},
+  {id:'rpr',cat:'Customer analytics',title:'Repeat purchase rate',icon:'\ud83d\udd01',fmt:'pct',period:false,calc:function(c){var cu=customers(c.sales),keys=Object.keys(cu),n=0;keys.forEach(function(k){if(cu[k].length>1)n++});return{v:keys.length?n/keys.length*100:0,sub:'Returning \u00f7 all customers',form:'Customers with 2+ purchases \u00f7 all customers \u00d7 100.'}}},
+  {id:'clv',cat:'Customer analytics',title:'Customer lifetime value',icon:'\ud83d\udc8e',fmt:'money',period:false,calc:function(c){var n=Object.keys(customers(c.sales)).length;return{v:n?sum(c.sales)/n:0,sub:'Average revenue per customer (approximate)',form:'Total revenue \u00f7 number of customers. An approximation.'}}},
+  {id:'kpirev',cat:'Power BI KPI cards',title:'Revenue KPI',icon:'\ud83d\udcca',fmt:'money',period:true,calc:function(c){return{v:sum(c.sales),sub:'Total sales in the period',form:'Same as Revenue.'}}},
+  {id:'kpiprof',cat:'Power BI KPI cards',title:'Profit KPI',icon:'\ud83d\udcb5',fmt:'money',period:true,calc:function(c){return{v:sum(c.sales)-sum(c.exp),sub:'Revenue minus expenses',form:'Sum of sales minus sum of expenses in the period.'}}},
+  {id:'kpigrow',cat:'Power BI KPI cards',title:'Growth KPI',icon:'\ud83d\ude80',fmt:'pct',period:false,calc:growth},
+  {id:'kpiperf',cat:'Power BI KPI cards',title:'Collection rate',icon:'\ud83c\udfc1',fmt:'pct',period:true,calc:function(c){var i=sum(c.inv),r=sum(c.rec);return{v:i?Math.min(100,r/i*100):0,sub:'Received \u00f7 invoiced in the period',form:'Receipts and payments \u00f7 invoices \u00d7 100, capped at 100%.'}}},
+  {id:'mgn',cat:'Common analyst KPIs',title:'Profit margin',icon:'\ud83d\udcb9',fmt:'pct',period:true,calc:function(c){var r=sum(c.sales),p=r-sum(c.exp);return{v:r?p/r*100:0,sub:'Profit \u00f7 revenue',form:'(Revenue \u2212 expenses) \u00f7 revenue \u00d7 100.'}}},
+  {id:'roi',cat:'Common analyst KPIs',title:'Return on investment',icon:'\ud83c\udfaf',fmt:'pct',period:true,calc:function(c){var e=sum(c.exp),r=sum(c.sales);return{v:e?(r-e)/e*100:0,sub:'(Revenue \u2212 expenses) \u00f7 expenses',form:'(Revenue \u2212 expenses) \u00f7 expenses \u00d7 100.'}}},
+  {id:'ret',cat:'Common analyst KPIs',title:'Customer retention',icon:'\ud83d\udd01',fmt:'pct',period:false,calc:function(c){var w=win30(c.sales,c.asof),prev=Object.keys(customers(w.prev)),cur=customers(w.cur),kept=prev.filter(function(k){return cur[k]}).length;return{v:prev.length?kept/prev.length*100:0,sub:'Customers who bought in both 30-day periods',form:'Customers active in both periods \u00f7 customers active in the previous 30 days \u00d7 100.'}}},
+  {id:'mix',cat:'Data visualization types',title:'Entry mix',icon:'\ud83e\udd67',fmt:'count',period:false,pie:true,calc:function(c){var m={};c.rows.forEach(function(x){m[x.entry_type]=(m[x.entry_type]||0)+1});return{v:c.rows.length,sub:'Rows by type',pie:m,form:'Count of ledger rows grouped by type.'}}},
+  {id:'health',cat:'Customer analytics',title:'Customer health and tips',icon:'\ud83e\udde0',fmt:'pct',custom:true,calc:function(c){var w=win30(c.sales,c.asof);return{v:0,sub:'Customers active in the last 7 days against the 7 days before',form:'Compares the last 7 days with the 7 days before. Tips change with the trend.'}}}
  ];
- function growth(c){var w=window30(c,c.sales),a=sum(w.cur),b=sum(w.prev);return{v:b?(a-b)/b*100:(a?100:0),sub:'Last 30 days against the 30 days before',series:weekly(c,c.sales,sum),form:'(Sales in the last 30 days \u2212 sales in the previous 30 days) \u00f7 previous \u00d7 100.'}}
- function topCustomers(list,rep){var m={};list.forEach(function(x){var k=x.party||'Unnamed';m[k]=(m[k]||0)+Number(x.amount)});return Object.keys(m).map(function(k){return{k:k,v:m[k]}}).sort(function(p,q){return q.v-p.v}).slice(0,5)}
- function fmtVal(m,r){if(r.need)return '';return m.fmt==='money'?money(r.v,window.__lsData&&window.__lsData.rep):m.fmt==='pct'?pct(r.v):Number(r.v||0).toLocaleString()}
- function safeCalc(m,c){try{return m.calc(c)}catch(e){return {v:0,sub:'Could not calculate this yet.',form:''}}}
- function barsSvg(labels,vals,fmt){var W=320,H=170,pad=24,max=Math.max.apply(null,vals.concat([1])),bw=(W-pad*2)/labels.length;
-  var s='<svg class="an-svg" viewBox="0 0 '+W+' '+(H+20)+'" role="img" aria-label="Bar chart">';
-  vals.forEach(function(v,i){var h=Math.max(2,v/max*(H-30)),x=pad+i*bw+bw*0.15,y=H-h;s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.7).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="6" fill="url(#gB)"><title>'+esc(labels[i])+': '+esc(fmt(v))+'</title></rect>';
-   if(i%3===0||i===labels.length-1)s+='<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(H+14)+'" font-size="9" text-anchor="middle" fill="currentColor" opacity=".6">'+esc(labels[i])+'</text>'});
-  return s+'<defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8ae8"/><stop offset="1" stop-color="#142b52"/></linearGradient></defs></svg>'}
- function lineSvg(labels,vals,fmt){var W=320,H=170,pad=12,max=Math.max.apply(null,vals.concat([1])),min=Math.min.apply(null,vals.concat([0]));var pts=vals.map(function(v,i){var x=pad+i*(W-pad*2)/Math.max(1,vals.length-1),y=H-((v-min)/((max-min)||1))*(H-30)-10;return [x,y]});
-  var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
-  return '<svg class="an-svg" viewBox="0 0 '+W+' '+(H+20)+'" role="img" aria-label="Line chart"><path d="'+d+'" fill="none" stroke="#2f63c4" stroke-width="3" stroke-linejoin="round"/>'+pts.map(function(p,i){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="#142b52"><title>'+esc(labels[i])+': '+esc(fmt(vals[i]))+'</title></circle>'}).join('')+'</svg>'}
- function pieSvg(map){var keys=Object.keys(map),tot=keys.reduce(function(s,k){return s+map[k]},0)||1,cols=['#2f63c4','#142b52','#5b8ae8','#b5543b','#2e9e6a','#c9a227'],a0=-Math.PI/2,cx=110,cy=110,r=95,out='<svg class="an-svg" viewBox="0 0 320 220" role="img" aria-label="Pie chart"><g transform="translate(0,0)">';
-  keys.forEach(function(k,i){var a1=a0+map[k]/tot*Math.PI*2,x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),large=a1-a0>Math.PI?1:0;out+='<path d="M'+cx+' '+cy+' L'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+large+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+' Z" fill="'+cols[i%cols.length]+'"><title>'+esc(k)+': '+map[k]+'</title></path>';a0=a1});
-  out+='</g>';keys.forEach(function(k,i){out+='<text x="230" y="'+(30+i*22)+'" font-size="12" fill="currentColor"><tspan fill="'+cols[i%cols.length]+'">\u25a0</tspan> '+esc(k)+' ('+map[k]+')</text>'});return out+'</svg>'}
- var CUR_CHART='bar';
+ // weekly dates ending at end, oldest first
+ function weeksEnding(end,n){var out=[];for(var i=n-1;i>=0;i--)out.push(addD(end,-i*7));return out}
+ function seriesFor(m,end){
+  var ends=weeksEnding(end,12),vals=[],labels=[],dates=[];
+  ends.forEach(function(e){var c=m.period?ctxRange(addD(e,-6),e):ctxAt(e);var r=m.calc(c);vals.push(Number(r.v)||0);labels.push(e.slice(5));dates.push(e)});
+  return {labels:labels,dates:dates,values:vals};
+ }
+ function safe(m,c){try{return m.calc(c)}catch(e){return{v:0,sub:'Not available yet',form:''}}}
+ function tileValue(m,c){var r=safe(m,c);if(m.pie)return String(r.v)+' rows';return m.fmt==='money'?money(r.v,c.rep):m.fmt==='pct'?pct(r.v):Number(r.v||0).toLocaleString(undefined,{maximumFractionDigits:1})}
+ function change(m,end){
+  var cur=safe(m,m.period?ctxRange(addD(end,-29),end):ctxAt(end)).v;
+  var prevEnd=addD(end,-30);
+  var prev=safe(m,m.period?ctxRange(addD(prevEnd,-29),prevEnd):ctxAt(prevEnd)).v;
+  var d=Number(cur)-Number(prev);var p=prev?d/Math.abs(prev)*100:(cur?100:0);
+  return {cur:cur,prev:prev,diff:d,pct:p};
+ }
+ function health(c){
+  var end=c.asof,t1=addD(end,-6),t0=addD(end,-13),p1=addD(t0,-1),p0=addD(p1,-6);
+  var all=c.sales;
+  function act(s,e){return Object.keys(customers(all.filter(function(x){return x.entry_date>=s&&x.entry_date<=e})))}
+  var a=act(t1,end),b=act(p0,p1);
+  var revA=sum(all.filter(function(x){return x.entry_date>=t1&&x.entry_date<=end})),revB=sum(all.filter(function(x){return x.entry_date>=p0&&x.entry_date<=p1}));
+  var ch=b.length?(a.length-b.length)/b.length*100:(a.length?100:0);
+  var mood=ch>=10?'growing':ch<=-10?'slowing':'steady';
+  var byRev={};all.forEach(function(x){var k=x.party||'Unnamed';byRev[k]=(byRev[k]||0)+Number(x.amount)});
+  var top=Object.keys(byRev).sort(function(p,q){return byRev[q]-byRev[p]}).slice(0,8);
+  var tips={
+   growing:['Ask recent customers for a referral. Growing weeks are when referrals convert best.','Offer a bundle to people who bought once, so the next order grows.','Keep response times fast on your inbox while demand is high.'],
+   slowing:['Message customers who have not bought in 30 days with a short, specific offer.','Check overdue invoices first. Slow weeks are often cash-flow weeks as well.','Post one useful piece of content per week aimed at your best customer type.'],
+   steady:['Test one new offer for a week and compare it with the week before.','Raise the average order value: suggest one add-on at checkout.','Ask every buyer for a review, so steady weeks start building momentum.']
+  };
+  return {a:a.length,b:b.length,ch:ch,revA:revA,revB:revB,mood:mood,top:top,byRev:byRev,tips:tips[mood]};
+ }
+ function diagram(h,c){
+  var W=340,H=230,cx=170,cy=115,r=34,n=h.top.length;
+  var max=Math.max.apply(null,h.top.map(function(k){return h.byRev[k]}).concat([1]));
+  var s='<svg class="px-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Customer connection diagram">';
+  h.top.forEach(function(k,i){var ang=-Math.PI/2+i*(Math.PI*2/Math.max(n,1)),rad=110,x=cx+rad*Math.cos(ang),y=cy+rad*Math.sin(ang),share=h.byRev[k]/max,nr=14+share*12;
+   s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="#2f63c4" stroke-opacity="'+(0.25+share*0.6).toFixed(2)+'" stroke-width="'+(1+share*3).toFixed(1)+'" stroke-dasharray="'+(h.mood==='slowing'?'4 4':'0')+'"/>';
+   s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+nr.toFixed(1)+'" fill="#142b52"><title>'+esc(k)+': '+money(h.byRev[k],c.rep)+'</title></circle>';
+   s+='<text x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">'+esc(String(k).slice(0,6))+'</text>'});
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+(h.mood==='growing'?'#2e9e6a':h.mood==='slowing'?'#c0503a':'#2f63c4')+'"/><text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">You</text>';
+  if(!n)s+='<text x="170" y="222" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">Customers appear here as invoices are added.</text>';
+  return s+'</svg>';
+ }
  function openMetric(m){
-  var c=ctx();var box=$a('anDetail');
+  var c=now(),box=$a('anDetail'),body=$a('anBody');
   $a('anTitle').textContent=m.title;$a('anCat').textContent=m.cat;
-  var body=$a('anBody');
-  if(!c){body.innerHTML='<div class="an-card dnote">Upload an invoice or data sheet and confirm it first, then the figures appear here.</div>';box.hidden=false;return}
-  if(m.need){body.innerHTML='<div class="an-card"><div class="an-big" style="font-size:20px">Not available yet</div><p class="dnote">'+esc(m.need)+'</p><p class="dnote">What we can calculate today: Sales, Customers, Profit, Growth and Performance from your ledger.</p></div>';box.hidden=false;return}
-  var r=safeCalc(m,c),val=m.fmt==='money'?money(r.v,c.rep):m.fmt==='pct'?pct(r.v):Number(r.v||0).toLocaleString();
-  var chartHtml='';
-  if(r.series){
-   var fmt=m.fmt==='money'?function(v){return money(v,c.rep)}:m.fmt==='pct'?pct:function(v){return String(Math.round(v))};
-   var typeSel='<div class="ls-tl"><label class="dnote" for="anType">Chart</label><select id="anType" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="bar"'+(CUR_CHART==='bar'?' selected':'')+'>Bar</option><option value="line"'+(CUR_CHART==='line'?' selected':'')+'>Line</option></select></div>';
-   chartHtml=typeSel+'<div class="an-card" id="anChartBox">'+(CUR_CHART==='line'?lineSvg(r.series.labels,r.series.values,fmt):barsSvg(r.series.labels,r.series.values,fmt))+'<div class="dnote">Last 12 weeks, weekly totals.</div></div>';
-  } else if(r.pie){chartHtml='<div class="an-card">'+pieSvg(r.pie)+'</div>'}
-  var table=r.table?'<div class="an-card"><b>Top customers</b>'+'<table class="ls-table"><tr><th>Customer</th><th>Revenue</th></tr>'+r.table.map(function(t){return '<tr><td>'+esc(t.k)+'</td><td>'+money(t.v,c.rep)+'</td></tr>'}).join('')+'</table></div>':'';
-  body.innerHTML='<div class="an-big">'+esc(val)+'</div><div class="dnote">'+esc(r.sub||'')+'</div>'+chartHtml+table+'<details class="ls-more" style="margin-top:0"><summary>How it is calculated</summary><div class="dnote">'+esc(r.form||'')+'</div></details>';
-  var sel=$a('anType');if(sel)sel.onchange=function(){CUR_CHART=this.value;openMetric(m)};
+  if(!c){body.innerHTML='<div class="an-card dnote">Upload an invoice or data sheet and confirm it first. The figures appear here.</div>';box.hidden=false;return}
+  if(m.custom){
+   var h=health(c);
+   body.innerHTML='<div class="an-big" style="font-size:24px">'+(h.mood==='growing'?'Growing':h.mood==='slowing'?'Slowing':'Steady')+'</div>'+
+    '<div class="dnote">Active customers: '+h.a+' in the last 7 days, '+h.b+' in the 7 days before ('+(h.ch>=0?'+':'')+h.ch.toFixed(0)+'%).</div>'+
+    '<div class="an-card"><b>Customer connections</b><div class="dnote">Bigger circles bought more. Dashed lines mean the trend is slowing.</div>'+diagram(h,c)+'</div>'+
+    '<div class="an-card"><b>Revenue, last 7 days vs before</b><div class="dnote">'+money(h.revA,c.rep)+' now, '+money(h.revB,c.rep)+' before.</div></div>'+
+    '<div class="an-card"><b>What to do next</b><ul class="dnote" style="padding-left:18px;margin:8px 0 0;line-height:1.7">'+h.tips.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul></div>';
+   box.hidden=false;box.scrollTop=0;return;
+  }
+  var r=safe(m,m.period?ctxRange(addD(c.asof,-29),c.asof):ctxAt(c.asof));
+  var f=fmtFor(m,c),val=m.pie?String(r.v)+' rows':f(r.v);
+  var ch=change(m,c.asof);
+  var arrow=ch.diff>=0?'\u25b2':'\u25bc',cls=ch.diff>=0?'#2e9e6a':'#c0503a';
+  var head='<div class="an-big">'+esc(val)+'</div><div class="dnote">'+esc(r.sub||'')+'</div>'+
+   '<div class="an-card" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span><b style="color:'+cls+'">'+arrow+' '+esc(m.fmt==='pct'?ch.diff.toFixed(1)+' pts':f(ch.diff))+'</b> vs the period before</span><span class="dnote">'+esc(m.fmt==='pct'?'Previous: '+pct(ch.prev):'Previous: '+f(ch.prev))+' ('+(ch.pct>=0?'+':'')+ch.pct.toFixed(0)+'%)</span></div>';
+  var chart='';
+  if(m.pie){chart='<div class="an-card" id="anPie"></div>'}
+  else{var s=seriesFor(m,c.asof);chart='<div class="an-card"><div class="px-tools"><b class="dnote">Last 12 periods</b></div><div id="anChart"></div></div>'}
+  var table='';
+  if(r.table){table='<div class="an-card"><b>Top customers</b><table class="ls-table"><tr><th>Customer</th><th>Revenue</th></tr>'+r.table.map(function(t){return '<tr><td>'+esc(t.k)+'</td><td>'+money(t.v,c.rep)+'</td></tr>'}).join('')+'</table></div>'}
+  body.innerHTML=head+chart+table+'<details class="ls-more"><summary>How it is calculated</summary><div class="dnote">'+esc(r.form||'')+'</div></details>';
   box.hidden=false;box.scrollTop=0;
+  if(m.pie){window.pxPie($a('anPie'),r.pie||{})}
+  else{var sr=seriesFor(m,c.asof);window.pxChart($a('anChart'),{id:'an_'+m.id,labels:sr.labels,dates:sr.dates,values:sr.values,fmt:f,title:m.title})}
  }
  function renderTiles(){
   var host=$a('anCats');if(!host)return;host.innerHTML='';
-  var c=ctx();
+  var c=now();
   var cats=[];METRICS.forEach(function(m){if(cats.indexOf(m.cat)<0)cats.push(m.cat)});
   cats.forEach(function(cat){
-   var card=document.createElement('div');card.className='dcard';
-   card.innerHTML='<h2>'+esc(cat)+'</h2><div class="an-grid"></div>';
+   var card=document.createElement('div');card.className='dcard';card.innerHTML='<h2>'+esc(cat)+'</h2><div class="an-grid"></div>';
    var grid=card.querySelector('.an-grid');
    METRICS.filter(function(m){return m.cat===cat}).forEach(function(m){
-    var t=document.createElement('button');t.type='button';t.className='an-tile'+(m.need?' need':'');
-    var val=m.need?'Needs data':(c?(m.fmt==='money'?money(safeCalc(m,c).v,c.rep):m.fmt==='pct'?pct(safeCalc(m,c).v):Number(safeCalc(m,c).v||0).toLocaleString()):'\u2014');
+    var t=document.createElement('button');t.type='button';t.className='an-tile';
+    var val=m.custom?(c?health(c).mood:'\u2014'):(c?tileValue(m,c):'\u2014');
     t.innerHTML='<b>'+m.icon+' '+esc(m.title)+'</b><span class="v">'+esc(val)+'</span>';
     t.onclick=function(){openMetric(m)};grid.appendChild(t)});
    host.appendChild(card)});
-  // business flow and design rules
   var fl=$a('anFlow');if(fl&&c){var up=(window.__lsData&&window.__lsData.U||[]).length,cust=Object.keys(customers(c.sales)).length;
-   fl.innerHTML='<div><b>1</b><span>Raw data: '+up+' upload(s) in the workspace</span></div><div><b>2</b><span>Cleaning: unclear rows are skipped at upload and shown in Data entry</span></div><div><b>3</b><span>Modelling: '+c.rows.length+' ledger rows, '+cust+' customers</span></div><div><b>4</b><span>Visualization: the tiles above</span></div><div><b>5</b><span>Actionable insights: '+(c.inv.length?'chase overdue invoices first (see Project management)':'add invoices to see insights')+'</span></div><div><b>6</b><span>Strategic decisions: compare growth and profit margin each month</span></div>'}
+   fl.innerHTML='<div><b>1</b><span>Raw data: '+up+' upload(s) in the workspace</span></div><div><b>2</b><span>Cleaning: unclear rows are skipped at upload and listed in Data entry</span></div><div><b>3</b><span>Modelling: '+c.rows.length+' ledger rows, '+cust+' customers</span></div><div><b>4</b><span>Visualization: the tiles above, with dated charts</span></div><div><b>5</b><span>Insights: '+(c.inv.length?'chase overdue invoices first (see Project management)':'add invoices to see insights')+'</span></div><div><b>6</b><span>Decisions: compare growth and margin each month</span></div>'}
  }
  window.__anRender=renderTiles;
  function build(){
-  var wrap=$a('lsWrap');var dash=$a('bDash');if(!dash||$a('anWrap'))return;
+  var dash=$a('bDash');if(!dash||$a('anWrap'))return;
   var w=document.createElement('div');w.id='anWrap';w.className='an-cats';
-  w.innerHTML='<div class="dcard"><div class="dhead"><h2>Analytics</h2><span class="ttag">Tap any tile for the full view</span></div><p class="dnote">Figures come from your ledger in the chosen currency, as of the date you set above.</p></div><div id="anCats" class="an-cats"></div>'+
+  w.innerHTML='<div class="dcard"><div class="dhead"><h2>Analytics</h2><span class="ttag">Tap a tile for its dated chart</span></div><p class="dnote">Figures come from your ledger in the chosen currency, as of the date you set above.</p></div><div id="anCats" class="an-cats"></div>'+
    '<div class="dcard"><h2>Business dashboard flow</h2><div class="an-flow" id="anFlow"></div></div>'+
-   '<div class="dcard"><h2>Dashboard design rules</h2><div class="an-flow"><div><b>\u2713</b><span>Keep it simple: one headline figure per tile</span></div><div><b>\u2713</b><span>Use consistent colours: navy for values, red only for overdue</span></div><div><b>\u2713</b><span>Highlight the KPIs that matter most</span></div><div><b>\u2713</b><span>Avoid visual clutter: details sit under Show more</span></div><div><b>\u2713</b><span>Focus on business goals, not vanity numbers</span></div></div></div>';
-  if(wrap)wrap.parentNode.insertBefore(w,wrap.nextSibling);else dash.insertBefore(w,dash.firstChild);
-  var d=document.createElement('div');d.id='anDetail';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
-  d.innerHTML='<div class="an-top"><button type="button" class="an-back" id="anBack">\u2190 Back</button><div class="t"><b id="anTitle"></b><small id="anCat"></small></div></div><div class="an-body" id="anBody"></div>';
-  document.body.appendChild(d);
-  $a('anBack').onclick=function(){d.hidden=true};
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')d.hidden=true});
+   '<div class="dcard"><h2>Dashboard design rules</h2><div class="an-flow"><div><b>\u2713</b><span>One headline figure per tile</span></div><div><b>\u2713</b><span>Navy for values, red only for overdue or falling</span></div><div><b>\u2713</b><span>Key figures first, detail under Show more</span></div><div><b>\u2713</b><span>Every chart shows its dates</span></div><div><b>\u2713</b><span>Focus on business goals, not vanity numbers</span></div></div></div>';
+  var lsw=$a('lsWrap');if(lsw)lsw.parentNode.insertBefore(w,lsw.nextSibling);else dash.insertBefore(w,dash.firstChild);
+  if(!$a('anDetail')){
+   var d=document.createElement('div');d.id='anDetail';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+   d.innerHTML='<div class="an-top"><button type="button" class="an-back" id="anBack">\u2190 Back</button><div class="t"><b id="anTitle"></b><small id="anCat"></small></div></div><div class="an-body" id="anBody"></div>';
+   document.body.appendChild(d);$a('anBack').onclick=function(){d.hidden=true};
+   document.addEventListener('keydown',function(e){if(e.key==='Escape')d.hidden=true});
+  }
   renderTiles();
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(build,250)};
  window.addEventListener('load',function(){setTimeout(function(){if($a('bDash'))build()},900)});
 })();
 </script>
+
 <script>
 /* PHASE 4: reminders for meeting notes, and reading a document picture into rows for review before saving. */
 (function(){
@@ -4668,5 +4674,103 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
 })();
 </script>
+
+<script>
+/* SHARED CHARTS: interactive bar/line with date labels and a scrub guide; pie with names, counts and percentages. */
+(function(){
+ var PAL=['#2f63c4','#2e9e6a','#e0a526','#c0503a','#7a4fc4','#14a3a8','#8a94a6','#d9548a'];
+ var TYPE={};
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function short(v){var a=Math.abs(v);if(a>=1e6)return (v/1e6).toFixed(1)+'M';if(a>=1e3)return (v/1e3).toFixed(a>=1e4?0:1)+'k';return String(Math.round(v))}
+ window.pxChart=function(host,o){
+  if(!host)return;
+  var id=o.id||'c',type=TYPE[id]||'bar',vals=(o.values||[]).map(Number),labels=o.labels||[],dates=o.dates||labels,fmt=o.fmt||function(v){return String(Math.round(v))};
+  host.innerHTML='';
+  if(!vals.some(function(v){return v>0})){host.innerHTML='<div class="ls-empty">No values in these periods yet. Add entries dated in them to see the chart.</div>';return}
+  var tools=document.createElement('div');tools.className='px-tools';
+  tools.innerHTML='<div class="px-seg"><button type="button" data-t="bar" class="'+(type==='bar'?'on':'')+'">Bar</button><button type="button" data-t="line" class="'+(type==='line'?'on':'')+'">Line</button></div><span class="px-hint">Slide across the chart to read each date</span>';
+  host.appendChild(tools);
+  tools.querySelectorAll('button').forEach(function(b){b.onclick=function(){TYPE[id]=b.getAttribute('data-t');window.pxChart(host,o)}});
+  var W=340,H=220,L=46,R=10,T=12,B=44,n=vals.length,pw=W-L-R,ph=H-T-B,step=pw/n;
+  var max=Math.max.apply(null,vals.concat([1])),min=Math.min.apply(null,vals.concat([0]));
+  var rng=(max-min)||1;
+  function X(i){return type==='bar'?L+i*step+step*0.14:L+(n===1?pw/2:i*pw/(n-1))}
+  function Y(v){return T+ph-((v-min)/rng)*ph}
+  var s='<svg class="px-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.title||'Chart')+'">';
+  for(var g=0;g<=4;g++){var gv=min+rng*g/4,gy=Y(gv);s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'" class="px-grid"/><text x="'+(L-6)+'" y="'+(gy+3)+'" class="px-y" text-anchor="end">'+short(gv)+'</text>'}
+  if(type==='bar'){vals.forEach(function(v,i){var bh=Math.max(1.5,(v-min)/rng*ph);s+='<rect x="'+X(i).toFixed(1)+'" y="'+(T+ph-bh).toFixed(1)+'" width="'+(step*0.72).toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4" class="px-bar"/>'})}
+  else{var d=vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join(' ');s+='<path d="'+d+'" class="px-line"/>';vals.forEach(function(v,i){s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3.2" class="px-dot"/>'})}
+  var every=n>8?Math.ceil(n/6):1;
+  labels.forEach(function(lb,i){if(i%every===0||i===n-1){var tx=type==='bar'?X(i)+step*0.36:X(i);s+='<text x="'+tx.toFixed(1)+'" y="'+(H-B+15)+'" class="px-x" text-anchor="middle">'+esc(lb)+'</text>'}});
+  s+='<line class="px-guide" x1="0" x2="0" y1="'+T+'" y2="'+(T+ph)+'"/><circle class="px-cursor" r="5" cx="0" cy="0"/></svg>';
+  host.insertAdjacentHTML('beforeend',s);
+  var svg=host.querySelector('svg'),guide=svg.querySelector('.px-guide'),cur=svg.querySelector('.px-cursor');
+  var readout=document.createElement('div');readout.className='px-read';readout.textContent='Latest: '+(dates[n-1]||'')+' \u00b7 '+fmt(vals[n-1]);host.appendChild(readout);
+  function pick(e){var r=svg.getBoundingClientRect();var px=((e.clientX||(e.touches&&e.touches[0].clientX))-r.left)/r.width*W;var idx=type==='bar'?Math.floor((px-L)/step):Math.round((px-L)/(n===1?1:pw/(n-1)));idx=Math.max(0,Math.min(n-1,idx));
+   var gx=X(idx)+(type==='bar'?step*0.36:0);guide.setAttribute('x1',gx);guide.setAttribute('x2',gx);cur.setAttribute('cx',gx);cur.setAttribute('cy',Y(vals[idx]));
+   readout.textContent=(dates[idx]||'')+' \u00b7 '+fmt(vals[idx])}
+  svg.addEventListener('pointermove',pick);svg.addEventListener('pointerdown',pick);svg.addEventListener('touchmove',pick,{passive:true});
+  pick({clientX:svg.getBoundingClientRect().left+svg.getBoundingClientRect().width*0.999});
+ };
+ window.pxPie=function(host,map,o){
+  if(!host)return;o=o||{};host.innerHTML='';
+  var keys=Object.keys(map).filter(function(k){return map[k]>0});
+  var tot=keys.reduce(function(s,k){return s+map[k]},0);
+  if(!tot){host.innerHTML='<div class="ls-empty">Nothing to show yet.</div>';return}
+  var cx=134,cy=122,r=92,a0=-Math.PI/2,svg='<svg class="px-svg px-pie" viewBox="0 0 340 260" role="img" aria-label="Pie chart">';
+  keys.forEach(function(k,i){var frac=map[k]/tot,a1=a0+frac*Math.PI*2,large=frac>0.5?1:0,col=PAL[i%PAL.length];
+   var x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+   if(keys.length===1){svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+col+'"><title>'+esc(k)+': '+map[k]+'</title></circle>'}
+   else svg+='<path d="M'+cx+' '+cy+' L'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+large+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+' Z" fill="'+col+'" stroke="#fff" stroke-width="2"><title>'+esc(k)+': '+map[k]+' ('+(frac*100).toFixed(0)+'%)</title></path>';
+   var am=(a0+a1)/2,lx=cx+(r+14)*Math.cos(am),ly=cy+(r+14)*Math.sin(am);
+   svg+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" class="px-y" text-anchor="'+(Math.cos(am)>0?'start':'end')+'" font-size="11" font-weight="700">'+(frac*100).toFixed(0)+'%</text>';
+   a0=a1});
+  svg+='</svg>';
+  var legend='<div class="px-legend">'+keys.map(function(k,i){return '<div><i style="background:'+PAL[i%PAL.length]+'"></i><b>'+esc(k)+'</b><span>'+map[k]+' \u00b7 '+(map[k]/tot*100).toFixed(0)+'%</span></div>'}).join('')+'</div>';
+  host.innerHTML=svg+legend;
+ };
+})();
+</script>
+
+<script>
+/* SPOTLIGHT: recent, most-watched YouTube videos for the interests chosen at sign-up. Plays on Pelex; the link opens YouTube. */
+(function(){
+ function $s(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function interests(){var pr=window.curUser&&window.curUser.user_metadata&&window.curUser.user_metadata.profile;return (pr&&pr.interests)||[]}
+ function cardHtml(v){
+  return '<article class="spot-card"><div class="spot-embed"><iframe src="https://www.youtube-nocookie.com/embed/'+encodeURIComponent(v.id)+'?rel=0" title="'+esc(v.title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>'+
+   '<div class="spot-meta"><b>'+esc(v.title)+'</b><span>'+esc(v.channel)+' \u00b7 '+esc(v.views)+' views \u00b7 '+esc(v.length)+' \u00b7 '+esc(v.published)+'</span>'+
+   '<a href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">Open on YouTube \u2197</a></div></article>';
+ }
+ async function findVideos(interest,mount){
+  if(!mount)return;
+  if(!(window.sb&&window.curUser)){mount.innerHTML='<div class="ls-empty">Sign in to see videos picked for you.</div>';return}
+  mount.innerHTML='<div class="ls-empty">Finding the most watched recent videos\u2026</div>';
+  try{
+   var out=await askPublicAgent('Find videos for: '+interest,Object.assign({},agentMeta(),{intent:'videos',interest:interest,__sid:'spot-'+Date.now()}));
+   var j=JSON.parse(String(out).replace(/^```json\s*|\s*```$/g,'').trim());
+   if(!j.videos||!j.videos.length){mount.innerHTML='<div class="ls-empty">No recent videos under an hour found for this interest yet. Try another.</div>';return}
+   mount.innerHTML=j.videos.map(cardHtml).join('');
+  }catch(e){mount.innerHTML='<div class="ls-empty">'+esc((e&&!e.backend&&e.message)?e.message:'Spotlight is not reachable right now.')+'</div>'}
+ }
+ window.pxFindVideos=findVideos;
+ // sheet of interests
+ function openSheet(){
+  var box=$s('spPick');box.innerHTML='';var list=interests();
+  if(!list.length){box.innerHTML='<div class="dnote">Finish your profile to get picks from your interests. Sign in, then complete the short onboarding.</div>'}
+  list.forEach(function(x){var b=document.createElement('button');b.type='button';b.className='sheetOpt';b.textContent=x;b.onclick=function(){$s('spSheet').hidden=true;$s('spTitle').textContent=x;findVideos(x,$s('spList'))};box.appendChild(b)});
+  $s('spSheet').hidden=false;
+ }
+ var _go=go;go=function(v,t){_go(v,t);if(v==='spotlight'){var l=$s('spList');if(l&&!l.innerHTML.trim())l.innerHTML='<div class="ls-empty">Tap \u201cPick an interest\u201d to start.</div>'}};
+ window.addEventListener('load',function(){
+  var b=$s('spOpen');if(b)b.onclick=openSheet;
+  var c=$s('spClose');if(c)c.onclick=function(){$s('spSheet').hidden=true};
+  var sh=$s('spSheet');if(sh)sh.addEventListener('click',function(e){if(e.target===sh)sh.hidden=true});
+ });
+})();
+</script>
+
+<script>window.addEventListener("load",function(){var b=document.getElementById("pnBtn");if(!b)return;b.onclick=function(){var f=(document.getElementById("pField")||{}).value||"";var L=document.getElementById("pnList");if(!f.trim()){L.innerHTML='<div class="ls-empty">Add your field in your pitch profile first.</div>';return}window.pxFindVideos&&window.pxFindVideos(f.trim(),L)}});</script>
 </body>
 </html>
