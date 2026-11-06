@@ -1152,6 +1152,11 @@ main{min-height:0;height:100%;overflow:hidden}
 #spSheet .sheetOpt{display:block;width:100%;text-align:left;padding:14px 6px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
 #spSheet .sheetOpt:first-of-type{border-top:0}
 .spot-open{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:12px 18px;background:linear-gradient(145deg,#142b52,#24457f);color:#fff;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 14px 26px -16px rgba(11,27,74,.7)}
+/* chat tables and wide content scroll inside the bubble instead of pushing the screen sideways */
+.msg table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+.msg td,.msg th{white-space:normal;min-width:90px}
+.msg pre,.msg code{max-width:100%;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.msg{max-width:100%;min-width:0}
 </style>
 </head>
 <body>
@@ -1322,7 +1327,11 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
   <div class="muted dnote" id="wsMsg"></div>
   <div class="prow" style="margin-top:10px"><button class="btn alt" id="wsCreate" type="button">Create workspace</button><button class="btn alt" id="wsInvite" type="button">Invite someone</button><button class="btn alt" id="wsReport" type="button">Create Report view link</button></div>
  </div>
- <div class="dcard"><h2>Upload data</h2>
+ <div class="dcard" id="payCard"><div class="dhead"><h2>Payments</h2><span class="ttag">Paystack or Flutterwave</span></div>
+ <p class="muted dnote">Connect your payment account once. Every successful online payment is then saved to your ledger automatically, with no upload needed.</p>
+ <div class="prow" style="margin-top:8px"><select id="payProv" class="inp" style="max-width:180px"><option value="paystack">Paystack</option><option value="flutterwave">Flutterwave</option></select><button class="btn" id="payConnect" type="button">Connect</button></div>
+ <div id="payOut" class="ilist"></div><div class="muted dnote" id="payMsg"></div></div>
+<div class="dcard"><h2>Upload data</h2>
   <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. CSV, XLSX, PDF, PNG or JPG, up to 10 MB each. Pelex detects the type, and nothing is saved until you confirm it.</p>
   <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg" hidden><span id="upLabel">Tap to choose a file</span></label>
   <div id="upReview" class="ilist" hidden></div>
@@ -1622,12 +1631,14 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="sheethead"><h2 id="instTitle">Install Pelex</h2><button class="xbtn" id="instClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <ol id="instSteps"></ol>
 </dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 // ====== SET THIS ======
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
 var PERSONAL_WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c9b40769-e309-45e7-951f-ab531c535635/chat';
 var BUSINESS_WEBHOOK_URL = 'PASTE_BUSINESS_CHAT_URL_HERE';
-var AGENT_URL = 'https://admin-pelex-dev.pelumiephraim9.workers.dev'; // the Cloudflare shield address (or the Render address). While it says PASTE_, public chat keeps using n8n
+var NETLIFY_FN_BASE='https://unclepelex.netlify.app'; /* set to the Netlify site address (for example https://your-site.netlify.app) once pelex.tech moves to Cloudflare Pages */
+AGENT_URL = 'https://admin-pelex-dev.pelumiephraim9.workers.dev'; // the Cloudflare shield address (or the Render address). While it says PASTE_, public chat keeps using n8n
 var N8N_RETIRED = true; // n8n is switched off: every chat goes to the code backend, and a backend problem is shown instead of hidden
 // ======================
 var $ = function(i){return document.getElementById(i)};
@@ -1805,7 +1816,7 @@ async function sttCall(b64,mime){
   if(AGENT_URL.indexOf('PASTE_')!==0){
     try{var tok=await agentAuth(false,false);var r0=await fetch(AGENT_URL.replace(/\/+$/,'')+'/voice/stt',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({audio:b64,mime:mime,language:langCode()})});var j0=await r0.json().catch(function(){return{}});if(r0.ok)return j0;if(r0.status===401)__gt={tok:'',exp:0,p:null}}catch(e){}
   }
-  return await post('/.netlify/functions/transcribe',{audio:b64,mime:mime,language:langCode()})}
+  return await post(NETLIFY_FN_BASE+'/.netlify/functions/transcribe',{audio:b64,mime:mime,language:langCode()})}
 async function askAgent(text){
   var useAgent=AGENT_URL.indexOf('PASTE_')!==0;
   if(WEBHOOK_URL.indexOf('PASTE_')===0&&!useAgent){var ne=new Error('The chat backend is not connected yet.');ne.backend=true;throw ne}
@@ -1862,7 +1873,7 @@ function voiceFail(e){if(voiceWarned)return;voiceWarned=true;var m=String((e&&e.
   var why=/404|not found/i.test(m)?'the voice function is not deployed on this site yet':/not configured/i.test(m)?'the ElevenLabs key is missing on the server':/quota|credit|401|402|429|unusual/i.test(m)?'ElevenLabs refused the request ('+m+')':(m||'no reply from the voice service');
   try{add('ElevenLabs voice is not responding: '+why+'. Using your device\'s basic voice instead.','sys')}catch(x){}}
 var VOICE_ENGINE='browser'; // 'browser' = free voice built into the phone or browser; 'elevenlabs' = the paid Netlify voice function
-function fetchAudio(c){if(VOICE_ENGINE==='browser')return Promise.resolve(null);var vp=voicePrefs();return post('/.netlify/functions/speak',{text:c,voice:vp.voice,speed:vp.speed,language:langCode()}).then(function(r){if(r&&r.audio)return 'data:audio/mpeg;base64,'+r.audio;voiceFail(new Error('the voice service sent back no audio'));return null}).catch(function(e){voiceFail(e);return null})}
+function fetchAudio(c){if(VOICE_ENGINE==='browser')return Promise.resolve(null);var vp=voicePrefs();return post(NETLIFY_FN_BASE+'/.netlify/functions/speak',{text:c,voice:vp.voice,speed:vp.speed,language:langCode()}).then(function(r){if(r&&r.audio)return 'data:audio/mpeg;base64,'+r.audio;voiceFail(new Error('the voice service sent back no audio'));return null}).catch(function(e){voiceFail(e);return null})}
 function playUrl(u){return new Promise(function(res){
   curRes=res;
   player.onended=player.onerror=function(){player.onended=player.onerror=null;curRes=null;res(true)};
@@ -2042,7 +2053,7 @@ async function sendImage(){
   try{await ensureChat(q)}catch(e){}
   saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
   stepWait(w);
-  try{var r;if(AGENT_URL.indexOf('PASTE_')!==0){try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:datas,intent:intent}))}}catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post('/.netlify/functions/vision',{images:datas,prompt:q})}}else{r=await post('/.netlify/functions/vision',{images:datas,prompt:q})}w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}}
+  try{var r;if(AGENT_URL.indexOf('PASTE_')!==0){try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:datas,intent:intent}))}}catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:datas,prompt:q})}}else{r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:datas,prompt:q})}w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}}
   catch(err){w.remove();await showErr(err)}
 }
 $('file').onchange=async function(e){
@@ -3021,7 +3032,7 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
   function vHue(t){var h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%360;return h}
   function loadNamedVoices(){
     var box=document.getElementById('voiceCards');if(!box||box.dataset.loaded)return;box.dataset.loaded='1';
-    fetch('/.netlify/functions/voices').then(function(r){return r.ok?r.json():null}).then(function(j){
+    fetch(NETLIFY_FN_BASE+'/.netlify/functions/voices').then(function(r){return r.ok?r.json():null}).then(function(j){
       if(!j||!j.voices||!j.voices.length)return;
       j.voices.forEach(function(v){
         if(!/^[A-Za-z0-9]{15,30}$/.test(v.id))return;
@@ -4343,9 +4354,12 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="ls-kpi"><b>'+money(outT,rep)+'</b><span>Outstanding</span></div>'+
    '<div class="ls-kpi '+(overdue.length?'warn':'')+'"><b>'+overdue.length+' overdue</b><span>'+(overdue.length?money(overdueT,rep)+' past due':'Nothing past due')+'</span></div>';
   // revenue by week (invoices), last 12 weeks to the chosen date
-  var end=parseD(a),weeks=[];for(var w=11;w>=0;w--){var d=new Date(end);d.setDate(d.getDate()-w*7);weeks.push(weekStart(iso(d)))}
-  var rev=weeks.map(function(ws){return inv.filter(function(x){return weekStart(x.entry_date)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
-  var vol=weeks.map(function(ws){return rows.filter(function(x){return weekStart(x.entry_date)===ws}).length});
+  var gran=($l('lsGran')&&$l('lsGran').value)||'week',end=parseD(a),weeks=[];
+  if(gran==='day'){for(var w=29;w>=0;w--){var dd=new Date(end);dd.setDate(dd.getDate()-w);weeks.push(iso(dd))}}
+  else{for(var w2=11;w2>=0;w2--){var d=new Date(end);d.setDate(d.getDate()-w2*7);weeks.push(weekStart(iso(d)))}}
+  var keyOf=gran==='day'?function(x){return String(x.entry_date)}:function(x){return weekStart(x.entry_date)};
+  var rev=weeks.map(function(ws){return inv.filter(function(x){return keyOf(x)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
+  var vol=weeks.map(function(ws){return rows.filter(function(x){return keyOf(x)===ws}).length});
   var lbl=weeks.map(function(s){return s.slice(5)});
   window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:weeks,values:rev,fmt:function(v){return money(v,rep)},title:'Revenue'});
   $l('lsRevTable').innerHTML='<table class="ls-table"><tr><th>Week starting</th><th>Invoiced</th></tr>'+weeks.map(function(w,i){return '<tr><td>'+esc(w)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</table>';
@@ -4395,7 +4409,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var wrap=document.createElement('div');wrap.id='lsWrap';wrap.className='ls-wrap';
   wrap.innerHTML=
    '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
-   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
+   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="week">Weekly</option><option value="day">Daily (last 30 days)</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
    '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
    '<div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
    '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
@@ -4411,6 +4425,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="supbar"><input class="inp" id="lsAsk" placeholder="For example: which invoices should I chase first?" maxlength="500"><button class="btn" id="lsSend" type="button">Ask</button></div></div>';
   dash.insertBefore(wrap,dash.firstChild);
   $l('lsCur').onchange=function(){rep=this.value;render()};
+  $l('lsGran').onchange=function(){render()};
   $l('lsDate').onchange=function(){render()};
   $l('lsSlider').oninput=function(){var a=parseD(minDate());a.setDate(a.getDate()+Number(this.value));$l('lsDate').value=iso(a);render()};
   $l('lsSend').onclick=ask;$l('lsAsk').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}});
@@ -4668,7 +4683,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
   $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
   b.onclick=readDoc;
-  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&/^image\//.test(f.type)||f&&/\.(png|jpe?g)$/i.test(f.name))});
+  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&(/^image\//.test(f.type)||/\.(png|jpe?g)$/i.test(f.name)||/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)))});
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
  setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
@@ -4772,5 +4787,231 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 </script>
 
 <script>window.addEventListener("load",function(){var b=document.getElementById("pnBtn");if(!b)return;b.onclick=function(){var f=(document.getElementById("pField")||{}).value||"";var L=document.getElementById("pnList");if(!f.trim()){L.innerHTML='<div class="ls-empty">Add your field in your pitch profile first.</div>';return}window.pxFindVideos&&window.pxFindVideos(f.trim(),L)}});</script>
+<script>
+/* PAYMENTS: connect Paystack or Flutterwave; shows the private webhook address to paste in the provider's dashboard. */
+(function(){
+ var WEBHOOK_BASE='https://admin-pelex-dev.pelumiephraim9.workers.dev/hooks/';
+ function $q(i){return document.getElementById(i)}
+ function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ async function show(){
+  var out=$q('payOut');if(!out||!(window.sb&&window.curUser&&ws()))return;
+  var r=await sb.from('payment_connections').select('provider,webhook_token,currency,active').eq('workspace_id',ws());
+  out.innerHTML='';
+  (r.data||[]).forEach(function(c){var d=document.createElement('div');d.className='irow';
+    var url=WEBHOOK_BASE+c.provider+'/'+c.webhook_token;
+    d.innerHTML='<b>'+(c.provider==='paystack'?'Paystack':'Flutterwave')+'</b> \u00b7 '+(c.active?'connected':'paused')+'<div class="dnote">Webhook address (paste into your provider dashboard):</div><code style="word-break:break-all;font-size:12px">'+url+'</code>';
+    out.appendChild(d)});
+ }
+ async function connect(){
+  var msg=$q('payMsg');
+  if(!(window.sb&&window.curUser)){msg.textContent='Sign in first.';return}
+  if(!ws()){msg.textContent='Create or join a workspace first.';return}
+  var prov=$q('payProv').value;
+  var r=await sb.from('payment_connections').upsert({workspace_id:ws(),provider:prov,connected_by:curUser.id,currency:'NGN',active:true},{onConflict:'workspace_id'});
+  msg.textContent=r.error?('Could not connect: '+r.error.message):'Connected. Paste the webhook address into your '+(prov==='paystack'?'Paystack':'Flutterwave')+' dashboard, under the webhook settings.';
+  show();
+ }
+ window.addEventListener('load',function(){var b=$q('payConnect');if(b)b.onclick=connect;setTimeout(show,800)});
+ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(show,300)};
+})();
+</script>
+<script>
+/* SETUP + AGREEMENTS: business type, company-set terms, agreements and payments (all calculated from the company's own settings). */
+(function(){
+ function $x(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function ready(){return !!(window.sb&&window.curUser&&ws())}
+ function errT(e){return String((e&&(e.message||e.details))||'Something went wrong.').replace(/^.*?: /,'')}
+ function money(n,c){return (c||'NGN')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
+ var SETTINGS=null, TYPES=[];
+ function card(id,title,inner){return '<div class="dcard" id="'+id+'"><div class="dhead"><h2>'+title+'</h2></div>'+inner+'</div>'}
+ function inp(id,label,val,type){return '<label class="dnote" for="'+id+'" style="display:block;margin-top:8px">'+label+'</label><input class="inp" id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" style="width:100%">'}
+ function sel(id,label,opts,val){return '<label class="dnote" for="'+id+'" style="display:block;margin-top:8px">'+label+'</label><select class="inp" id="'+id+'" style="width:100%">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===val?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select>'}
+
+ function buildSetup(){
+  var host=$x('bWork');if(!host||$x('setupCard'))return;
+  var wrap=document.createElement('div');wrap.id='finWrap';wrap.style.display='flex';wrap.style.flexDirection='column';wrap.style.gap='14px';
+  wrap.innerHTML=
+   card('setupCard','Your business setup','<p class="muted dnote">Choose your type. Pelex then shows the tools for it. You enter your own rates and terms; Pelex only does the calculations.</p><div id="stBody"><div class="muted dnote">Sign in and create a workspace to set this up.</div></div><div class="muted dnote" id="stMsg"></div>')+
+   card('agreeCard','Loan agreements','<div id="agBody"><div class="muted dnote">Set your terms above first, then create an agreement here.</div></div>')+
+   card('importCard','Import your data','<p class="muted dnote">Keep your worksheet as usual. Pelex reads it and adds each row to your ledger.</p><div id="imBody"></div><div class="muted dnote" id="imMsg"></div>');
+  host.insertBefore(wrap,host.firstChild);
+  loadAll();
+ }
+
+ async function loadAll(){
+  if(!ready())return;
+  var t=await sb.from('business_types').select('code,name,group_name,description,default_cycle').order('sort_order');
+  TYPES=t.data||[];
+  var s=await sb.from('workspace_settings').select('*').eq('workspace_id',ws()).maybeSingle();
+  SETTINGS=s.data||{business_type:'general',currency:'NGN',default_cycle:'monthly',default_rate:0,default_method:'flat',rate_basis:'per_cycle',startup_capital_month:0,startup_capital_year:0,deposit_treatment:'credited'};
+  renderSetup();renderAgreements();renderImport();
+ }
+
+ function renderSetup(){
+  var groups={};TYPES.forEach(function(x){(groups[x.group_name]=groups[x.group_name]||[]).push(x)});
+  var typeOpts=[];Object.keys(groups).forEach(function(g){groups[g].forEach(function(x){typeOpts.push([x.code,g+' \u00b7 '+x.name])})});
+  $x('stBody').innerHTML=
+   sel('stType','Business type',typeOpts,SETTINGS.business_type)+
+   inp('stCur','Currency (for example NGN, USD)',SETTINGS.currency)+
+   sel('stCycle','How often you collect or report',[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']],SETTINGS.default_cycle)+
+   inp('stRate','Your interest or charge rate, as a percentage (for example 7)',Number(SETTINGS.default_rate||0)*100,'number')+
+   sel('stBasis','Is the rate per month or in total?',[['per_cycle','Per month (per cycle)'],['total','In total, spread evenly']],SETTINGS.rate_basis)+
+   sel('stMethod','How interest is calculated',[['flat','Flat (on the original amount)'],['declining','Declining (on the balance left)'],['none','No interest']],SETTINGS.default_method)+
+   sel('stDeposit','Upfront deposit',[['credited','Reduces the balance to repay'],['savings','Held as savings (not reduced)']],SETTINGS.deposit_treatment||'credited')+
+   inp('stCapM','Startup capital this month',SETTINGS.startup_capital_month,'number')+
+   inp('stCapY','Startup capital this year',SETTINGS.startup_capital_year,'number')+
+   '<div class="prow" style="margin-top:12px"><button class="btn" id="stSave" type="button">Save my setup</button></div>';
+  $x('stSave').onclick=saveSetup;
+  $x('stType').onchange=function(){var code=this.value;var t=TYPES.filter(function(x){return x.code===code})[0];if(t)$x('stCycle').value=t.default_cycle};
+ }
+
+ async function saveSetup(){
+  var rate=parseFloat($x('stRate').value);if(isNaN(rate)||rate<0){$x('stMsg').textContent='Enter a rate of 0 or more.';return}
+  var row={workspace_id:ws(),business_type:$x('stType').value,currency:($x('stCur').value||'NGN').toUpperCase().slice(0,3),default_cycle:$x('stCycle').value,
+    default_rate:rate/100,rate_basis:$x('stBasis').value,default_method:$x('stMethod').value,deposit_treatment:$x('stDeposit').value,
+    startup_capital_month:parseFloat($x('stCapM').value)||0,startup_capital_year:parseFloat($x('stCapY').value)||0,updated_at:new Date().toISOString()};
+  var r=await sb.from('workspace_settings').upsert(row,{onConflict:'workspace_id'});
+  $x('stMsg').textContent=r.error?('Not saved: '+errT(r.error)):'Saved. Pelex now uses these terms.';
+  if(!r.error){SETTINGS=Object.assign({},SETTINGS,row);renderAgreements();}
+ }
+
+ async function renderAgreements(){
+  var box=$x('agBody');if(!box||!ready())return;
+  var r=await sb.from('agreements').select('id,party,principal,deposit,deposit_treatment,rate,rate_basis,method,cycle,term_cycles,start_date,status').eq('workspace_id',ws()).order('created_at',{ascending:false}).limit(100);
+  var list=r.data||[];
+  box.innerHTML='<div class="prow" style="margin-bottom:10px"><button class="btn" id="agNew" type="button">New agreement</button></div><div id="agForm" hidden></div><div id="agList" class="ilist">'+(list.length?'':'<div class="muted dnote">No agreements yet.</div>')+'</div><div id="agDetail"></div>';
+  $x('agNew').onclick=agreementForm;
+  var lst=$x('agList');
+  list.forEach(function(a){
+   var d=document.createElement('div');d.className='irow';d.style.cursor='pointer';
+   d.innerHTML='<b>'+esc(a.party)+'</b> \u00b7 '+money(a.principal,SETTINGS.currency)+' \u00b7 '+esc(a.term_cycles)+' '+esc(a.cycle)+' \u00b7 '+esc(a.status)+'<div class="dnote">Starts '+esc(a.start_date)+'. Tap to see the schedule and record a payment.</div>';
+   d.onclick=function(){showAgreement(a)};lst.appendChild(d);
+  });
+ }
+
+ function agreementForm(){
+  var f=$x('agForm');f.hidden=false;
+  f.innerHTML='<div class="dnote" style="margin-bottom:6px"><b>New agreement</b> \u00b7 uses your setup by default. Change anything for this borrower only.</div>'+
+   inp('agParty','Borrower or customer name','')+inp('agPrin','Amount borrowed','','number')+inp('agDep','Upfront deposit','0','number')+
+   sel('agTreat','Deposit treatment',[['credited','Reduces the balance to repay'],['savings','Held as savings']],SETTINGS.deposit_treatment||'credited')+
+   inp('agRate','Rate, as a percentage for this borrower',Number(SETTINGS.default_rate||0)*100,'number')+
+   sel('agBasis','Rate per month or in total',[['per_cycle','Per month'],['total','In total']],SETTINGS.rate_basis)+
+   sel('agMethod','Interest method',[['flat','Flat'],['declining','Declining'],['none','None']],SETTINGS.default_method)+
+   sel('agCycle','Repayment cycle',[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']],SETTINGS.default_cycle)+
+   inp('agTerm','Number of repayment cycles (term)','6','number')+inp('agStart','Start date',new Date().toISOString().slice(0,10),'date')+
+   '<div class="prow" style="margin-top:10px"><button class="btn" id="agSave" type="button">Create agreement</button><button class="btn alt" id="agCancel" type="button">Cancel</button></div><div class="muted dnote" id="agMsg"></div>';
+  $x('agCancel').onclick=function(){f.hidden=true};
+  $x('agSave').onclick=createAgreement;
+ }
+
+ async function createAgreement(){
+  var v=function(i){return $x(i).value};
+  var p=parseFloat(v('agPrin')),dep=parseFloat(v('agDep'))||0,rate=parseFloat(v('agRate'))/100,term=parseInt(v('agTerm'),10);
+  if(!v('agParty').trim()){$x('agMsg').textContent='Enter the borrower name.';return}
+  if(!(p>0)){$x('agMsg').textContent='Enter the amount borrowed.';return}
+  if(isNaN(rate)||rate<0){$x('agMsg').textContent='Enter a rate of 0 or more.';return}
+  if(!(term>0)){$x('agMsg').textContent='Enter a term of at least 1 cycle.';return}
+  var r=await sb.rpc('create_agreement',{p_workspace:ws(),p_party:v('agParty').trim(),p_principal:p,p_deposit:dep,p_deposit_treatment:v('agTreat'),p_rate:rate,p_rate_basis:v('agBasis'),p_method:v('agMethod'),p_cycle:v('agCycle'),p_term:term,p_start:v('agStart')});
+  if(r.error){$x('agMsg').textContent='Not created: '+errT(r.error);return}
+  $x('agForm').hidden=true;renderAgreements();
+ }
+
+ async function showAgreement(a){
+  var d=$x('agDetail');d.innerHTML='<div class="muted dnote">Loading schedule\u2026</div>';
+  var s=await sb.from('schedule_items').select('seq,due_date,principal_due,interest_due,amount_due,amount_paid,status').eq('agreement_id',a.id).order('seq');
+  var items=s.data||[];
+  var totalDue=items.reduce(function(t,x){return t+Number(x.amount_due)},0),paid=items.reduce(function(t,x){return t+Number(x.amount_paid)},0);
+  d.innerHTML='<div class="an-card" style="margin-top:10px"><b>'+esc(a.party)+'</b><div class="dnote">Total to repay '+money(totalDue,SETTINGS.currency)+' \u00b7 paid '+money(paid,SETTINGS.currency)+' \u00b7 outstanding '+money(totalDue-paid,SETTINGS.currency)+'</div>'+
+   '<div style="overflow-x:auto"><table class="ls-table"><tr><th>#</th><th>Due</th><th>Principal</th><th>Interest</th><th>Amount due</th><th>Paid</th><th>Left</th><th>Status</th></tr>'+
+   items.map(function(x){var left=Number(x.amount_due)-Number(x.amount_paid);var st=x.status==='paid'?'<span class="ls-pill ok">Paid</span>':x.status==='partial'?'<span class="ls-pill warn">Partly paid</span>':'<span class="ls-pill open">Open</span>';
+     return '<tr><td>'+x.seq+'</td><td>'+esc(x.due_date)+'</td><td>'+money(x.principal_due,SETTINGS.currency)+'</td><td>'+money(x.interest_due,SETTINGS.currency)+'</td><td>'+money(x.amount_due,SETTINGS.currency)+'</td><td>'+money(x.amount_paid,SETTINGS.currency)+'</td><td>'+money(left,SETTINGS.currency)+'</td><td>'+st+'</td></tr>'}).join('')+'</table></div></div>'+
+   '<div class="an-card" style="margin-top:10px"><b>Record a payment</b><div class="dnote">Applied to the oldest unpaid instalment first. A short payment stays on that instalment as outstanding.</div>'+
+   inp('payAmt','Amount received','','number')+inp('payDate','Date received',new Date().toISOString().slice(0,10),'date')+
+   '<div class="prow" style="margin-top:10px"><button class="btn" id="paySave" type="button">Record payment</button></div><div class="muted dnote" id="payMsg"></div></div>';
+  $x('paySave').onclick=async function(){
+   var amt=parseFloat($x('payAmt').value);if(!(amt>0)){$x('payMsg').textContent='Enter an amount above zero.';return}
+   var r=await sb.rpc('record_payment',{p_agreement:a.id,p_amount:amt,p_date:$x('payDate').value});
+   if(r.error){$x('payMsg').textContent='Not recorded: '+errT(r.error);return}
+   $x('payMsg').textContent='Recorded. '+money(r.data,SETTINGS.currency)+' applied to the schedule.';
+   showAgreement(a);
+  };
+ }
+
+ /* IMPORT: a watched folder (Chrome and Edge on a computer) or a published Google Sheet link. */
+ var SEEN_KEY='pelex_seen_files';
+ function seen(){try{return JSON.parse(localStorage.getItem(SEEN_KEY)||'{}')}catch(e){return {}}}
+ function markSeen(k){var s=seen();s[k]=1;try{localStorage.setItem(SEEN_KEY,JSON.stringify(s))}catch(e){}}
+ function splitCsv(line){return line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.trim().replace(/^"|"$/g,'')})}
+ function findCol(h,re){for(var i=0;i<h.length;i++)if(re.test(h[i]))return i;return -1}
+ function parseSheet(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0};
+  var h=splitCsv(lines[0]).map(function(x){return x.toLowerCase()});
+  var cd=findCol(h,/date/),ca=findCol(h,/amount|total|value|sum|price/),cc=findCol(h,/currency|curr/),cp=findCol(h,/customer|client|borrower|party|name|item|description/),ct=findCol(h,/type|category/),cu=findCol(h,/due/);
+  var rows=[],skipped=0,defCur=(SETTINGS&&SETTINGS.currency)||'NGN';
+  for(var i=1;i<lines.length;i++){
+   var c=splitCsv(lines[i]);var dt=cd>=0?new Date(c[cd]):null,am=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
+   if(!dt||isNaN(dt)||isNaN(am)){skipped++;continue}
+   var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';
+   var due=cu>=0&&c[cu]&&!isNaN(new Date(c[cu]))?new Date(c[cu]).toISOString().slice(0,10):null;
+   rows.push({date:dt.toISOString().slice(0,10),type:tv,amount:am,currency:(cc>=0&&c[cc]?c[cc]:defCur).toUpperCase().slice(0,3),party:cp>=0?c[cp]:null,due:due});
+  }
+  return {rows:rows,skipped:skipped};
+ }
+ async function saveRows(name,text,size){
+  var p=parseSheet(text);if(!p.rows.length)return {ok:false,msg:name+': no readable rows.'};
+  var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+  var cur=p.rows[0].currency;
+  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,file_name:name,file_size:size||text.length,detected_type:'sheet',confidence:'Synced',currency:cur});
+  if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
+  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows});
+  if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
+  return {ok:true,msg:name+': '+rc.data+' rows added'+(p.skipped?' ('+p.skipped+' skipped: unclear date or amount)':'')};
+ }
+ function renderImport(){
+  var b=$x('imBody');if(!b)return;
+  var folderOk=typeof window.showDirectoryPicker==='function';
+  b.innerHTML='<div class="prow"><button class="btn" id="imFolder" type="button"'+(folderOk?'':' disabled')+'>Watch a folder</button><button class="btn alt" id="imSyncNow" type="button"'+(folderOk?'':' disabled')+'>Sync now</button></div>'+
+   (folderOk?'':'<div class="muted dnote">Folder watching works in Chrome or Edge on a computer. On phones, use a Google Sheet link below.</div>')+
+   '<div class="dnote" style="margin-top:12px"><b>Or paste a Google Sheet link</b></div><div class="prow"><input class="inp" id="imSheet" placeholder="https://docs.google.com/spreadsheets/..." style="flex:1;min-width:0"><button class="btn alt" id="imSheetGo" type="button">Import</button></div>'+
+   '<div class="muted dnote">In Google Sheets: File, Share, Publish to web, choose CSV, then paste that link.</div>';
+  var f=$x('imFolder');if(f)f.onclick=watchFolder;
+  var sn=$x('imSyncNow');if(sn)sn.onclick=function(){if(dirHandle)scanFolder(dirHandle)};
+  $x('imSheetGo').onclick=importSheet;
+ }
+ var dirHandle=null,timer=null;
+ async function watchFolder(){
+  try{dirHandle=await window.showDirectoryPicker({mode:'read'});}catch(e){return}
+  $x('imMsg').textContent='Watching '+dirHandle.name+'. New CSV files are added while this page is open.';
+  scanFolder(dirHandle);
+  if(timer)clearInterval(timer);timer=setInterval(function(){if(dirHandle)scanFolder(dirHandle)},60000);
+ }
+ async function scanFolder(dir){
+  if(!ready()){$x('imMsg').textContent='Sign in and choose a workspace first.';return}
+  var s=seen(),done=[];
+  for await (var entry of dir.values()){
+   if(entry.kind!=='file'||!/\.csv$/i.test(entry.name))continue;
+   var file=await entry.getFile();var key=entry.name+'|'+file.size+'|'+file.lastModified;
+   if(s[key])continue;
+   var res=await saveRows(entry.name,await file.text(),file.size);
+   if(res.ok)markSeen(key);
+   done.push(res.msg);
+  }
+  $x('imMsg').textContent=done.length?done.join(' \u00b7 '):'Nothing new in the folder.';
+ }
+ async function importSheet(){
+  var url=$x('imSheet').value.trim();
+  if(!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(url)){$x('imMsg').textContent='Paste a Google Sheets link that starts with https://docs.google.com/spreadsheets/';return}
+  if(!ready()){$x('imMsg').textContent='Sign in and choose a workspace first.';return}
+  var csv=url.indexOf('output=csv')>=0?url:url.replace(/\/edit.*$/,'/export?format=csv');
+  try{var r=await fetch(csv);if(!r.ok)throw new Error('HTTP '+r.status);var text=await r.text();
+   var res=await saveRows('google-sheet.csv',text,text.length);$x('imMsg').textContent=res.msg;}
+  catch(e){$x('imMsg').textContent='Could not read the sheet. Publish it to web as CSV, then try again. ('+e.message+')'}
+ }
+ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300)};
+ window.addEventListener('load',function(){setTimeout(function(){if($x('bWork'))buildSetup()},1200)});
+})();
+</script>
 </body>
 </html>
