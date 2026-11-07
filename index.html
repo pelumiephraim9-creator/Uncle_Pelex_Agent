@@ -1157,6 +1157,22 @@ main{min-height:0;height:100%;overflow:hidden}
 .msg td,.msg th{white-space:normal;min-width:90px}
 .msg pre,.msg code{max-width:100%;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
 .msg{max-width:100%;min-width:0}
+.pp-sec .sec{background:none;border:0;box-shadow:none;padding:6px 0;margin:6px 0}.pp-sec h2{font-size:15px;margin:10px 0 4px;color:var(--ink)}.pp-sec h3{font-size:13.5px;margin:8px 0 2px}.pp-sec p,.pp-sec li{font-size:13.5px;line-height:1.6;color:var(--ink)}.pp-sec ul{padding-left:18px;margin:4px 0}.pp-sec .note{font-size:13px;background:var(--soft);border-left:3px solid #2f63c4;padding:8px 10px;border-radius:8px}.pp-body details summary{cursor:pointer;padding:10px 0}
+/* MONITOR */
+#mnScreen{position:fixed;inset:0;z-index:400;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));text-align:center}
+#mnScreen[hidden]{display:none}
+.mn-top{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:18px;right:18px;display:flex;justify-content:space-between;align-items:center}
+.mn-big{font-size:clamp(34px,9vw,64px);font-weight:800;letter-spacing:-.03em;color:#142b52;word-break:break-word}
+:root[data-theme="dark"] .mn-big{color:#d6e4ff}
+.mn-small{font-size:13px;color:var(--muted)}
+.mn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(420px,100%)}
+.mn-grid>div{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(150deg,var(--panel),var(--soft))}
+.mn-grid b{display:block;font-size:20px}.mn-grid span{font-size:12px;color:var(--muted)}
+.mn-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* DEVICES */
+#dvScreen{position:fixed;inset:0;z-index:401;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));text-align:center}
+#dvScreen[hidden]{display:none}
+.dv-card{width:min(440px,100%);border:1px solid var(--line);border-radius:18px;padding:18px;background:linear-gradient(150deg,var(--panel),var(--soft));text-align:left}
 </style>
 </head>
 <body>
@@ -1406,7 +1422,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div id="sDayWrap" hidden><label for="sDay" class="muted">On</label><select class="inp" id="sDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></div>
 <div><label for="sTime" class="muted">At</label><input class="inp" id="sTime" type="time" value="08:00"><div class="muted" id="sTzNote" style="font-size:12px;margin-top:4px"></div></div>
 <div><label for="sChan" class="muted">Send to</label><select class="inp" id="sChan"><option value="website">This app</option></select></div>
-<div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="general">General Agent</option><option value="business">Business Agent</option><option value="pitch">Pitch Agent</option><option value="gmail">Gmail Bot (Mailbot)</option></select></div>
+<div><label for="sBot" class="muted">Run with</label><select class="inp" id="sBot"><option value="general">General Agent</option></select></div>
 </div>
 <div style="margin-bottom:12px"><label for="sSrc" class="muted">Website to pull from (optional)</label><input class="inp" id="sSrc" type="url" inputmode="url" placeholder="Paste a website link"></div>
 <div id="sMsg" class="muted" style="min-height:20px;font-size:13px;margin-bottom:8px" role="status"></div>
@@ -1605,7 +1621,287 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="pane" id="p-look" hidden>
 <select id="themeSel" style="display:none"><option value="system">Match my device</option><option value="light">Light</option><option value="dark">Dark</option></select>
 </div>
-<div class="pane" id="p-privacy" hidden>
+<div class="pane" id="p-privacy" hidden><div class="pp-body" style="margin-top:14px"><details class="ls-more"><summary><b>Privacy policy</b> (last updated 4 November 2026)</summary><div class="pp-sec"><section class="sec" id="who"><h2>1. Who we are</h2>
+<p>Pelex is an AI assistant built by PelexSkillHub, based in Nigeria. This policy covers the Pelex website and app, the chat, voice and image features, the Business Agent, the Pitch Agent, the Gmail Bot, scheduled tasks, and meeting notes (together, "the Service"). It explains what we collect, why, and the choices you have.</p>
+<p>By using the Service you agree to this policy. If you do not agree, please do not use the Service.</p></section><section class="sec" id="collect"><h2>2. What we collect</h2>
+<ul>
+<li><b>Account details.</b> Name, email, sign-in method (email, Google or GitHub), and onboarding answers you choose to give: date of birth, a category that describes you, your interests, and a short about-you note.</li>
+<li><b>Chats and messages.</b> Your messages and Pelex replies, saved so you can return to them, if chat saving is on. You can switch saving off or delete chats at any time.</li>
+<li><b>Files, images and voice.</b> Images and documents you upload, and voice audio when you use voice features. Generated images and videos are deleted automatically 2 days after creation.</li>
+<li><b>Pitch Agent profile.</b> Your field, years of experience, work modes, location, the countries you are approved to work in, your tone, your portfolio link, and a resume file if you upload one. The Pitch Agent also keeps proposals, approvals and the progress figures it shows you.</li>
+<li><b>Business Agent records.</b> Your business name, tone, description, website, limits you set for the bot, revenue entries you record, meetings, customer messages sent to your inbox, and your replies.</li>
+<li><b>Gmail data (only for accounts you connect and switch on).</b> Message details needed to show your inbox summaries, drafts, labels you approve, and sign-in tokens. Each connected account has its own on/off switch.</li>
+<li><b>Meeting notes.</b> The meeting link you paste, and, when you start notes, the audio or transcript needed to make your chosen output (PDF, voice or digital notes).</li>
+<li><b>Technical data.</b> Approximate country (from your connection) so prices show in the right currency, device and browser details, and standard server logs kept for security and fault checking.</li>
+</ul></section><section class="sec" id="use"><h2>3. How we use it</h2>
+<ul>
+<li>To answer you, run the features you ask for, and keep your work where you left it.</li>
+<li>To schedule and run tasks you set, and to show the results in the app.</li>
+<li>To search public websites for jobs and clients, read public company information, and build proposals for your approval (Pitch Agent).</li>
+<li>To show your business revenue, meetings, and inbox, and to let you reply to customers (Business Agent).</li>
+<li>To draft emails and summaries for the Gmail accounts you switch on (Gmail Bot).</li>
+<li>To show prices in naira in Nigeria and in dollars elsewhere, and to process plan payments.</li>
+<li>To find recent, popular YouTube videos for the interests you choose in Spotlight, and to play them in the app. Each search sends only the interest you pick. Videos open on YouTube under YouTube's own terms and privacy policy.</li>
+<li>To keep the Service secure and prevent abuse.</li>
+</ul>
+<p class="note"><b>We do not sell, rent or monetise your personal data, and we do not use your private chats, Gmail content or business records to advertise to you or to anyone else.</b></p></section><section class="sec" id="memory"><h2>4. How Pelex remembers things</h2><figure class="dg" aria-label="Diagram: how Pelex keeps memory for each part of the Service">
+<svg class="dg-d" viewBox="0 0 720 620" role="img" aria-labelledby="dgt">
+<title id="dgt">Pelex core assistant branches to General chat, Business Agent, Pitch Agent and Gmail Bot, each with its own memory. Gmail accounts can be switched on or off. A wall keeps PINs and payment details out of every agent.</title>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--line)"/></marker></defs>
+<rect x="230" y="20" width="260" height="72" rx="16" class="dg-core"/>
+<text x="360" y="50" class="dg-t" text-anchor="middle">Pelex core assistant</text>
+<text x="360" y="72" class="dg-s" text-anchor="middle">chat · voice · images · scheduled tasks</text>
+<path d="M360 92 V128 M105 128 H645 M105 128 V168 M285 128 V168 M465 128 V168 M645 128 V168" class="dg-line"/>
+<rect x="25" y="168" width="160" height="112" rx="14" class="dg-box"/>
+<text x="105" y="200" class="dg-t" text-anchor="middle">General chat</text>
+<text x="105" y="222" class="dg-s" text-anchor="middle">Normal memory</text>
+<text x="105" y="240" class="dg-s" text-anchor="middle">saved chats, your control</text>
+<rect x="205" y="168" width="160" height="112" rx="14" class="dg-box"/>
+<text x="285" y="200" class="dg-t" text-anchor="middle">Business Agent</text>
+<text x="285" y="222" class="dg-s" text-anchor="middle">Normal memory</text>
+<text x="285" y="240" class="dg-s" text-anchor="middle">revenue · inbox</text>
+<rect x="385" y="168" width="160" height="112" rx="14" class="dg-box"/>
+<text x="465" y="200" class="dg-t" text-anchor="middle">Pitch Agent</text>
+<text x="465" y="222" class="dg-s" text-anchor="middle">Normal memory</text>
+<text x="465" y="240" class="dg-s" text-anchor="middle">profile · proposals</text>
+<rect x="565" y="168" width="160" height="112" rx="14" class="dg-box dg-hi"/>
+<text x="645" y="200" class="dg-t" text-anchor="middle">Gmail Bot</text>
+<text x="645" y="222" class="dg-s" text-anchor="middle">Account switches</text>
+<text x="645" y="240" class="dg-s" text-anchor="middle">you approve sends</text>
+<path d="M645 280 V318" class="dg-line"/>
+<rect x="25" y="318" width="660" height="150" rx="18" class="dg-group"/>
+<text x="50" y="346" class="dg-t">Your Gmail accounts</text>
+<rect x="50" y="362" width="180" height="40" rx="20" class="dg-pill"/><text x="140" y="387" class="dg-s" text-anchor="middle">Account 1 · ON</text>
+<rect x="270" y="362" width="180" height="40" rx="20" class="dg-pill"/><text x="360" y="387" class="dg-s" text-anchor="middle">Account 2 · ON</text>
+<rect x="490" y="362" width="180" height="40" rx="20" class="dg-pill dg-off"/><text x="580" y="387" class="dg-s" text-anchor="middle">Account 3 · OFF</text>
+<text x="360" y="430" class="dg-s" text-anchor="middle">Pelex only works on accounts that are switched on</text>
+<rect x="60" y="500" width="600" height="58" rx="14" class="dg-wall"/>
+<text x="360" y="524" class="dg-wt" text-anchor="middle">Wall: no agent reads or stores PINs, passwords,</text>
+<text x="360" y="544" class="dg-wt" text-anchor="middle">card or bank details. Payments go only to our payment provider.</text>
+<text x="360" y="598" class="dg-s" text-anchor="middle">Left to right: General chat, Business Agent, Pitch Agent, Gmail Bot.</text>
+</svg>
+<svg class="dg-m" viewBox="0 0 360 790" role="img" aria-labelledby="dgtm">
+<title id="dgtm">Pelex core assistant leads to General chat, Business Agent, Pitch Agent and Gmail Bot, each with its own memory. Gmail accounts can be switched on or off. A wall keeps PINs and payment details out of every agent.</title>
+<rect x="20" y="16" width="320" height="64" rx="14" class="dg-core"/>
+<text x="180" y="44" class="dg-t" text-anchor="middle">Pelex core assistant</text>
+<text x="180" y="64" class="dg-s" text-anchor="middle">chat · voice · images · scheduled tasks</text>
+<path d="M180 80 V116 M180 184 V196 M180 264 V276 M180 344 V356 M180 424 V446" class="dg-line"/>
+<rect x="20" y="120" width="320" height="64" rx="14" class="dg-box"/>
+<text x="180" y="146" class="dg-t" text-anchor="middle">General chat</text>
+<text x="180" y="168" class="dg-s" text-anchor="middle">Normal memory · saved chats, your control</text>
+<rect x="20" y="200" width="320" height="64" rx="14" class="dg-box"/>
+<text x="180" y="226" class="dg-t" text-anchor="middle">Business Agent</text>
+<text x="180" y="248" class="dg-s" text-anchor="middle">Normal memory · revenue · inbox</text>
+<rect x="20" y="280" width="320" height="64" rx="14" class="dg-box"/>
+<text x="180" y="306" class="dg-t" text-anchor="middle">Pitch Agent</text>
+<text x="180" y="328" class="dg-s" text-anchor="middle">Normal memory · profile · proposals</text>
+<rect x="20" y="360" width="320" height="64" rx="14" class="dg-box dg-hi"/>
+<text x="180" y="386" class="dg-t" text-anchor="middle">Gmail Bot</text>
+<text x="180" y="408" class="dg-s" text-anchor="middle">Account switches · you approve sends</text>
+<rect x="20" y="446" width="320" height="170" rx="16" class="dg-group"/>
+<text x="40" y="472" class="dg-t">Your Gmail accounts</text>
+<rect x="40" y="484" width="280" height="30" rx="15" class="dg-pill"/><text x="180" y="504" class="dg-s" text-anchor="middle">Account 1 · ON</text>
+<rect x="40" y="522" width="280" height="30" rx="15" class="dg-pill"/><text x="180" y="542" class="dg-s" text-anchor="middle">Account 2 · ON</text>
+<rect x="40" y="560" width="280" height="30" rx="15" class="dg-pill dg-off"/><text x="180" y="580" class="dg-s" text-anchor="middle">Account 3 · OFF</text>
+<text x="180" y="606" class="dg-s" text-anchor="middle">Pelex only works on accounts switched on</text>
+<rect x="20" y="640" width="320" height="104" rx="14" class="dg-wall"/>
+<text x="180" y="668" class="dg-wt" text-anchor="middle">Wall: no agent reads or stores</text>
+<text x="180" y="688" class="dg-wt" text-anchor="middle">PINs, passwords, card or bank details.</text>
+<text x="180" y="716" class="dg-s" text-anchor="middle">Payments go only to our payment provider.</text>
+<text x="180" y="770" class="dg-s" text-anchor="middle">Top to bottom: the four agents above.</text>
+</svg>
+<figcaption class="dgc">Each part of Pelex keeps only the memory its job needs. The Gmail accounts can be switched on or off at any time.</figcaption>
+</figure>
+
+<p>Pelex keeps different kinds of memory, and each is used only for its purpose:</p>
+<ul>
+<li><b>Chat memory.</b> Earlier messages in a chat, so replies make sense. Turn saving off in Settings, or delete chats at any time.</li>
+<li><b>Your preferences.</b> Tone, reply length, and interests you set, used to personalise replies if personalisation is on.</li>
+<li><b>Business records.</b> Revenue, meetings and inbox items, kept for the Business Agent only.</li>
+<li><b>Gmail.</b> Only for accounts you have switched on. Turning an account off stops Pelex working on it.</li>
+</ul>
+<h3>What Pelex never handles</h3>
+<p>No Pelex agent is designed to read, store or act on PINs, passwords, card numbers, bank details or payment instructions. If such details appear in an email, a chat or a customer message, the agent is built to ignore them and not to repeat them. Payments are handled by our payment provider, not by the agents.</p></section><section class="sec" id="access"><h2>5. Who can access your data</h2>
+<ul>
+<li><b>You.</b> Your data is visible to your signed-in account only. Database access rules keep each user's rows separate.</li>
+<li><b>Our team.</b> Only the founder and named technical contributors, and only to support you, fix faults, or respond to a legal request. Access is logged where possible.</li>
+<li><b>Admin inbox.</b> Customer messages sent to a business go to that business owner's inbox. Pelex staff do not read them except when the owner asks for support.</li>
+<li><b>Service providers</b> listed in section 8, only as needed to run the Service.</li>
+</ul></section><section class="sec" id="permissions"><h2>6. Permissions and two-step approval</h2>
+<p>No Pelex agent is allowed to take a sensitive action on its own. This applies to the General chat, the Business Agent, the Pitch Agent, the Gmail Bot, scheduled tasks, and any Google or other third-party app you have connected.</p>
+<h3>What counts as a sensitive action</h3>
+<ul>
+<li>Sending, replying to, forwarding or deleting an email or message.</li>
+<li>Archiving, moving, labelling or changing settings in an email account or other connected app.</li>
+<li>Reading or exporting data from Gmail, Calendar, Drive or another connected app beyond what you asked for.</li>
+<li>Creating, changing or cancelling meetings or calendar events, or sharing a file or link.</li>
+<li>Changing business records, prices, bookings, or replies sent to your customers.</li>
+<li>Publishing or posting anything, starting a meeting recording or transcript, and connecting a new account or app.</li>
+<li>Anything involving payments.</li>
+</ul>
+<h3>The two steps</h3>
+<ul>
+<li><b>Step 1: review.</b> The agent shows exactly what it will do: the account, recipients, subject, content, link or file, and when. You approve, edit, or reject it.</li>
+<li><b>Step 2: confirm.</b> Before the action runs, the agent asks you to confirm once more. Nothing runs until both steps are complete.</li>
+<li>An approval covers only the action shown. It expires if not used within a short time, and a changed action needs fresh approval.</li>
+<li>Silence, a previous approval, or a scheduled task never counts as approval for a new sensitive action. A scheduled task that needs a sensitive action pauses until you approve it.</li>
+</ul>
+<p class="note">Read-only tasks you request in chat, such as summarising one email you choose, run after your request. Bulk reading, exporting, or reading beyond the task is treated as a sensitive action and needs both steps.</p>
+<p>We keep a record of approved actions so you can review what was done and when.</p></section><section class="sec" id="google"><h2>7. Google user data</h2>
+<p>When you sign in with Google, we receive your basic profile (name, email and picture). If you connect Gmail or Calendar later, the Service asks for the specific permissions each feature needs, and only uses them for those features.</p>
+<p>Pelex's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including its Limited Use requirements. We do not use Google user data for advertising. We do not sell it. We do not let humans read your Gmail content, except where you ask us to for support, or where the law requires it. Gmail content is sent to our AI providers only to deliver the feature you asked for, under contracts that prohibit them from using it to train their models.</p>
+<p>You can disconnect any Google account at any time in Settings, or from your Google account settings. Disconnecting removes Pelex's access and stored sign-in tokens.</p></section><section class="sec" id="gmail"><h2>8. Gmail Bot</h2>
+<ul>
+<li><b>Several accounts, each with a switch.</b> Turn an account on or off at any time. When it is off, Pelex stops reading or acting on it.</li>
+<li><b>Drafts and sends with your approval.</b> Pelex drafts emails and shows them to you. Nothing is sent until you approve it in two steps (see section 6).</li>
+<li><b>Labels and summaries.</b> Pelex can suggest a label or a summary. It asks before it creates or changes anything.</li>
+<li><b>Sensitive content is left alone.</b> The Gmail Bot is built not to act on PINs, passwords or payment details it sees in an email.</li>
+<li><b>Flip-card view.</b> Your recent emails appear as summary cards. They are only shown to you.</li>
+</ul></section><section class="sec" id="pitch"><h2>9. Pitch Agent (jobs and clients)</h2>
+<ul>
+<li><b>What it reads.</b> Public company websites, public job pages and public company information (such as published funding or revenue, news and hiring activity). It does not log into private accounts, bypass access controls, or collect personal data about other people beyond what a public job posting shows.</li>
+<li><b>Estimates.</b> Company size is estimated from public sources and labelled with its source. If it cannot be verified, the Service says so.</li>
+<li><b>Direct links.</b> It prefers the company's own application page, and marks a link as verified only after the page loads.</li>
+<li><b>Your approval.</b> It builds a proposal and shows it to you. It sends only after you approve in two steps (see section 6). Approved emails go to the Gmail Bot, which sends from the account you chose.</li>
+<li><b>One person, one shortlist.</b> Your shortlist is built for you alone, and is not shared with other users.</li>
+</ul></section><section class="sec" id="business"><h2>10. Business Agent and meeting notes</h2>
+<ul>
+<li><b>Revenue and meetings.</b> The figures and meetings you enter are used for your own charts and reports.</li>
+<li><b>Customer messages.</b> Messages from customers who chat with your business bot are kept in your inbox so you can respond. Replies, price changes and bookings are made only after your two-step approval (see section 6).</li>
+<li><b>Meeting notes.</b> You choose the output (PDF, voice or digital notes). Before recording or transcribing a meeting, you must tell the participants and, where the law requires it, get their consent. Recordings and notes stay in your account until you delete them.</li>
+</ul></section><section class="sec" id="share"><h2>11. Services that help us run Pelex</h2>
+<p>Your data is processed by these providers, only as needed to deliver the Service:</p>
+<ul>
+<li><b>Supabase</b> (accounts, database and file storage). <b>Netlify</b> (website hosting and functions). <b>Cloudflare</b> (traffic protection and our agent gateway). <b>Render</b> (our agent backend).</li>
+<li><b>AI model providers</b> (for chat, images, vision and summaries), including Google Gemini and other providers the Service uses.</li>
+<li><b>Voice providers</b> (speech-to-text and text-to-speech, including ElevenLabs), and the speech service built into your browser or device.</li>
+<li><b>YouTube</b> (Spotlight video search and playback, through the YouTube Data API and the YouTube embedded player).</li>
+<li><b>Google</b> (sign-in and the Google features you connect). <b>Resend</b> (account emails, when enabled). <b>Paystack</b> (plan payments, when enabled).</li>
+</ul>
+<p>We do not sell your data to any of them. Telegram and WhatsApp are not part of the Service.</p></section><section class="sec" id="keep"><h2>12. How long we keep data</h2>
+<ul>
+<li>Account details and saved chats: while your account is active, or until you delete them.</li>
+<li><b>Generated images and videos: automatically deleted 2 days after creation.</b> Save anything you want to keep.</li>
+<li>Gmail sign-in tokens: until you disconnect the account. Gmail summaries: until you delete them or disconnect.</li>
+<li>Meeting recordings and notes: until you delete them.</li>
+<li>Server logs: kept for a limited period for security and fault checking.</li>
+<li>You can delete your data or your account from Settings, or by emailing us.</li>
+</ul></section><section class="sec" id="protect"><h2>13. How we protect your data</h2>
+<ul>
+<li>Each user's data is separated by database row-level security.</li>
+<li>Connections are encrypted in transit. Sign-in tokens and provider keys are stored on the server, never in your browser.</li>
+<li>Sensitive memory and connected accounts are protected with additional access checks.</li>
+<li>No system is perfectly secure. Please do not share passwords or card numbers in chat.</li>
+</ul></section><section class="sec" id="rights"><h2>14. Your choices and rights</h2>
+<ul>
+<li>Ask for a copy of your data, or for it to be corrected or deleted.</li>
+<li>Turn chat saving, personalisation or any Gmail account on or off in Settings.</li>
+<li>Disconnect a connected account at any time.</li>
+<li>Object to or restrict some uses of your data, and withdraw consent where we rely on it.</li>
+</ul>
+<p>Under the Nigeria Data Protection Act 2023 you have these rights. Email <a href="mailto:hello@pelex.tech">hello@pelex.tech</a> and we will respond.</p></section><section class="sec" id="transfer"><h2>15. International transfers</h2>
+<p>Some providers process data outside Nigeria. Where this happens, we choose providers that offer appropriate safeguards and tell you about it in this policy.</p></section><section class="sec" id="children"><h2>16. Children</h2>
+<p>The Service is not intended for children under 13, and we do not knowingly collect their data. If you believe a child has given us data, email us and we will remove it.</p></section><section class="sec" id="companies"><h2>17. Businesses that use Pelex to track their own data</h2>
+<p>Many businesses use Pelex to record their own customers, borrowers, sales and payments. For that data, the business decides what is recorded and why, and Pelex processes it only on the business's instructions to provide the service. The business is responsible for telling its customers and borrowers how their information is used, and for having a lawful basis to record it.</p>
+<h3>Terms the business sets</h3>
+<p>Each business enters its own interest rates, fees, deposit rules, repayment cycles and terms. Pelex does not set or recommend any rate, and it does not check whether those terms comply with the law. The schedules and totals Pelex produces are calculated from the business's own inputs.</p>
+<h3>Loans, agreements and deposits</h3>
+<p>Where a business records loan agreements, Pelex stores the borrower name, amounts, deposits, rates, schedule, repayments and outstanding balances. Deposits may be recorded either as savings held separately or as a reduction of the balance. Pelex records what the business enters; it does not verify identity, credit or the borrower's documents.</p>
+<h3>Importing data from worksheets</h3>
+<p>A business can connect a folder on its computer, or a Google Sheet published as CSV. Pelex reads the rows the business approves and adds them to its ledger. Folder access is granted by the user in the browser and works only while the page is open. Pelex does not read other files in that folder.</p>
+<h3>Usernames</h3>
+<p>Group usernames start with dev_ or workspace_ and are chosen by the user. Usernames are visible to other people you add to a group or search for. Do not use your real full name or private information as a username unless you are happy for it to be seen.</p>
+<h3>Payments</h3>
+<p>If a business connects Paystack or Flutterwave, the provider sends Pelex a notice of each successful payment, with the amount, currency, customer name and payment reference. Pelex checks the notice is genuine before saving it. Pelex does not receive card numbers or bank login details.</p>
+<h3>Installing Pelex as an app</h3>
+<p>Pelex can be added to your phone or computer home screen from the browser. Installing it stores the app on your device. It does not give Pelex access to other apps or files on that device beyond what you grant in the browser.</p></section><section class="sec" id="devices"><h2>18. Tills, computers and devices</h2>
+<p>You can connect a till, computer or tablet to your business. Each device connects with a one-time code that the owner creates. The device then keeps its own connection on that device only.</p>
+<ul>
+<li><b>Only its own sales.</b> A connected device can add the transactions it reads from its export folder to its own business. It cannot read your other records, your customers, your inbox, your chats or other businesses.</li>
+<li><b>No other people see it.</b> Each device's connection is private to the business that owns it. Other businesses, and other people in your business without owner access, cannot see a device or its records.</li>
+<li><b>Duplicates are ignored.</b> Each transaction is recognised so it is recorded once, even if the same file is read again after a restart.</li>
+<li><b>You can remove a device at any time.</b> Removing it stops it from recording. Records it has already added stay in your business until you delete them.</li>
+<li><b>Stored on the device.</b> The device keeps its connection in the browser on that device. Clearing the browser data or disconnecting the device removes it.</li>
+</ul></section><section class="sec" id="changes"><h2>19. Changes and contact</h2>
+<p>When we change this policy, we update the date at the top and, for important changes, tell you in the app. Questions or requests: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></details><details class="ls-more"><summary><b>Terms of service</b> (last updated 4 November 2026)</summary><div class="pp-sec"><section class="sec" id="accept"><h2>1. Agreement to these terms</h2>
+<p>These Terms of Service ("Terms") are a contract between you and PelexSkillHub, which builds and runs Pelex in Nigeria. By creating an account, or using the chat, voice, image, Business Agent, Pitch Agent, Gmail Bot, scheduled tasks, meeting notes or any other part of the Service, you agree to these Terms and to our <a href="privacy.html">Privacy Policy</a>. If you do not agree, do not use the Service.</p>
+<p>You must be at least 13 years old to use the Service. If you are under 18, you need permission from a parent or guardian.</p></section><section class="sec" id="service"><h2>2. What the Service includes</h2>
+<ul>
+<li><b>General chat.</b> Ask questions, plan, write, search the web, analyse files and images, write code, and use voice.</li>
+<li><b>Images.</b> Create images from a description, or edit an image you attach. Generated images are kept for 2 days.</li>
+<li><b>Spotlight.</b> Picks recent, popular YouTube videos for the interests you choose, plays them in the app, and links to YouTube. Videos belong to their creators and are subject to YouTube's terms.</li>
+<li><b>Scheduled tasks.</b> Set tasks to run on a schedule, with results shown in the app.</li>
+<li><b>Business Agent.</b> A business support bot, a revenue chart and report, a calendar of meetings, an inbox for customer messages, and meeting notes.</li>
+<li><b>Pitch Agent.</b> Searches public job and company information, builds proposals for your approval, and tracks your progress.</li>
+<li><b>Gmail Bot.</b> Works on the Gmail accounts you connect and switch on.</li>
+<li><b>Connectors and creative tools</b> that we make available from time to time. Features marked "Soon" are not yet available.</li>
+</ul>
+<p>We may change, add or remove features. We will try to give notice of material changes.</p></section><section class="sec" id="account"><h2>3. Your account</h2>
+<ul>
+<li>Keep your sign-in details private. You are responsible for activity on your account.</li>
+<li>Give accurate information, including the details the Pitch Agent and Business Agent use.</li>
+<li>Tell us promptly if you believe your account has been accessed without permission.</li>
+</ul></section><section class="sec" id="plans"><h2>4. Plans, trials and payments</h2>
+<ul>
+<li>General chat has a free daily limit. Premium, the Business Bot and the Pitch Agent are paid plans. The Pitch Agent is an add-on for the Business plan.</li>
+<li>Paid plans begin with a 2-day free trial. A payment method may be taken at the start of the trial. You can cancel at any time during the trial.</li>
+<li>Prices are shown in naira in Nigeria and in US dollars elsewhere. Prices and plans may change; we will give notice before a change affects you.</li>
+<li>Payments are processed by our payment provider. Pelex does not store your card details.</li>
+</ul></section><section class="sec" id="use"><h2>5. Acceptable use</h2>
+<p>You must not use the Service to:</p>
+<ul>
+<li>break the law, or infringe anyone's rights;</li>
+<li>send spam, harass people, or impersonate anyone;</li>
+<li>phish for, or try to obtain, other people's PINs, passwords or payment details;</li>
+<li>scrape or access websites in ways that breach their terms, bypass their access controls, or ignore a site's instructions to automated visitors;</li>
+<li>use meeting notes, or record people, without the consent the law requires;</li>
+<li>create or spread malware, or try to disrupt or probe the Service;</li>
+<li>use the Service to create unlawful, sexual content involving minors, or content that is defamatory or infringes intellectual property.</li>
+</ul></section><section class="sec" id="you"><h2>6. Your responsibility for what is sent</h2>
+<ul>
+<li><b>You approve every message.</b> The Pitch Agent and the Gmail Bot send an email only after you approve it in two steps (see section 7). You are responsible for the content you approve and send.</li>
+<li><b>Customer messages.</b> The Business Agent answers your customers using the information and limits you set. You are responsible for the business information you provide, the prices and promises your bot gives, and your dealings with your customers.</li>
+<li><b>Meetings.</b> If you use meeting notes, you must tell the participants and get any consent the law requires before recording or transcribing.</li>
+<li><b>Gmail.</b> Your use of connected Google accounts is also subject to Google's terms.</li>
+</ul></section><section class="sec" id="perm"><h2>7. Permissions and two-step approval</h2>
+<p>Pelex agents must not take a sensitive action on your behalf, or on any Google or other connected third-party app, without your approval in two steps:</p>
+<ul>
+<li><b>Step 1, review:</b> you see exactly what will happen (account, recipients, content, link, file or time) and approve, edit or reject it.</li>
+<li><b>Step 2, confirm:</b> you confirm once more before the action runs.</li>
+</ul>
+<p>Sensitive actions include sending or deleting messages, changing email or app settings, bulk reading or exporting connected data, changing calendar events or shared files, changing business records, prices, bookings or customer replies, publishing anything, starting a meeting recording, connecting a new account or app, and anything involving payments.</p>
+<p>An approval covers only the action shown. Approvals expire if not used in a short time. Silence, earlier approvals and scheduled tasks never count as approval for a new sensitive action. You remain responsible for every action you approve, and you can disconnect any account or app at any time.</p></section><section class="sec" id="ai"><h2>8. AI output and information</h2>
+<ul>
+<li>AI replies, summaries, proposals and analysis can be wrong or out of date. Check important information before you rely on it.</li>
+<li>Market, financial, legal, medical or career information from the Service is general information, not professional advice. Make your own decisions, and consult a professional where needed.</li>
+<li>Company size and revenue figures are estimates from public sources. They are labelled with their sources and may be incomplete.</li>
+</ul></section><section class="sec" id="jobs"><h2>9. Pitch Agent: no guarantees</h2>
+<p>The Pitch Agent helps you find and apply for opportunities. It does not guarantee any job, client, interview, reply, or income. Check every link and every company before you apply. The Pitch Agent does not apply or send on your behalf without your approval.</p></section><section class="sec" id="third"><h2>10. Third-party services and links</h2>
+<p>The Service uses and links to services we do not control, including Google, YouTube and company websites. Their terms and privacy policies apply to your use of them. We are not responsible for their content or availability.</p></section><section class="sec" id="ip"><h2>11. Intellectual property</h2>
+<p>Pelex, its name, design and software belong to PelexSkillHub. You keep the rights to what you upload and create. You give us the permission we need to store, process and display your content in order to provide the Service. Generated images and videos are yours to use, subject to these Terms and to the rights of others. Generated images and videos are deleted from our servers 2 days after creation.</p></section><section class="sec" id="suspend"><h2>12. Suspension and ending</h2>
+<p>You can stop using the Service and delete your account at any time. We may suspend or end access where you breach these Terms, where needed to protect the Service or other users, or where the law requires it.</p></section><section class="sec" id="liab"><h2>13. Disclaimers and limits</h2>
+<ul>
+<li>The Service is provided "as is" and "as available". We do not promise it will be uninterrupted or error-free.</li>
+<li>To the extent the law allows, PelexSkillHub is not liable for indirect or consequential loss, lost profits or lost opportunities, and our total liability is limited to the amount you paid us in the three months before the claim.</li>
+<li>Nothing in these Terms limits liability that cannot be limited under Nigerian law.</li>
+</ul></section><section class="sec" id="law"><h2>14. Governing law and disputes</h2>
+<p>These Terms are governed by the laws of the Federal Republic of Nigeria. Please contact us first to try to resolve any dispute. Courts in Nigeria have jurisdiction over unresolved disputes.</p></section><section class="sec" id="businessuse"><h2>15. Business terms, loans and company data</h2>
+<ul>
+<li><b>You set the terms.</b> If you use Pelex for lending or any other business, you set the rates, fees, deposit rules and terms. Pelex calculates from what you enter and does not choose or recommend any rate.</li>
+<li><b>You are responsible for compliance.</b> You are responsible for making sure your business is licensed where required, and that your rates, charges, contracts and collection practices follow the law in your country. Pelex does not give legal, tax or financial advice.</li>
+<li><b>Records must be accurate.</b> The schedules, balances and totals depend on what you enter, or what you approve from an imported sheet. Check them before you rely on them.</li>
+<li><b>Your customers' data.</b> You must have the right to record your customers' and borrowers' information in Pelex, and to tell them how it is used.</li>
+<li><b>Payments.</b> Payment providers such as Paystack and Flutterwave have their own terms, which apply to your account with them.</li>
+</ul></section><section class="sec" id="usernames"><h2>16. Usernames</h2>
+<p>Group usernames must start with dev_ or workspace_, followed by two or more letters or numbers. You must not choose a username that impersonates another person or business, or that is offensive or misleading. We may change or remove a username that breaks these rules.</p></section><section class="sec" id="devicesterms"><h2>17. Tills, computers and devices</h2>
+<ul>
+<li><b>You are responsible for your devices.</b> Add only devices you control, and keep pairing codes private. A code works once and expires after 10 minutes.</li>
+<li><b>Records must come from your own sales.</b> A device should only send transactions that belong to your business. You are responsible for the accuracy of the exports your devices read.</li>
+<li><b>Remove devices you no longer use.</b> Removing a device stops it from recording, but records it already added stay in your business until you delete them.</li>
+<li><b>No warranty on device reading.</b> Pelex records what it finds in the files you approve. It does not check the completeness of your POS exports.</li>
+</ul></section><section class="sec" id="change"><h2>18. Changes to these Terms</h2>
+<p>We may update these Terms. We will change the date at the top and, for material changes, tell you in the app before they take effect. Continued use after a change means you accept it.</p></section><section class="sec" id="contact"><h2>19. Contact</h2>
+<p>Questions about these Terms: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></details></div>
 <div class="list">
 <div class="row"><span>Privacy policy</span><a class="btn alt" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
 <div class="row"><span>Terms of service</span><a class="btn alt" href="/terms.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
@@ -1637,7 +1933,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
 var PERSONAL_WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c9b40769-e309-45e7-951f-ab531c535635/chat';
 var BUSINESS_WEBHOOK_URL = 'PASTE_BUSINESS_CHAT_URL_HERE';
-var NETLIFY_FN_BASE='https://pelex.tech'; /* set to the Netlify site address (for example https://your-site.netlify.app) once pelex.tech moves to Cloudflare Pages */
+var NETLIFY_FN_BASE='https://unclepelex.netlify.app'; /* set to the Netlify site address (for example https://your-site.netlify.app) once pelex.tech moves to Cloudflare Pages */
 AGENT_URL = 'https://admin-pelex-dev.pelumiephraim9.workers.dev'; // the Cloudflare shield address (or the Render address). While it says PASTE_, public chat keeps using n8n
 var N8N_RETIRED = true; // n8n is switched off: every chat goes to the code backend, and a backend problem is shown instead of hidden
 // ======================
@@ -2629,9 +2925,9 @@ $('sAdd').onclick=async function(){
   if(src){if(!/^https?:\/\//i.test(src))src='https://'+src;try{var uu=new URL(src);if(!uu.hostname.includes('.'))throw 0;src=uu.href}catch(e){sMsg('That website link does not look right.',true);return}ins+='\nSource website: '+src}
   movieGuard();var f=$('sFreq').value,tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(e){}
   var btn=this;btn.disabled=true;sMsg('Saving...');
-  var r=await sb.from('scheduled_tasks').insert({bot:$('sBot').value,agent:$('sBot').value,instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
+  var r=await sb.from('scheduled_tasks').insert({bot:($('sBot').value==='gmail'?'mailbot':$('sBot').value),instruction:ins,frequency:f,channel:$('sChan').value,next_run:nextRunFrom(f,$('sTime').value,$('sDay').value),user_name:userDisplay(curUser),timezone:tz});
   btn.disabled=false;
-  if(r.error){sMsg('Could not save that. Please try again.',true);return}
+  if(r.error){sMsg('Could not save that: '+String((r.error&&r.error.message)||'please try again').replace(/^.*?: /,''),true);return}
   $('sInstr').value='';$('sSrc').value='';document.querySelectorAll('#sChips .qchip').forEach(function(x){x.classList.remove('on')});sMsg(f==='every2days'&&MOVIE_RE.test(ins)?'Added. Movie and TV updates are checked every 2 days.':'Added to your schedule.');loadTasks();
 };
 
@@ -4758,15 +5054,20 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="spot-meta"><b>'+esc(v.title)+'</b><span>'+esc(v.channel)+' \u00b7 '+esc(v.views)+' views \u00b7 '+esc(v.length)+' \u00b7 '+esc(v.published)+'</span>'+
    '<a href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">Open on YouTube \u2197</a></div></article>';
  }
- async function findVideos(interest,mount){
+ async function findVideos(interest,mount,pageToken,append){
   if(!mount)return;
   if(!(window.sb&&window.curUser)){mount.innerHTML='<div class="ls-empty">Sign in to see videos picked for you.</div>';return}
-  mount.innerHTML='<div class="ls-empty">Finding the most watched recent videos\u2026</div>';
+  if(!append)mount.innerHTML='<div class="ls-empty">Finding the most watched recent videos\u2026</div>';
   try{
-   var out=await askPublicAgent('Find videos for: '+interest,Object.assign({},agentMeta(),{intent:'videos',interest:interest,__sid:'spot-'+Date.now()}));
-   var j=JSON.parse(String(out).replace(/^```json\s*|\s*```$/g,'').trim());
+   var out=await askPublicAgent('Find videos for: '+interest,Object.assign({},agentMeta(),{intent:'videos',interest:interest,pageToken:pageToken||'',__sid:'spot-'+Date.now()}));
+   var raw=String(out||'');
+   if(/unknown tool/i.test(raw))throw new Error('Spotlight is not on the server yet. Redeploy the Render backend with find_videos.js in its tools folder.');
+   var j;try{j=JSON.parse(raw.replace(/^```json\s*|\s*```$/g,'').trim())}catch(pe){throw new Error('Spotlight could not read the server reply. Redeploy the backend and try again.')}
    if(!j.videos||!j.videos.length){mount.innerHTML='<div class="ls-empty">No recent videos under an hour found for this interest yet. Try another.</div>';return}
-   mount.innerHTML=j.videos.map(cardHtml).join('');
+   var old=mount.querySelector('.spot-more');if(old)old.remove();
+   if(!append)mount.innerHTML='';
+   mount.insertAdjacentHTML('beforeend',j.videos.map(cardHtml).join(''));
+   if(j.nextPageToken){var mb=document.createElement('button');mb.type='button';mb.className='spot-open spot-more';mb.style.alignSelf='center';mb.textContent='Load more videos';mb.onclick=function(){mb.disabled=true;mb.textContent='Loading\u2026';findVideos(interest,mount,j.nextPageToken,true)};mount.appendChild(mb)}
   }catch(e){mount.innerHTML='<div class="ls-empty">'+esc((e&&!e.backend&&e.message)?e.message:'Spotlight is not reachable right now.')+'</div>'}
  }
  window.pxFindVideos=findVideos;
@@ -4835,6 +5136,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   wrap.innerHTML=
    card('setupCard','Your business setup','<p class="muted dnote">Choose your type. Pelex then shows the tools for it. You enter your own rates and terms; Pelex only does the calculations.</p><div id="stBody"><div class="muted dnote">Sign in and create a workspace to set this up.</div></div><div class="muted dnote" id="stMsg"></div>')+
    card('agreeCard','Loan agreements','<div id="agBody"><div class="muted dnote">Set your terms above first, then create an agreement here.</div></div>')+
+   card('monitorCard','Monitor sales from a till or computer','<p class=\"muted dnote\">Install Pelex on the device that handles your sales, then open the monitor screen. It shows today\'s sales and keeps reading your export folder while it stays open.</p><div class=\"prow\" style=\"margin-top:8px\"><button class=\"btn\" id=\"mnOpen\" type=\"button\">Open monitor screen</button><button class=\"btn alt\" id=\"mnCopy\" type=\"button\">Copy monitor link</button></div><div class=\"muted dnote\" id=\"mnMsg\"></div><details class=\"ls-more\"><summary>How to install on each device</summary><div class=\"dnote\" style=\"line-height:1.7\"><b>Windows or Mac computer, or a till with Chrome or Edge:</b> open the monitor link, then click the install icon at the right of the address bar and choose Install.<br><b>Android POS terminal or tablet (Chrome):</b> open the monitor link, tap the menu (three dots), then Install app or Add to Home screen.<br><b>iPhone or iPad (Safari):</b> open the monitor link, tap Share, then Add to Home Screen.<br><b>Folder watching:</b> works in Chrome or Edge on a computer. Choose the folder your POS exports to, once per session.</div></details>')+
    card('importCard','Import your data','<p class="muted dnote">Keep your worksheet as usual. Pelex reads it and adds each row to your ledger.</p><div id="imBody"></div><div class="muted dnote" id="imMsg"></div>');
   host.insertBefore(wrap,host.firstChild);
   loadAll();
@@ -4842,39 +5144,62 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 
  async function loadAll(){
   if(!ready())return;
-  var t=await sb.from('business_types').select('code,name,group_name,description,default_cycle').order('sort_order');
+  var t=await sb.from('business_types').select('code,name,group_name,description,default_cycle,modules,fields').order('sort_order');
   TYPES=t.data||[];
   var s=await sb.from('workspace_settings').select('*').eq('workspace_id',ws()).maybeSingle();
-  SETTINGS=s.data||{business_type:'general',currency:'NGN',default_cycle:'monthly',default_rate:0,default_method:'flat',rate_basis:'per_cycle',startup_capital_month:0,startup_capital_year:0,deposit_treatment:'credited'};
+  SETTINGS=s.data||{business_type:'general',currency:'NGN',default_cycle:'monthly',default_rate:0,default_method:'none',rate_basis:'per_cycle',startup_capital_month:0,startup_capital_year:0,deposit_treatment:'credited',profile:{}};
   renderSetup();renderAgreements();renderImport();
  }
 
+ function typeOf(code){return TYPES.filter(function(x){return x.code===code})[0]||null}
+ function savedValues(){
+  return Object.assign({},SETTINGS.profile||{},{cycle:SETTINGS.default_cycle,rate:Number(SETTINGS.default_rate||0)*100,rate_basis:SETTINGS.rate_basis,method:SETTINGS.default_method,deposit_treatment:SETTINGS.deposit_treatment,startup_capital_month:SETTINGS.startup_capital_month,startup_capital_year:SETTINGS.startup_capital_year});
+ }
+ function fieldHtml(f,val){
+  var id='sf_'+f.key;
+  var label='<label class="dnote" for="'+id+'" style="display:block;margin-top:8px">'+esc(f.label)+(f.optional?' (optional)':'')+'</label>';
+  if(f.type==='select')return label+'<select class="inp" id="'+id+'" data-key="'+f.key+'" style="width:100%">'+f.options.map(function(o){return '<option value="'+o[0]+'"'+(String(o[0])===String(val)?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select>';
+  return label+'<input class="inp" id="'+id+'" data-key="'+f.key+'" type="number" step="any" min="0" value="'+esc(val==null||val===''?'':val)+'" placeholder="'+(f.optional?'Leave blank if none':'')+'" style="width:100%">';
+ }
  function renderSetup(){
+  var t=typeOf(SETTINGS.business_type)||typeOf('general');
   var groups={};TYPES.forEach(function(x){(groups[x.group_name]=groups[x.group_name]||[]).push(x)});
   var typeOpts=[];Object.keys(groups).forEach(function(g){groups[g].forEach(function(x){typeOpts.push([x.code,g+' \u00b7 '+x.name])})});
+  var vals=savedValues();
+  var fields=(t&&t.fields)||[];
   $x('stBody').innerHTML=
    sel('stType','Business type',typeOpts,SETTINGS.business_type)+
    inp('stCur','Currency (for example NGN, USD)',SETTINGS.currency)+
-   sel('stCycle','How often you collect or report',[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']],SETTINGS.default_cycle)+
-   inp('stRate','Your interest or charge rate, as a percentage (for example 7)',Number(SETTINGS.default_rate||0)*100,'number')+
-   sel('stBasis','Is the rate per month or in total?',[['per_cycle','Per month (per cycle)'],['total','In total, spread evenly']],SETTINGS.rate_basis)+
-   sel('stMethod','How interest is calculated',[['flat','Flat (on the original amount)'],['declining','Declining (on the balance left)'],['none','No interest']],SETTINGS.default_method)+
-   sel('stDeposit','Upfront deposit',[['credited','Reduces the balance to repay'],['savings','Held as savings (not reduced)']],SETTINGS.deposit_treatment||'credited')+
-   inp('stCapM','Startup capital this month',SETTINGS.startup_capital_month,'number')+
-   inp('stCapY','Startup capital this year',SETTINGS.startup_capital_year,'number')+
+   '<div id="stFields">'+fields.map(function(f){return fieldHtml(f,vals[f.key])}).join('')+'</div>'+
+   '<div class="muted dnote" style="margin-top:8px">'+esc(t?t.description:'')+'</div>'+
    '<div class="prow" style="margin-top:12px"><button class="btn" id="stSave" type="button">Save my setup</button></div>';
   $x('stSave').onclick=saveSetup;
-  $x('stType').onchange=function(){var code=this.value;var t=TYPES.filter(function(x){return x.code===code})[0];if(t)$x('stCycle').value=t.default_cycle};
+  $x('stType').onchange=function(){SETTINGS.business_type=this.value;SETTINGS.profile={};renderSetup();renderAgreements();};
+  var card=$x('agreeCard');if(card)card.hidden=!(t&&t.modules&&t.modules.indexOf('agreements')>=0);
  }
 
  async function saveSetup(){
-  var rate=parseFloat($x('stRate').value);if(isNaN(rate)||rate<0){$x('stMsg').textContent='Enter a rate of 0 or more.';return}
-  var row={workspace_id:ws(),business_type:$x('stType').value,currency:($x('stCur').value||'NGN').toUpperCase().slice(0,3),default_cycle:$x('stCycle').value,
-    default_rate:rate/100,rate_basis:$x('stBasis').value,default_method:$x('stMethod').value,deposit_treatment:$x('stDeposit').value,
-    startup_capital_month:parseFloat($x('stCapM').value)||0,startup_capital_year:parseFloat($x('stCapY').value)||0,updated_at:new Date().toISOString()};
+  var t=typeOf($x('stType').value)||typeOf('general');
+  var profile={};var bad=null;
+  (t.fields||[]).forEach(function(f){
+   var el=$x('sf_'+f.key);var raw=el?el.value:'';
+   if(f.type==='number'){
+    if(raw===''){if(!f.optional)bad=bad||f.label;profile[f.key]=null;return}
+    var n=parseFloat(raw);if(isNaN(n)||n<0){bad=bad||f.label;return}
+    profile[f.key]=n;
+   }else profile[f.key]=raw;
+  });
+  if(bad){$x('stMsg').textContent='Please fill in: '+bad;return}
+  var rateNum=profile.rate==null?0:profile.rate;
+  var row={workspace_id:ws(),business_type:$x('stType').value,currency:($x('stCur').value||'NGN').toUpperCase().slice(0,3),
+    default_cycle:profile.cycle||SETTINGS.default_cycle||'monthly',
+    default_rate:rateNum/100,rate_basis:profile.rate_basis||'per_cycle',default_method:profile.method||'none',
+    deposit_treatment:profile.deposit_treatment||'credited',
+    startup_capital_month:profile.startup_capital_month||0,startup_capital_year:profile.startup_capital_year||0,
+    profile:profile,updated_at:new Date().toISOString()};
   var r=await sb.from('workspace_settings').upsert(row,{onConflict:'workspace_id'});
   $x('stMsg').textContent=r.error?('Not saved: '+errT(r.error)):'Saved. Pelex now uses these terms.';
-  if(!r.error){SETTINGS=Object.assign({},SETTINGS,row);renderAgreements();}
+  if(!r.error){SETTINGS=Object.assign({},SETTINGS,row);renderSetup();renderAgreements();}
  }
 
  async function renderAgreements(){
@@ -5009,8 +5334,204 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var res=await saveRows('google-sheet.csv',text,text.length);$x('imMsg').textContent=res.msg;}
   catch(e){$x('imMsg').textContent='Could not read the sheet. Publish it to web as CSV, then try again. ('+e.message+')'}
  }
- var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300)};
+ window.pxWatchFolder=watchFolder;window.pxScanFolder=function(){if(dirHandle)scanFolder(dirHandle)};window.pxHasFolderPicker=(typeof window.showDirectoryPicker==='function');
+var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300)};
  window.addEventListener('load',function(){setTimeout(function(){if($x('bWork'))buildSetup()},1200)});
+})();
+</script>
+<script>
+/* MONITOR: a full-screen sales view for a till or computer. Opens with ?monitor=1. Shows today's figures and keeps reading the export folder. */
+(function(){
+ function $m(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function monitorUrl(){return location.origin+location.pathname+'?monitor=1'}
+ function today(){return new Date().toLocaleDateString('sv-SE')}
+ var timer=null;
+ function ensureOverlay(){
+  if($m('mnScreen'))return;
+  var d=document.createElement('div');d.id='mnScreen';d.hidden=true;
+  d.innerHTML='<div class="mn-top"><b>Pelex monitor</b><span id="mnWhen" class="mn-small"></span></div>'+
+   '<div class="mn-big" id="mnTotal">\u2014</div><div class="mn-small" id="mnSub">Today\u2019s sales</div>'+
+   '<div class="mn-grid"><div><b id="mnCount">0</b><span>entries today</span></div><div><b id="mnRate">\u2014</b><span>currency</span></div></div>'+
+   '<div class="mn-actions"><button class="btn" id="mnFolder" type="button">Choose export folder</button><button class="btn alt" id="mnRefresh" type="button">Refresh</button><button class="btn alt" id="mnExit" type="button">Exit monitor</button></div>'+
+   '<div class="mn-small" id="mnStatus"></div>';
+  document.body.appendChild(d);
+  $m('mnRefresh').onclick=load;
+  $m('mnExit').onclick=function(){d.hidden=true;document.body.classList.remove('mn-on')};
+  $m('mnFolder').onclick=function(){
+   if(window.pxWatchFolder&&window.pxHasFolderPicker)window.pxWatchFolder();
+   else $m('mnStatus').textContent='Folder watching works in Chrome or Edge on a computer. Your data can still be imported from a Google Sheet in the Business page.';
+  };
+ }
+ async function load(){
+  var st=$m('mnStatus');
+  if(!(window.sb&&window.curUser)){$m('mnTotal').textContent='\u2014';$m('mnStatus').textContent='Sign in to see today\u2019s sales.';return}
+  var w=wsId();if(!w){$m('mnStatus').textContent='Create or join a business workspace first.';return}
+  var s=await window.sb.from('workspace_settings').select('currency').eq('workspace_id',w).maybeSingle();
+  var cur=(s.data&&s.data.currency)||'NGN';
+  var r=await window.sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',w).eq('entry_date',today());
+  if(r.error){$m('mnStatus').textContent='Could not load today\u2019s sales: '+r.error.message;return}
+  var rows=(r.data||[]).filter(function(x){return ['sale','receipt','invoice','payment'].indexOf(x.entry_type)>=0&&x.currency===cur});
+  var total=rows.reduce(function(t,x){return t+Number(x.amount)},0);
+  $m('mnTotal').textContent=cur+' '+total.toLocaleString(undefined,{maximumFractionDigits:0});
+  $m('mnCount').textContent=rows.length;$m('mnRate').textContent=cur;
+  $m('mnWhen').textContent='Updated '+new Date().toLocaleTimeString();
+  $m('mnStatus').textContent='Reading your export folder automatically while this screen is open.';
+  if(window.pxScanFolder)window.pxScanFolder();
+ }
+ function startMonitor(){
+  ensureOverlay();
+  $m('mnScreen').hidden=false;document.body.classList.add('mn-on');
+  load();
+  if(timer)clearInterval(timer);timer=setInterval(load,60000);
+ }
+ window.addEventListener('load',function(){
+  var b=$m('mnOpen');if(b)b.onclick=function(){window.open(monitorUrl(),'_blank','noopener')};
+  var c=$m('mnCopy');if(c)c.onclick=function(){
+   var u=monitorUrl();
+   if(navigator.clipboard)navigator.clipboard.writeText(u).then(function(){$m('mnMsg').textContent='Link copied. Open it on the till or computer and install it.'},function(){$m('mnMsg').textContent=u});
+   else $m('mnMsg').textContent=u;
+  };
+  if(/[?&]monitor=1/.test(location.search)){
+   var wait=setInterval(function(){if(window.sb&&window.curUser){clearInterval(wait);startMonitor()}},400);
+   setTimeout(function(){clearInterval(wait);if(!$m('mnScreen')||$m('mnScreen').hidden)startMonitor()},6000);
+  }
+ });
+})();
+</script>
+<script>
+/* DEVICES: owner adds and revokes tills or computers; each device connects with a one-time code and records only its own transactions. */
+(function(){
+ function $d(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ var TOKEN_KEY='pelex_device_token', NAME_KEY='pelex_device_name';
+ function token(){try{return localStorage.getItem(TOKEN_KEY)||''}catch(e){return ''}}
+ function errT(e){return String((e&&(e.message||e.details))||'Something went wrong.').replace(/^.*?: /,'')}
+ async function sha(s){var b=new TextEncoder().encode(s);var h=await crypto.subtle.digest('SHA-256',b);return [...new Uint8Array(h)].map(function(x){return x.toString(16).padStart(2,'0')}).join('')}
+
+ /* ---- owner side: pairing codes and device list (inside the monitor card) ---- */
+ function ownerPanel(){
+  var msg=$d('mnMsg');if(!msg||$d('dvOwner'))return;
+  var box=document.createElement('div');box.id='dvOwner';box.style.marginTop='12px';
+  box.innerHTML='<div class="prow"><button class="btn" id="dvAdd" type="button">Add a device</button></div><div id="dvCode" class="muted dnote"></div><div class="ilist" id="dvList" style="margin-top:8px"></div>';
+  msg.parentNode.insertBefore(box,msg.nextSibling);
+  $d('dvAdd').onclick=async function(){
+   if(!(window.sb&&window.curUser&&wsId())){$d('dvCode').textContent='Sign in and choose a workspace first.';return}
+   var r=await sb.rpc('create_pairing_code',{p_workspace:wsId()});
+   if(r.error){$d('dvCode').textContent=errT(r.error);return}
+   $d('dvCode').innerHTML='Pairing code: <b style="font-size:20px;letter-spacing:.12em">'+esc(r.data)+'</b><br>Enter it on the device within 10 minutes. It works once.';
+   loadDevices();
+  };
+  loadDevices();
+ }
+ async function loadDevices(){
+  var list=$d('dvList');if(!list||!(window.sb&&window.curUser&&wsId()))return;
+  var r=await sb.from('devices').select('id,name,last_seen,revoked').eq('workspace_id',wsId()).order('created_at',{ascending:false});
+  if(r.error){list.innerHTML='<div class="muted dnote">Devices are not connected yet.</div>';return}
+  list.innerHTML=(r.data&&r.data.length)?'':'<div class="muted dnote">No devices yet.</div>';
+  (r.data||[]).forEach(function(v){
+   var row=document.createElement('div');row.className='irow';row.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:8px';
+   row.innerHTML='<span><b>'+esc(v.name)+'</b><br><small class="muted">'+(v.revoked?'Removed':'Last seen '+(v.last_seen?new Date(v.last_seen).toLocaleString():'never'))+'</small></span>';
+   if(!v.revoked){var b=document.createElement('button');b.type='button';b.className='btn alt';b.textContent='Remove';
+    b.onclick=async function(){if(!confirm('Remove '+v.name+'? It will stop recording.'))return;var rr=await sb.rpc('revoke_device',{p_device:v.id});if(rr.error)$d('dvCode').textContent=errT(rr.error);else loadDevices()};
+    row.appendChild(b)}
+   list.appendChild(row);
+  });
+ }
+
+ /* ---- device side: a screen with only the device's own status ---- */
+ var deviceScreen=null;
+ function showDevice(html){
+  if(!deviceScreen){deviceScreen=document.createElement('div');deviceScreen.id='dvScreen';deviceScreen.hidden=true;document.body.appendChild(deviceScreen)}
+  deviceScreen.innerHTML=html;deviceScreen.hidden=false;document.body.classList.add('mn-on');
+  return deviceScreen;
+ }
+ function pairingScreen(){
+  var s=showDevice('<div class="mn-top"><b>Connect this device</b></div>'+
+   '<div class="dv-card"><p class="dnote">Ask the owner for a pairing code from Business, then Monitor sales, then Add a device.</p>'+
+   '<input class="inp" id="dvCodeIn" placeholder="Pairing code" maxlength="12" autocomplete="off" style="width:100%;text-transform:uppercase">'+
+   '<input class="inp" id="dvNameIn" placeholder="Name this device (for example Till 1)" maxlength="60" style="width:100%;margin-top:8px">'+
+   '<div class="prow" style="margin-top:10px"><button class="btn" id="dvConnect" type="button">Connect this device</button></div><div class="muted dnote" id="dvMsg"></div></div>');
+  $d('dvConnect').onclick=async function(){
+   var code=$d('dvCodeIn').value.trim(),name=$d('dvNameIn').value.trim()||'Device';
+   if(!code){$d('dvMsg').textContent='Enter the pairing code.';return}
+   if(!window.sb){$d('dvMsg').textContent='Pelex is not reachable right now.';return}
+   var r=await sb.rpc('redeem_pairing_code',{p_code:code,p_name:name});
+   if(r.error){$d('dvMsg').textContent=errT(r.error);return}
+   try{localStorage.setItem(TOKEN_KEY,r.data.token);localStorage.setItem(NAME_KEY,name)}catch(e){}
+   deviceMode();
+  };
+ }
+ var dirHandle=null,ticking=null;
+ function idbOpen(){return new Promise(function(res,rej){var q=indexedDB.open('pelex-device',1);q.onupgradeneeded=function(){q.result.createObjectStore('kv')};q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})}
+ async function saveHandle(h){var db=await idbOpen();db.transaction('kv','readwrite').objectStore('kv').put(h,'folder')}
+ async function loadHandle(){var db=await idbOpen();return new Promise(function(res){var r=db.transaction('kv').objectStore('kv').get('folder');r.onsuccess=function(){res(r.result||null)};r.onerror=function(){res(null)}})}
+ function parseCsvRows(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return [];
+  var split=function(l){return l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.trim().replace(/^"|"$/g,'')})};
+  var h=split(lines[0]).map(function(x){return x.toLowerCase()});
+  var f=function(re){for(var i=0;i<h.length;i++)if(re.test(h[i]))return i;return -1};
+  var cd=f(/date/),ca=f(/amount|total|value|sum|price/),cc=f(/currency|curr/),cp=f(/customer|client|borrower|party|name|item|description/),ct=f(/type|category/),cu=f(/due/);
+  var out=[],seen={};
+  for(var i=1;i<lines.length;i++){var c=split(lines[i]);var dt=cd>=0?new Date(c[cd]):null,am=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
+   if(!dt||isNaN(dt)||isNaN(am))continue;
+   var row={date:dt.toISOString().slice(0,10),type:(ct>=0&&c[ct]?c[ct].toLowerCase():'sale'),amount:am,currency:cc>=0&&c[cc]?c[cc].toUpperCase().slice(0,3):'',party:cp>=0?c[cp]:'',due:cu>=0&&c[cu]&&!isNaN(new Date(c[cu]))?new Date(c[cu]).toISOString().slice(0,10):''};
+   var base=[row.date,row.type,row.party,row.amount,row.currency,row.due].join('|');
+   seen[base]=(seen[base]||0)+1;
+   row.key_base=base+'#'+seen[base];
+   out.push(row);
+  }
+  return out;
+ }
+ async function syncFolder(){
+  var st=$d('dvStatus');if(!dirHandle)return;
+  var perm=await dirHandle.queryPermission({mode:'read'});
+  if(perm!=='granted'){if(st)st.textContent='Click Resume reading folder to allow Pelex to read it again.';return}
+  var rows=[];
+  for await (var entry of dirHandle.values()){
+   if(entry.kind!=='file'||!/\.csv$/i.test(entry.name))continue;
+   var txt=await (await entry.getFile()).text();
+   parseCsvRows(txt).forEach(function(r){rows.push(r)});
+  }
+  var payload=[];
+  for(var i=0;i<rows.length;i++){var r=rows[i];payload.push({date:r.date,type:r.type,amount:r.amount,currency:r.currency,party:r.party,due:r.due,source_key:await sha(r.key_base)})}
+  var added=0,already=0;
+  for(var j=0;j<payload.length;j+=500){
+   var res=await sb.rpc('device_ingest',{p_token:token(),p_rows:payload.slice(j,j+500)});
+   if(res.error){if(st)st.textContent='Could not record: '+errT(res.error);return}
+   added+=res.data.new;already+=res.data.already_recorded;
+  }
+  if(st)st.textContent='Up to date. '+added+' new transaction(s) recorded, '+already+' already recorded. Checked '+new Date().toLocaleTimeString()+'.';
+ }
+ async function deviceMode(){
+  var name='';try{name=localStorage.getItem(NAME_KEY)||'Device'}catch(e){}
+  showDevice('<div class="mn-top"><b>'+esc(name)+'</b><span class="mn-small" id="dvWhen"></span></div>'+
+   '<div class="dv-card"><b>Recording sales from this device</b><p class="dnote" id="dvStatus">Starting\u2026</p>'+
+   '<div class="prow" style="justify-content:center"><button class="btn" id="dvResume" type="button">Resume reading folder</button><button class="btn alt" id="dvPick" type="button">Choose a different folder</button><button class="btn alt" id="dvLeave" type="button">Disconnect this device</button></div>'+
+   '<p class="mn-small">This device sends only its own transactions to your business. It cannot see your other data.</p></div>');
+  var saved=null;try{saved=await loadHandle()}catch(e){}
+  if(saved){dirHandle=saved;$d('dvStatus').textContent='Ready. Tap Resume reading folder.'}
+  else $d('dvStatus').textContent='Choose the folder your POS or till exports to.';
+  $d('dvPick').onclick=async function(){try{dirHandle=await window.showDirectoryPicker({mode:'read'});await saveHandle(dirHandle);syncFolder();keepUp()}catch(e){}};
+  $d('dvResume').onclick=async function(){if(!dirHandle){$d('dvPick').click();return}var p=await dirHandle.requestPermission({mode:'read'});if(p==='granted'){syncFolder();keepUp()}else $d('dvStatus').textContent='Permission was not given.'};
+  $d('dvLeave').onclick=function(){if(!confirm('Disconnect this device? It will stop recording until you connect it again.'))return;try{localStorage.removeItem(TOKEN_KEY)}catch(e){}deviceScreen.hidden=true;location.href=location.pathname};
+  if(dirHandle){var perm=await dirHandle.queryPermission({mode:'read'});if(perm==='granted'){syncFolder();keepUp()}}
+ }
+ function keepUp(){if(ticking)clearInterval(ticking);ticking=setInterval(syncFolder,60000)}
+
+ window.addEventListener('load',function(){
+  ownerPanel();
+  var pathOk=/[?&]monitor=1/.test(location.search);
+  if(!pathOk)return;
+  var waitFor=setInterval(function(){
+   if(!window.sb)return;clearInterval(waitFor);
+   if(token()){deviceMode()}
+   else if(!window.curUser){pairingScreen()}
+  },400);
+  setTimeout(function(){clearInterval(waitFor)},8000);
+ });
 })();
 </script>
 </body>
