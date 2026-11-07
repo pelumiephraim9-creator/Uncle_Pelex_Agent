@@ -2428,12 +2428,37 @@ function applyUser(u){
 var TURNSTILE_SITE_KEY='0x4AAAAAAF34zjfzJgj0akV9',capTok='',capId=null,capBusy=false;
 function capOn(){return TURNSTILE_SITE_KEY.indexOf('PASTE_')!==0}
 function capLoad(){
-  if(!capOn()||capId!==null||capBusy)return;capBusy=true;
-  var sc=document.createElement('script');sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.async=true;
-  sc.onload=function(){try{capId=turnstile.render('#authCaptcha',{sitekey:TURNSTILE_SITE_KEY,theme:'auto',callback:function(t){capTok=t},'expired-callback':function(){capTok=''},'error-callback':function(){capTok=''}})}catch(e){capBusy=false}};
-  sc.onerror=function(){capBusy=false};document.head.appendChild(sc)}
-function capOpts(o){o=o||{};if(capOn()&&capTok)o.captchaToken=capTok;return o}
-function capReset(){capTok='';try{if(capId!==null)turnstile.reset(capId)}catch(e){}}
+  if(!capOn()||capId!==null||capBusy)return;
+  capBusy=true;
+  // Reuse the shared Turnstile loader used by guest chat. Loading the API a
+  // second time can create duplicate widgets and invalid/empty auth tokens.
+  tsReady().then(function(){
+    if(capId!==null)return;
+    var box=document.getElementById('authCaptcha');
+    if(!box)throw new Error('The security check area is missing.');
+    capId=turnstile.render(box,{
+      sitekey:TURNSTILE_SITE_KEY,
+      theme:'auto',
+      appearance:'always',
+      callback:function(t){capTok=t},
+      'expired-callback':function(){capTok=''},
+      'error-callback':function(){capTok='';try{turnstile.reset(capId)}catch(e){}}
+    });
+  }).catch(function(e){
+    capBusy=false;
+    capTok='';
+    authMsg('The security check could not load. Refresh the page and try again.',true);
+  });
+}
+function capOpts(o){
+  o=o||{};
+  if(capOn()&&capTok)o.captchaToken=capTok;
+  return o;
+}
+function capReset(){
+  capTok='';
+  try{if(capId!==null&&window.turnstile)turnstile.reset(capId)}catch(e){}
+}
 (function(){var el=document.getElementById('authCaptcha');if(!el||!capOn())return;el.style.minHeight='65px';
   if('IntersectionObserver' in window){new IntersectionObserver(function(es){if(es.some(function(x){return x.isIntersecting}))capLoad()}).observe(el)}else capLoad()})();
 async function oauth(provider){
