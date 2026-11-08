@@ -1357,7 +1357,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
  <div id="payOut" class="ilist"></div><div class="muted dnote" id="payMsg"></div></div>
 <div class="dcard"><h2>Upload data</h2>
   <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. CSV, XLSX, PDF, PNG or JPG, up to 10 MB each. Pelex detects the type, and nothing is saved until you confirm it.</p>
-  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg" hidden><span id="upLabel">Tap to choose a file</span></label>
+  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xls,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.heic,.txt,.doc,.docx,.json,.md" hidden><span id="upLabel">Tap to choose a file</span></label>
   <div id="upReview" class="ilist" hidden></div>
   <div id="upCur" class="ilist" hidden></div>
   <div class="prow" id="upActs" hidden style="margin-top:10px"><button class="btn" id="upConfirm" type="button">Confirm and save</button><button class="btn alt" id="upCancel" type="button">Cancel</button></div>
@@ -1629,7 +1629,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="pane" id="p-look" hidden>
 <select id="themeSel" style="display:none"><option value="system">Match my device</option><option value="light">Light</option><option value="dark">Dark</option></select>
 </div>
-<div class="pane" id="p-privacy" hidden><div class="pp-body" style="margin-top:14px"><details class="ls-more"><summary><b>Privacy policy</b> (last updated 4 November 2026)</summary><div class="pp-sec"><section class="sec" id="who"><h2>1. Who we are</h2>
+<div class="pane" id="p-privacy" hidden><div class="pp-body" style="margin-top:14px"><div class="pp-part"><div class="pp-sec"><section class="sec" id="who"><h2>1. Who we are</h2>
 <p>Pelex is an AI assistant built by PelexSkillHub, based in Nigeria. This policy covers the Pelex website and app, the chat, voice and image features, the Business Agent, the Pitch Agent, the Gmail Bot, scheduled tasks, and meeting notes (together, "the Service"). It explains what we collect, why, and the choices you have.</p>
 <p>By using the Service you agree to this policy. If you do not agree, please do not use the Service.</p></section><section class="sec" id="collect"><h2>2. What we collect</h2>
 <ul>
@@ -1831,7 +1831,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <li><b>You can remove a device at any time.</b> Removing it stops it from recording. Records it has already added stay in your business until you delete them.</li>
 <li><b>Stored on the device.</b> The device keeps its connection in the browser on that device. Clearing the browser data or disconnecting the device removes it.</li>
 </ul></section><section class="sec" id="changes"><h2>19. Changes and contact</h2>
-<p>When we change this policy, we update the date at the top and, for important changes, tell you in the app. Questions or requests: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></details><details class="ls-more"><summary><b>Terms of service</b> (last updated 4 November 2026)</summary><div class="pp-sec"><section class="sec" id="accept"><h2>1. Agreement to these terms</h2>
+<p>When we change this policy, we update the date at the top and, for important changes, tell you in the app. Questions or requests: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></div><div class="pp-part"><div class="pp-sec"><section class="sec" id="accept"><h2>1. Agreement to these terms</h2>
 <p>These Terms of Service ("Terms") are a contract between you and PelexSkillHub, which builds and runs Pelex in Nigeria. By creating an account, or using the chat, voice, image, Business Agent, Pitch Agent, Gmail Bot, scheduled tasks, meeting notes or any other part of the Service, you agree to these Terms and to our Privacy Policy. If you do not agree, do not use the Service.</p>
 <p>You must be at least 13 years old to use the Service. If you are under 18, you need permission from a parent or guardian.</p></section><section class="sec" id="service"><h2>2. What the Service includes</h2>
 <ul>
@@ -1909,7 +1909,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <li><b>No warranty on device reading.</b> Pelex records what it finds in the files you approve. It does not check the completeness of your POS exports.</li>
 </ul></section><section class="sec" id="change"><h2>18. Changes to these Terms</h2>
 <p>We may update these Terms. We will change the date at the top and, for material changes, tell you in the app before they take effect. Continued use after a change means you accept it.</p></section><section class="sec" id="contact"><h2>19. Contact</h2>
-<p>Questions about these Terms: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></details></div>
+<p>Questions about these Terms: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></div></div>
 <div class="list">
 <div class="row"><span>Privacy policy</span><a class="btn alt" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
 <div class="row"><span>Terms of service</span><a class="btn alt" href="/terms.html" target="_blank" rel="noopener" style="text-decoration:none">Read</a></div>
@@ -2248,6 +2248,8 @@ async function sendTyped(){
   if(pendingImgs.length){await sendImage();return}
   var q=input.value.trim();
   if(!q&&!pendingDoc) return;
+  var gen=q.match(/^\/general(?:\s+([\s\S]*))?$/i);
+  if(gen){q=(gen[1]||'').trim();if(!q){input.value='';add('Type your message after /general, for example: /general what is a savings box loan?','sys');return}}
   input.value='';
   if(pendingDoc){
     var d=pendingDoc;clearAttach();
@@ -2337,11 +2339,15 @@ function showAttach(kind,data,name){
   var th=$('attachTh');th.innerHTML='';
   if(kind==='img'){
     pendingImgs.forEach(function(src,ix){
-      var w=document.createElement('div');w.className='th';
+      var w=document.createElement('div');w.className='th';w.style.position='relative';
       var im=document.createElement('img');im.src=src;im.alt='Attached image '+(ix+1);w.appendChild(im);
       var x=document.createElement('button');x.type='button';x.className='thx';x.setAttribute('aria-label','Remove image');x.textContent='\u00d7';
       x.onclick=function(){pendingImgs.splice(ix,1);if(pendingImgs.length)showAttach('img');else clearAttach()};
-      w.appendChild(x);th.appendChild(w)});
+      w.appendChild(x);
+      var mk=document.createElement('button');mk.type='button';mk.textContent='Mark up';mk.setAttribute('aria-label','Mark up image '+(ix+1));mk.style.cssText='position:absolute;left:2px;bottom:2px;font-size:10px;padding:2px 6px;border:0;border-radius:999px;background:#0b1b4a;color:#fff;cursor:pointer';
+      mk.onclick=function(){if(window.pxMarkUp)window.pxMarkUp(ix,pendingImgs[ix])};
+      w.appendChild(mk);th.appendChild(w)});
+    window.__pxShowAttach=function(){showAttach('img')};
     $('attachNm').textContent=pendingImgs.length+(pendingImgs.length===1?' image':' images')+' (up to 6)';attach.classList.add('multi');
   }else{var d=document.createElement('div');d.className='th';d.textContent='\ud83d\udcc4';th.appendChild(d);$('attachNm').textContent=name;attach.classList.remove('multi')}
   attach.hidden=false}
@@ -2350,9 +2356,17 @@ $('attachX').onclick=clearAttach;
 async function sendImage(){
   var datas=pendingImgs.slice(),typed=input.value.trim();
   var q=typed||(datas.length>1?'Describe these images and explain what matters in them.':'Describe this image and explain what matters in it.');
+  /* ANY command with a picture: the picture is edited to match the command (for example /billboard turns it into a billboard).
+     Commands that analyse a file keep the analysis path. */
+  var ANALYSE_CMDS=['data','analyze','analyse','csv','summarize','summary','tldr','translate','explain','define','wiki','read','review','debug','code','sql','regex','explainimage','describe','ocr','extract'];
+  var cmdM=typed.match(/^\/([a-zA-Z][a-zA-Z0-9_-]{0,30})(?:\s+([\s\S]*))?$/);
+  var cmdName=cmdM?cmdM[1].toLowerCase():'';
+  if(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0){
+    q='Apply the '+cmdName+' command to this image, producing the picture the command asks for.'+(cmdM[2]?' Details: '+cmdM[2].trim():'');
+  }
   input.value='';clearAttach();
   datas.forEach(function(d){thumb(d).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})})});
-  var intent=/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
+  var intent=(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)||/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
   add(q,'me',datas);var w=add('Looking at the image...','sys');
   try{await ensureChat(q)}catch(e){}
   saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
@@ -2427,7 +2441,7 @@ function applyUser(u){
   var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
   if(window.onUserChange)window.onUserChange(u);
 }
-var TURNSTILE_SITE_KEY='0x4AAAAAAFlUFOYC56wEPe5V',capTok='',capId=null,capBusy=false;
+var TURNSTILE_SITE_KEY='0x4AAAAAAF34zjfzJgj0akV9',capTok='',capId=null,capBusy=false;
 function capOn(){return TURNSTILE_SITE_KEY.indexOf('PASTE_')!==0}
 function capLoad(){
   if(!capOn()||capId!==null||capBusy)return;capBusy=true;
@@ -2910,9 +2924,7 @@ async function loadTasks(){
     var meta=document.createElement('div');meta.className='meta';
     meta.textContent=(AGL[t.agent||t.bot]||'General Agent')+' · '+when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
     c.appendChild(meta);
-    if(t.last_result){
-      var lr=document.createElement('div');lr.className='res';if(window.mdRender)lr.appendChild(window.mdRender(t.last_result.slice(0,6000)));else lr.textContent=t.last_result.slice(0,600);c.appendChild(lr);
-      }
+    if(t.last_result&&window.pxResultCard){window.pxResultCard(t,c)}
     var sl=schedStatusLine(t);if(sl){var ld=document.createElement('div');ld.className='meta';ld.textContent=sl;c.appendChild(ld)}
     var hr=(window.__runs||{})[t.id];if(hr&&hr.length){var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary');sm.textContent='History · '+hr.length+(hr.length===1?' run':' runs');dt.appendChild(sm);hr.slice(0,5).forEach(function(x){var rw=document.createElement('div');rw.textContent=new Date(x.started_at).toLocaleString([],{dateStyle:'short',timeStyle:'short'})+' · '+String(x.status).replace(/_/g,' ')+(x.error?' · '+x.error:'');dt.appendChild(rw)});c.appendChild(dt)}
     var a=document.createElement('div');a.className='acts';
@@ -4695,7 +4707,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  async function load(){
   var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
   var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id').eq('workspace_id',w).order('entry_date',{ascending:true}).limit(5000);
-  var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at').eq('workspace_id',w).order('created_at',{ascending:false}).limit(50);
+  var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at').eq('workspace_id',w).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
   if(e.error||u.error){$l('lsCount').textContent='Ledger is not connected yet. Run phase2_workspace.sql and phase3_ledger.sql in Supabase.';return}
   T=e.data||[];U=u.data||[];render();
  }
@@ -5827,6 +5839,121 @@ window.pxDuplicate=async function(hash){
   document.getElementById('lsDays').style.display='none';
   document.getElementById('lsDayBack').onclick=function(){v.innerHTML='';document.getElementById('lsDays').style.display=''};
  });
+})();
+</script>
+<script>
+/* COMMANDS: a message that starts with / is sent as a named command. The agent gets the command name and the rest of the text. */
+var PX_COMMANDS={
+ general:'Ask the General agent',
+ image:'Create or edit an image (attach a picture to edit it)',
+ doc:'Make a document',
+ qr:'Make a QR code',
+ search:'Search the web',
+ video:'Find videos',
+ help:'List the commands'
+};
+function pxParseCommand(q){
+ var m=String(q||'').trim().match(/^\/([a-zA-Z]+)\s*([\s\S]*)$/);
+ if(!m)return null;
+ return {name:m[1].toLowerCase(),rest:(m[2]||'').trim()};
+}
+function pxCommandHelp(){
+ return 'Commands:\n'+Object.keys(PX_COMMANDS).map(function(k){return '/'+k+' - '+PX_COMMANDS[k]}).join('\n');
+}
+</script>
+<script>
+/* IMAGE MARK-UP: draw on an attached picture before it is sent. The marked-up copy replaces the original. */
+(function(){
+ var overlay=null,cvs=null,ctx=null,base=null,strokes=[],cur=null,target=-1,color='#e11d48';
+ function build(){
+  overlay=document.createElement('div');
+  overlay.id='markOv';
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,10,25,.82);display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px;box-sizing:border-box';
+  overlay.innerHTML='<div style="background:#fff;border-radius:14px;padding:12px;max-width:100%;max-height:100%;display:flex;flex-direction:column;gap:8px;box-sizing:border-box">'+
+   '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><b style="margin-right:auto;color:#0b1b4a">Mark up the image</b>'+
+   '<button type="button" id="mkRed" style="border:2px solid #e11d48;background:#e11d48;color:#fff;border-radius:999px;padding:4px 10px">Red</button>'+
+   '<button type="button" id="mkBlue" style="border:2px solid #2563eb;background:#fff;color:#2563eb;border-radius:999px;padding:4px 10px">Blue</button>'+
+   '<button type="button" id="mkUndo" style="border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:4px 10px">Undo</button>'+
+   '<button type="button" id="mkClear" style="border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:4px 10px">Clear</button></div>'+
+   '<canvas id="mkCv" style="max-width:86vw;max-height:66vh;touch-action:none;border-radius:8px;cursor:crosshair"></canvas>'+
+   '<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" id="mkCancel" style="border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:8px 16px">Cancel</button>'+
+   '<button type="button" id="mkDone" style="border:0;background:#0b1b4a;color:#fff;border-radius:999px;padding:8px 18px">Done</button></div></div>';
+  document.body.appendChild(overlay);
+  cvs=document.getElementById('mkCv');ctx=cvs.getContext('2d');
+  cvs.addEventListener('pointerdown',function(e){cur={c:color,p:[pt(e)]};cvs.setPointerCapture(e.pointerId)});
+  cvs.addEventListener('pointermove',function(e){if(!cur)return;cur.p.push(pt(e));redraw()});
+  cvs.addEventListener('pointerup',function(){if(cur&&cur.p.length){strokes.push(cur)}cur=null;redraw()});
+  document.getElementById('mkRed').onclick=function(){color='#e11d48'};
+  document.getElementById('mkBlue').onclick=function(){color='#2563eb'};
+  document.getElementById('mkUndo').onclick=function(){strokes.pop();redraw()};
+  document.getElementById('mkClear').onclick=function(){strokes=[];redraw()};
+  document.getElementById('mkCancel').onclick=close;
+  document.getElementById('mkDone').onclick=done;
+ }
+ function pt(e){var r=cvs.getBoundingClientRect();return [(e.clientX-r.left)*cvs.width/r.width,(e.clientY-r.top)*cvs.height/r.height]}
+ function redraw(){
+  if(!ctx||!base)return;
+  ctx.clearRect(0,0,cvs.width,cvs.height);ctx.drawImage(base,0,0,cvs.width,cvs.height);
+  var all=strokes.concat(cur?[cur]:[]);
+  all.forEach(function(s){
+   ctx.strokeStyle=s.c;ctx.lineWidth=Math.max(4,cvs.width/160);ctx.lineCap='round';ctx.lineJoin='round';
+   ctx.beginPath();s.p.forEach(function(q,i){i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke();
+  });
+ }
+ function close(){if(overlay)overlay.style.display='none';document.body.style.overflow=''}
+ function done(){
+  if(target>=0&&base&&window.pendingImgs&&pendingImgs[target]!==undefined){
+   pendingImgs[target]=cvs.toDataURL('image/jpeg',0.92);
+   if(window.__pxShowAttach)window.__pxShowAttach();
+  }
+  close();
+ }
+ window.pxMarkUp=function(index,src){
+  if(!overlay)build();
+  target=index;strokes=[];cur=null;base=new Image();
+  base.onload=function(){
+   var max=1600,w=base.naturalWidth,h2=base.naturalHeight,k=Math.min(1,max/Math.max(w,h2));
+   cvs.width=Math.round(w*k);cvs.height=Math.round(h2*k);redraw();
+  };
+  base.src=src;
+  overlay.style.display='flex';document.body.style.overflow='hidden';
+ };
+})();
+</script>
+<script>
+/* SCHEDULE RESULTS: each result opens in its own side panel, titled with the task. It opens by itself when a new result arrives.
+   The Schedule list keeps only the schedules. */
+(function(){
+ var box=null;
+ function ensure(){
+  if(box)return box;
+  box=document.createElement('aside');box.id='resPanel';box.hidden=true;
+  box.style.cssText='position:fixed;top:0;right:0;height:100vh;width:min(480px,100vw);background:#fff;color:#0b1b4a;z-index:9000;box-shadow:-12px 0 32px rgba(11,27,74,.18);display:flex;flex-direction:column;border-left:1px solid #dfe4ee;box-sizing:border-box';
+  box.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #e6eaf2"><b id="resTitle" style="flex:1;font-size:16px;line-height:1.3"></b><button type="button" id="resClose" aria-label="Close" style="border:0;background:#eef2f9;border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer">\u00d7</button></div><div id="resBody" style="flex:1;overflow:auto;padding:16px;line-height:1.6;font-size:15px"></div>';
+  document.body.appendChild(box);
+  document.getElementById('resClose').onclick=function(){box.hidden=true};
+  if(window.matchMedia('(max-width: 720px)').matches){
+   box.style.top='auto';box.style.right='0';box.style.left='0';box.style.bottom='0';box.style.height='auto';box.style.maxHeight='88vh';box.style.width='100vw';box.style.borderLeft='0';box.style.borderTop='1px solid #dfe4ee';box.style.borderRadius='16px 16px 0 0';
+  }
+  return box;
+ }
+ function titleOf(t){var s=(t.title||'').trim();if(!s){s=String(t.instruction||'Scheduled result').replace(/\s+/g,' ').trim();if(s.length>64)s=s.slice(0,64)+'\u2026'}return s}
+ window.pxOpenResult=function(t){
+  var b=ensure();
+  document.getElementById('resTitle').textContent=titleOf(t);
+  var body=document.getElementById('resBody');body.innerHTML='';
+  if(window.mdRender)body.appendChild(window.mdRender(String(t.last_result||'').slice(0,18000)));else body.textContent=String(t.last_result||'');
+  b.hidden=false;
+ };
+ window.pxResultCard=function(t,container){
+  var key='pxSeenResult:'+t.id+':'+String(t.last_result||'').length;
+  var seen=false;try{seen=!!localStorage.getItem(key)}catch(e){}
+  var row=document.createElement('div');row.style.cssText='margin-top:8px';
+  var btn=document.createElement('button');btn.type='button';btn.className='btn alt';btn.textContent='Open result: '+titleOf(t);
+  btn.onclick=function(){window.pxOpenResult(t)};
+  row.appendChild(btn);container.appendChild(row);
+  if(!seen){try{localStorage.setItem(key,'1')}catch(e){};setTimeout(function(){window.pxOpenResult(t)},300)}
+ };
 })();
 </script>
 </body>
