@@ -19,10 +19,10 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pelex","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://pelex.tech/","publisher":{"@type":"Organization","name":"PelexSkillHub"}}
 </script>
-<link rel="manifest" href="/manifest.webmanifest">
+<link rel="manifest" href="/manifest.webmanifest?v=2">
 <meta name="theme-color" content="#0B2A5B">
-<link rel="icon" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon/icon-192.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-180.png?v=2">
 <meta name="color-scheme" content="light dark">
 <script>try{var _t=localStorage.getItem("pelex_theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2425,40 +2425,15 @@ function applyUser(u){
   var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
   if(window.onUserChange)window.onUserChange(u);
 }
-var TURNSTILE_SITE_KEY='0x4AAAAAAF34zjfzJgj0akV9',capTok='',capId=null,capBusy=false;
+var TURNSTILE_SITE_KEY='0x4AAAAAAFlUFOYC56wEPe5V',capTok='',capId=null,capBusy=false;
 function capOn(){return TURNSTILE_SITE_KEY.indexOf('PASTE_')!==0}
 function capLoad(){
-  if(!capOn()||capId!==null||capBusy)return;
-  capBusy=true;
-  // Reuse the shared Turnstile loader used by guest chat. Loading the API a
-  // second time can create duplicate widgets and invalid/empty auth tokens.
-  tsReady().then(function(){
-    if(capId!==null)return;
-    var box=document.getElementById('authCaptcha');
-    if(!box)throw new Error('The security check area is missing.');
-    capId=turnstile.render(box,{
-      sitekey:TURNSTILE_SITE_KEY,
-      theme:'auto',
-      appearance:'always',
-      callback:function(t){capTok=t},
-      'expired-callback':function(){capTok=''},
-      'error-callback':function(){capTok='';try{turnstile.reset(capId)}catch(e){}}
-    });
-  }).catch(function(e){
-    capBusy=false;
-    capTok='';
-    authMsg('The security check could not load. Refresh the page and try again.',true);
-  });
-}
-function capOpts(o){
-  o=o||{};
-  if(capOn()&&capTok)o.captchaToken=capTok;
-  return o;
-}
-function capReset(){
-  capTok='';
-  try{if(capId!==null&&window.turnstile)turnstile.reset(capId)}catch(e){}
-}
+  if(!capOn()||capId!==null||capBusy)return;capBusy=true;
+  var sc=document.createElement('script');sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.async=true;
+  sc.onload=function(){try{capId=turnstile.render('#authCaptcha',{sitekey:TURNSTILE_SITE_KEY,theme:'auto',callback:function(t){capTok=t},'expired-callback':function(){capTok=''},'error-callback':function(){capTok=''}})}catch(e){capBusy=false}};
+  sc.onerror=function(){capBusy=false};document.head.appendChild(sc)}
+function capOpts(o){o=o||{};if(capOn()&&capTok)o.captchaToken=capTok;return o}
+function capReset(){capTok='';try{if(capId!==null)turnstile.reset(capId)}catch(e){}}
 (function(){var el=document.getElementById('authCaptcha');if(!el||!capOn())return;el.style.minHeight='65px';
   if('IntersectionObserver' in window){new IntersectionObserver(function(es){if(es.some(function(x){return x.isIntersecting}))capLoad()}).observe(el)}else capLoad()})();
 async function oauth(provider){
@@ -4660,8 +4635,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(!rep||curs.indexOf(rep)<0)rep=curs[0]||null;
   sel.innerHTML=curs.map(function(c){return '<option'+(c===rep?' selected':'')+'>'+esc(c)+'</option>'}).join('')||'<option>No currency yet</option>';
   var fx=loadFx(),Tc=[],skipped={};
-  T.forEach(function(x){if(!x.currency)return;if(x.currency===rep){Tc.push(x);return}var r=Number(fx[x.currency]);if(r>0){Tc.push(Object.assign({},x,{amount:Number(x.amount)*r,currency:rep,converted:true}))}else{skipped[x.currency]=(skipped[x.currency]||0)+1}});
+  T.forEach(function(x){if(!x.currency)return;if(window.__lsHiddenFiles&&window.__lsHiddenFiles[x.upload_id])return;if(x.currency===rep){Tc.push(x);return}var r=Number(fx[x.currency]);if(r>0){Tc.push(Object.assign({},x,{amount:Number(x.amount)*r,currency:rep,converted:true}))}else{skipped[x.currency]=(skipped[x.currency]||0)+1}});
   if(window.__lsFile)Tc=Tc.filter(function(x){return x.upload_id===window.__lsFile});
+  if(window.__lsBuildDays)window.__lsBuildDays(Tc);
   var skippedN=Object.keys(skipped).reduce(function(s,k){return s+skipped[k]},0);
   $l('lsFxNote').textContent=skippedN?(skippedN+' row(s) in '+Object.keys(skipped).join(', ')+' have no exchange rate and are not counted. Enter the rate below.'):(Tc.some(function(x){return x.converted})?'Other currencies are converted at the rates you entered.':'');
   $l('lsFx').innerHTML=curs.filter(function(c){return c!==rep}).map(function(c){return '<div class="irow" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>1 '+esc(c)+' = </span><input type="number" min="0" step="any" data-fx="'+esc(c)+'" value="'+(fx[c]||'')+'" style="width:120px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit" aria-label="Rate for '+esc(c)+'"><span>'+esc(rep)+'</span></div>'}).join('')||'<div class="ls-empty">Only one currency in the ledger. No rates needed.</div>';
@@ -4705,7 +4681,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     return '<tr><td>'+esc(x.party||'Unnamed')+'</td><td>'+money(x.amount,rep)+'</td><td>'+esc(x.due_date||'-')+'</td><td>'+st+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No invoices up to this date.</div>';
   // data entry: each upload
   var cnt={};T.forEach(function(x){if(x.upload_id)cnt[x.upload_id]=(cnt[x.upload_id]||0)+1});
-  $l('lsUploads').innerHTML=U.length?'<table class="ls-table"><tr><th>File</th><th>Type</th><th>Rows</th><th>Status</th><th></th></tr>'+U.map(function(u){
+  var Uv=U.filter(function(u){return !(window.__lsHiddenFiles&&window.__lsHiddenFiles[u.id])});
+  $l('lsUploads').innerHTML=Uv.length?'<table class="ls-table"><tr><th>File</th><th>Type</th><th>Rows</th><th>Status</th><th></th></tr>'+Uv.map(function(u){
     var s=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';
     return '<tr data-file="'+u.id+'" style="cursor:pointer"><td>'+esc(u.file_name)+'</td><td>'+esc(u.detected_type||'-')+' <small class="muted">('+esc(u.confidence||'-')+')</small></td><td>'+(cnt[u.id]||0)+'</td><td>'+s+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</table><div class="muted dnote">Tap a file to see its own charts and totals.</div>':'<div class="ls-empty">No uploads yet.</div>';
   $l('lsCount').textContent=T.length+' ledger rows \u00b7 '+U.length+' uploads \u00b7 as of '+a;
@@ -4741,7 +4718,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
    '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="week">Weekly</option><option value="day">Daily (last 30 days)</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
    '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
-   '<div id="lsFileBar"></div><div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
+   '<div id="lsDays"></div><div id="lsDayView"></div><div id="lsFileBar"></div><div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
    '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
    '<div class="dnote" style="margin-top:12px"><b>Revenue, last 12 weeks</b></div><div id="lsRev"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div><div id="lsRevTable"></div></details>'+
@@ -5174,7 +5151,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   wrap.innerHTML=
    card('setupCard','Your business setup','<p class="muted dnote">Choose your type. Pelex then shows the tools for it. You enter your own rates and terms; Pelex only does the calculations.</p><div id="stBody"><div class="muted dnote">Sign in and create a workspace to set this up.</div></div><div class="muted dnote" id="stMsg"></div>')+
    card('agreeCard','Loan agreements','<div id="agBody"><div class="muted dnote">Set your terms above first, then create an agreement here.</div></div>')+
-   card('monitorCard','Monitor sales from a till or computer','<p class=\"muted dnote\">Install Pelex on the device that handles your sales, then open the monitor screen. It shows today\'s sales and keeps reading your export folder while it stays open.</p><div class=\"prow\" style=\"margin-top:8px\"><button class=\"btn\" id=\"mnOpen\" type=\"button\">Open monitor screen</button><button class=\"btn alt\" id=\"mnCopy\" type=\"button\">Copy monitor link</button></div><div class=\"muted dnote\" id=\"mnMsg\"></div><details class=\"ls-more\"><summary>How to install on each device</summary><div class=\"dnote\" style=\"line-height:1.7\"><b>Windows or Mac computer, or a till with Chrome or Edge:</b> open the monitor link, then click the install icon at the right of the address bar and choose Install.<br><b>Android POS terminal or tablet (Chrome):</b> open the monitor link, tap the menu (three dots), then Install app or Add to Home screen.<br><b>iPhone or iPad (Safari):</b> open the monitor link, tap Share, then Add to Home Screen.<br><b>Folder watching:</b> works in Chrome or Edge on a computer. Choose the folder your POS exports to, once per session.</div></details>')+
+   card('monitorCard','Monitor sales from a till or computer','<p class=\"muted dnote\">Install Pelex on the device that handles your sales, then open the monitor screen. It shows today\'s sales and keeps reading your export folder while it stays open.</p><div class=\"prow\" style=\"margin-top:8px\"><button class=\"btn\" id=\"mnOpen\" type=\"button\">Open monitor screen</button><button class=\"btn alt\" id=\"mnCopy\" type=\"button\">Copy monitor link</button><button class=\"btn alt\" id=\"mnPop\" type=\"button\">Pop out monitor window</button></div><div class=\"muted dnote\" id=\"mnMsg\"></div><details class=\"ls-more\"><summary>How to install on each device</summary><div class=\"dnote\" style=\"line-height:1.7\"><b>Windows or Mac computer, or a till with Chrome or Edge:</b> open the monitor link, then click the install icon at the right of the address bar and choose Install.<br><b>Android POS terminal or tablet (Chrome):</b> open the monitor link, tap the menu (three dots), then Install app or Add to Home screen.<br><b>iPhone or iPad (Safari):</b> open the monitor link, tap Share, then Add to Home Screen.<br><b>Folder watching:</b> works in Chrome or Edge on a computer. Choose the folder your POS exports to, once per session.</div></details>')+
    card('importCard','Import your data','<p class="muted dnote">Keep your worksheet as usual. Pelex reads it and adds each row to your ledger.</p><div id="imBody"></div><div class="muted dnote" id="imMsg"></div>');
   host.insertBefore(wrap,host.firstChild);
   loadAll();
@@ -5237,7 +5214,11 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     profile:profile,updated_at:new Date().toISOString()};
   var r=await sb.from('workspace_settings').upsert(row,{onConflict:'workspace_id'});
   $x('stMsg').textContent=r.error?('Not saved: '+errT(r.error)):'Saved. Pelex now uses these terms.';
-  if(!r.error){SETTINGS=Object.assign({},SETTINGS,row);renderSetup();renderAgreements();}
+  if(!r.error){
+   var fig=await sb.rpc('save_setup_figures',{p_workspace:ws(),p_capital_month:profile.startup_capital_month,p_capital_year:profile.startup_capital_year,p_spent:profile.spend_amount,p_spend_period:profile.spend_period||'month',p_loan:profile.loan_amount});
+   if(fig.error)$x('stMsg').textContent='Saved, but the figures did not reach the analysis: '+errT(fig.error);
+   SETTINGS=Object.assign({},SETTINGS,row);renderSetup();renderAgreements();if(window.__lsLoad)window.__lsLoad();
+  }
  }
 
  async function renderAgreements(){
@@ -5276,12 +5257,34 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(!(p>0)){$x('agMsg').textContent='Enter the amount borrowed.';return}
   if(isNaN(rate)||rate<0){$x('agMsg').textContent='Enter a rate of 0 or more.';return}
   if(!(term>0)){$x('agMsg').textContent='Enter a term of at least 1 cycle.';return}
-  var r=await sb.rpc('create_agreement',{p_workspace:ws(),p_party:v('agParty').trim(),p_principal:p,p_deposit:dep,p_deposit_treatment:v('agTreat'),p_rate:rate,p_rate_basis:v('agBasis'),p_method:v('agMethod'),p_cycle:v('agCycle'),p_term:term,p_start:v('agStart')});
+  var r=await sb.rpc('create_agreement',{p_workspace:ws(),p_party:v('agParty').trim(),p_principal:p,p_deposit:dep,p_deposit_treatment:v('agTreat'),p_rate:rate,p_rate_basis:v('agBasis'),p_method:v('agMethod'),p_cycle:v('agCycle'),p_term:term,p_start:v('agStart'),p_savings_model:(SETTINGS.profile&&SETTINGS.profile.savings_model)||'upfront_credited',p_savings_per_instalment:Number((SETTINGS.profile&&SETTINGS.profile.savings_per_instalment)||0)});
   if(r.error){$x('agMsg').textContent='Not created: '+errT(r.error);return}
   $x('agForm').hidden=true;renderAgreements();
  }
 
+ async function renderRelease(a){
+  var d=$x('agDetail'),t=0;
+  while(d&&d.innerHTML.indexOf('Loading schedule')>=0&&t<50){await new Promise(function(r){setTimeout(r,100)});t++}
+  if(!d)return;
+  var g=await sb.from('agreements').select('status,deposit,savings_model,party').eq('id',a.id).maybeSingle();
+  var ag=g.data;if(!ag||ag.savings_model!=='savings_box_completes'||!(Number(ag.deposit)>0))return;
+  var rel=await sb.from('ledger_entries').select('amount,entry_date').eq('workspace_id',ws()).eq('party','Savings released to complete loan: '+ag.party).maybeSingle();
+  var amt=money(ag.deposit,SETTINGS.currency);var html;
+  if(rel.data){html='<div class="an-card" style="margin-top:10px"><b>Savings box</b><div class="dnote">'+amt+' was released on '+esc(rel.data.entry_date)+' to complete this loan.</div></div>'}
+  else if(ag.status==='closed'){html='<div class="an-card" style="margin-top:10px"><b>Savings box</b><div class="dnote">'+amt+' is held for this loan. The loan is fully repaid.</div><div class="prow" style="margin-top:8px"><button class="btn" id="relSav" type="button">Release '+esc(amt)+' now</button></div><div class="dnote" id="relMsg"></div></div>'}
+  else {html='<div class="an-card" style="margin-top:10px"><b>Savings box</b><div class="dnote">'+amt+' is held. It is released when the loan is fully repaid.</div></div>'}
+  d.insertAdjacentHTML('beforeend',html);
+  var b=document.getElementById('relSav');
+  if(b)b.onclick=async function(){
+    b.disabled=true;
+    var r=await sb.rpc('release_savings',{p_agreement:a.id});
+    if(r.error){document.getElementById('relMsg').textContent='Not released: '+errT(r.error);b.disabled=false;return}
+    if(window.__lsLoad)window.__lsLoad();
+    showAgreement(a);
+  };
+ }
  async function showAgreement(a){
+  renderRelease(a);
   var d=$x('agDetail');d.innerHTML='<div class="muted dnote">Loading schedule\u2026</div>';
   var s=await sb.from('schedule_items').select('seq,due_date,principal_due,interest_due,amount_due,amount_paid,status').eq('agreement_id',a.id).order('seq');
   var items=s.data||[];
@@ -5308,20 +5311,60 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function markSeen(k){var s=seen();s[k]=1;try{localStorage.setItem(SEEN_KEY,JSON.stringify(s))}catch(e){}}
  function splitCsv(line){return line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.trim().replace(/^"|"$/g,'')})}
  function findCol(h,re){for(var i=0;i<h.length;i++)if(re.test(h[i]))return i;return -1}
- function parseSheet(text){
+ function pxDate(s){
+  s=String(s==null?'':s).trim();
+  var m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(m){var d=new Date(Date.UTC(+m[3],+m[2]-1,+m[1]));return isNaN(d)?null:d}
+  var t=new Date(s);return isNaN(t)?null:t;
+}
+/* TEMPLATES: one generalized layout per business type. Each money column says what it means. */
+var TEMPLATES={
+ finance:{name:'Micro-lending ledger',date:/date/,party:/customer|borrower|client|name/,cols:[
+   {re:/amount paid/,type:'receipt',tag:''},
+   {re:/interest/,type:'receipt',tag:'Interest: '},
+   {re:/savings/,type:'other',tag:'Savings: '}]},
+ trade:{name:'Retail and supermarket sales',date:/date/,party:/item|product|description|customer/,cols:[
+   {re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ transport:{name:'Transport income and costs',date:/date/,party:/trip|route|vehicle|description/,cols:[
+   {re:/income|fare|revenue|earn/,type:'receipt',tag:''},
+   {re:/fuel|maintenance|repair|toll|expense/,type:'expense',tag:''}]}
+};
+function parseSheet(text){
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0};
-  var h=splitCsv(lines[0]).map(function(x){return x.toLowerCase()});
-  var cd=findCol(h,/date/),ca=findCol(h,/amount|total|value|sum|price/),cc=findCol(h,/currency|curr/),cp=findCol(h,/customer|client|borrower|party|name|item|description/),ct=findCol(h,/type|category/),cu=findCol(h,/due/);
-  var rows=[],skipped=0,defCur=(SETTINGS&&SETTINGS.currency)||'NGN';
-  for(var i=1;i<lines.length;i++){
-   var c=splitCsv(lines[i]);var dt=cd>=0?new Date(c[cd]):null,am=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
-   if(!dt||isNaN(dt)||isNaN(am)){skipped++;continue}
-   var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';
-   var due=cu>=0&&c[cu]&&!isNaN(new Date(c[cu]))?new Date(c[cu]).toISOString().slice(0,10):null;
-   rows.push({date:dt.toISOString().slice(0,10),type:tv,amount:am,currency:(cc>=0&&c[cc]?c[cc]:defCur).toUpperCase().slice(0,3),party:cp>=0?c[cp]:null,due:due});
+  var h=splitCsv(lines[0]).map(function(x){return x.toLowerCase().trim()});
+  var defCur=(SETTINGS&&SETTINGS.currency)||'NGN';
+  var code=(SETTINGS&&SETTINGS.business_type)||'';
+  var tpl=TEMPLATES[code];
+  var cd=findCol(h,/date/);
+  if(tpl){
+   var cp=findCol(h,tpl.party);
+   var cc=findCol(h,/currency|curr/);
+   var colMap=tpl.cols.map(function(c){return {idx:findCol(h,c.re),type:c.type,tag:c.tag}}).filter(function(c){return c.idx>=0});
+   if(!colMap.length)return {rows:[],skipped:lines.length-1,error:'These columns were not found for the '+tpl.name+' template. Check the header row.'};
+   var rows=[],skipped=0;
+   for(var i=1;i<lines.length;i++){
+    var c=splitCsv(lines[i]);var dt=cd>=0?pxDate(c[cd]):null;
+    if(!dt){skipped++;continue}
+    var party=cp>=0?(c[cp]||'').trim():'';
+    colMap.forEach(function(m){
+     var am=parseFloat(String(c[m.idx]||'').replace(/[^0-9.\-]/g,''));
+     if(isNaN(am)||am===0)return;
+     rows.push({date:dt.toISOString().slice(0,10),type:m.type,amount:Math.abs(am),currency:(cc>=0&&c[cc]?c[cc]:defCur).toUpperCase().slice(0,3),party:(m.tag+(party||tpl.name)),due:null});
+    });
+   }
+   return {rows:rows,skipped:skipped,template:tpl.name};
   }
-  return {rows:rows,skipped:skipped};
- }
+  var ca=findCol(h,/amount|total|value|sum|price/),cc2=findCol(h,/currency|curr/),cp2=findCol(h,/customer|client|borrower|party|name|item|description/),ct=findCol(h,/type|category/),cu=findCol(h,/due/);
+  var rows2=[],skipped2=0;
+  for(var j=1;j<lines.length;j++){
+   var c2=splitCsv(lines[j]);var dt2=cd>=0?pxDate(c2[cd]):null,am2=ca>=0?parseFloat(String(c2[ca]).replace(/[^0-9.\-]/g,'')):NaN;
+   if(!dt2||isNaN(am2)){skipped2++;continue}
+   var tv=ct>=0&&c2[ct]?c2[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';
+   var due2=cu>=0&&c2[cu]&&pxDate(c2[cu])?pxDate(c2[cu]).toISOString().slice(0,10):null;
+   rows2.push({date:dt2.toISOString().slice(0,10),type:tv,amount:am2,currency:(cc2>=0&&c2[cc2]?c2[cc2]:defCur).toUpperCase().slice(0,3),party:cp2>=0?c2[cp2]:null,due:due2});
+  }
+  return {rows:rows2,skipped:skipped2};
+}
  async function saveRows(name,text,size){
   var p=parseSheet(text);if(!p.rows.length)return {ok:false,msg:name+': no readable rows.'};
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
@@ -5621,10 +5664,12 @@ window.pxDuplicate=async function(hash){
    e.stopPropagation();
    if(!confirm('Delete this file? It leaves your dashboard now. It stays in Deleted files for one year, where you can restore it. After one year it is removed.'))return;
    var id=del.getAttribute('data-del');
+   window.__lsHiddenFiles=window.__lsHiddenFiles||{};window.__lsHiddenFiles[id]=true;
+   if(window.__lsFile===id){window.__lsFile=null;window.__lsFileName=''}
+   window.__lsRender();bar();
    window.sb.rpc('delete_upload',{p_upload:id}).then(function(r){
-    if(r.error){alert('Could not delete: '+String(r.error.message||'please try again').replace(/^.*?: /,''));return}
-    if(window.__lsFile===id){window.__lsFile=null;window.__lsFileName=''}
-    window.__lsLoad();bar();
+    if(r.error){delete window.__lsHiddenFiles[id];window.__lsRender();alert('Could not delete: '+String(r.error.message||'please try again').replace(/^.*?: /,''));return}
+    window.__lsLoad();
    });
    return;
   }
@@ -5666,8 +5711,11 @@ window.pxDuplicate=async function(hash){
  document.addEventListener('click',async function(e){
   var rb=e.target.closest&&e.target.closest('[data-restore]');
   if(!rb)return;
-  var r=await sb.rpc('restore_upload',{p_upload:rb.getAttribute('data-restore')});
-  if(r.error){alert('Could not restore: '+String(r.error.message||'please try again').replace(/^.*?: /,''));return}
+  var rid=rb.getAttribute('data-restore');
+  var row=rb.closest('.irow');if(row)row.style.opacity='0.4';
+  var r=await sb.rpc('restore_upload',{p_upload:rid});
+  if(r.error){if(row)row.style.opacity='1';alert('Could not restore: '+String(r.error.message||'please try again').replace(/^.*?: /,''));return}
+  if(window.__lsHiddenFiles)delete window.__lsHiddenFiles[rid];
   if(window.__lsLoad)window.__lsLoad();
   refreshDeleted();
  });
@@ -5681,6 +5729,102 @@ window.pxDuplicate=async function(hash){
  setTimeout(function(){clearInterval(_t)},120000);
  var _del=document.addEventListener;
  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-del]'))setTimeout(refreshDeleted,1200)});
+})();
+</script>
+<script>
+/* POP-OUT MONITOR: a small always-on-top window (Chrome and Edge on Windows and Mac). Shows today's total and recording status. */
+(function(){
+ function $p(i){return document.getElementById(i)}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ var pipWin=null,pipTimer=null;
+ function supported(){return 'documentPictureInPicture' in window}
+ function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function today(){return new Date().toLocaleDateString('sv-SE')}
+ async function totals(){
+  if(!(window.sb&&window.curUser&&wsId()))return {text:'Sign in to see today',count:0};
+  var s=await sb.from('workspace_settings').select('currency').eq('workspace_id',wsId()).maybeSingle();
+  var cur=(s.data&&s.data.currency)||'NGN';
+  var r=await sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',wsId()).eq('entry_date',today());
+  if(r.error)return {text:'Could not load',count:0};
+  var rows=(r.data||[]).filter(function(x){return ['sale','receipt','invoice','payment'].indexOf(x.entry_type)>=0&&x.currency===cur});
+  var t=rows.reduce(function(a,x){return a+Number(x.amount)},0);
+  return {text:cur+' '+t.toLocaleString(undefined,{maximumFractionDigits:0}),count:rows.length};
+ }
+ async function paint(){
+  if(!pipWin)return;
+  var d=pipWin.document,box=d.getElementById('pxBox');if(!box)return;
+  var t=await totals();
+  box.innerHTML='<div class="pxh"><b>Pelex monitor</b><span>'+new Date().toLocaleTimeString()+'</span></div>'+
+   '<div class="pxt">'+esc(t.text)+'</div><div class="pxs">'+t.count+' entries today</div>'+
+   '<div class="pxs">Recording while the Pelex page is open on this computer.</div>';
+ }
+ async function openPip(){
+  if(!supported()){alert('Pop-out works in Chrome or Edge on a computer.');return}
+  if(pipWin){pipWin.focus();return}
+  pipWin=await documentPictureInPicture.requestWindow({width:300,height:200});
+  var st=pipWin.document.createElement('style');
+  st.textContent='body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:#0b1b4a}#pxBox{padding:12px;height:100%;box-sizing:border-box}.pxh{display:flex;justify-content:space-between;align-items:center;font-size:13px}.pxh span{color:#5d6980;font-size:11px}.pxt{font-size:26px;font-weight:800;margin:10px 0 4px;letter-spacing:-.02em}.pxs{font-size:12px;color:#5d6980;margin-top:4px}';
+  pipWin.document.head.appendChild(st);
+  var box=pipWin.document.createElement('div');box.id='pxBox';pipWin.document.body.appendChild(box);
+  pipWin.addEventListener('pagehide',function(){pipWin=null;if(pipTimer)clearInterval(pipTimer);pipTimer=null});
+  paint();pipTimer=setInterval(paint,60000);
+ }
+ function showButton(tries){
+  var b=$p('mnPop');
+  if(!b){if((tries||0)<60)setTimeout(function(){showButton((tries||0)+1)},500);return}
+  if(b.dataset.ready)return;
+  b.dataset.ready='1';
+  if(!supported()){b.disabled=true;b.textContent='Pop-out: Chrome or Edge on a computer';return}
+  if(!window.__pxClickWired){window.__pxClickWired=1;document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('#mnPop');if(t&&!t.disabled)openPip()})}
+ }
+ window.addEventListener('load',function(){
+  showButton(0);
+ });
+ var _go=window.go;
+ if(typeof _go==='function'){window.go=function(v,t){_go(v,t);if(v==='business')setTimeout(showButton,300)}}
+})();
+</script>
+<script>
+/* DAILY FOLDERS: every day is one folder with its totals; tap a folder to see that day's transactions. */
+(function(){
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+ var INCOME=['sale','receipt','invoice','payment'];
+ var EXPENSE=['expense','purchase','cost'];
+ function money(n,cur){return (cur||'')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}
+ window.__lsBuildDays=function(rows){
+  var box=document.getElementById('lsDays');if(!box)return;
+  var byDay={};
+  (rows||[]).forEach(function(x){
+   var d=x.entry_date||'no date';
+   if(!byDay[d])byDay[d]={date:d,count:0,income:0,expense:0,items:[],cur:x.currency};
+   byDay[d].count++;
+   var a=Number(x.amount)||0;
+   if(INCOME.indexOf(x.entry_type)>=0)byDay[d].income+=a;
+   else if(EXPENSE.indexOf(x.entry_type)>=0)byDay[d].expense+=a;
+   byDay[d].items.push(x);
+  });
+  var days=Object.keys(byDay).sort().reverse();
+  if(!days.length){box.innerHTML='';return}
+  box.innerHTML='<div class="dnote" style="margin:10px 0 6px"><b>Daily folders</b> <span class="muted">one folder per day, tap to open</span></div>'+
+   days.map(function(d){var f=byDay[d];
+    return '<div class="irow" data-day="'+esc(d)+'" style="cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center">'+
+     '<span><b>'+esc(d)+'</b><br><small class="muted">'+f.count+' transactions</small></span>'+
+     '<span style="text-align:right"><small>In: '+esc(money(f.income,f.cur))+'</small><br><small>Out: '+esc(money(f.expense,f.cur))+'</small></span></div>';
+   }).join('');
+  window.__lsDayRows=byDay;
+ };
+ document.addEventListener('click',function(e){
+  var f=e.target.closest&&e.target.closest('[data-day]');
+  if(!f)return;
+  var v=document.getElementById('lsDayView');if(!v||!window.__lsDayRows)return;
+  var day=window.__lsDayRows[f.getAttribute('data-day')];if(!day)return;
+  v.innerHTML='<div class="an-card" style="margin:10px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>'+esc(day.date)+' · '+day.count+' transactions</b><button type="button" class="btn alt" id="lsDayBack" style="padding:4px 8px;font-size:12px">Back to folders</button></div>'+
+   '<table class="ls-table" style="margin-top:8px"><tr><th>Party</th><th>Type</th><th>Amount</th></tr>'+
+   day.items.map(function(x){return '<tr><td>'+esc(x.party||'-')+'</td><td>'+esc(x.entry_type)+'</td><td>'+esc(money(x.amount,x.currency))+'</td></tr>'}).join('')+
+   '</table></div>';
+  document.getElementById('lsDays').style.display='none';
+  document.getElementById('lsDayBack').onclick=function(){v.innerHTML='';document.getElementById('lsDays').style.display=''};
+ });
 })();
 </script>
 </body>
