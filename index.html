@@ -1181,6 +1181,14 @@ main{min-height:0;height:100%;overflow:hidden}
 .dv-card{width:min(440px,100%);border:1px solid var(--line);border-radius:18px;padding:18px;background:linear-gradient(150deg,var(--panel),var(--soft));text-align:left}
 /* PDF OF A FILE */
 @media print{body.pdf-file *{visibility:hidden !important}body.pdf-file #lsWrap,body.pdf-file #lsWrap *{visibility:visible !important}body.pdf-file #lsWrap{position:absolute;left:0;top:0;width:100%}body.pdf-file .no-print{display:none !important}body.pdf-file #lsWrap details{display:block}body.pdf-file #lsWrap details > *{display:block}}
+/* SENT PICTURE: the picture stands on its own; the text sits in its own dark pill */
+.msg.me.imgme{background:none!important;box-shadow:none!important;border:0!important;padding:0!important;max-width:78%!important}
+.msg.me.imgme .imgs{display:flex;flex-direction:column;gap:8px}
+.msg.me.imgme img{display:block;width:100%;height:auto;max-height:520px;object-fit:cover;border-radius:24px;margin:0 0 10px;box-shadow:0 10px 24px -16px rgba(11,27,74,.55)}
+.msg.me.imgme>img:first-child{margin-bottom:10px}
+.msg.me.imgme .me-pill{display:block;background:linear-gradient(150deg,#142b52,#24457f);color:#fff;border-radius:22px;padding:14px 18px;box-shadow:0 14px 26px -18px rgba(11,27,74,.7);margin:0}
+.msg.me.imgme .msgactions{justify-content:flex-end;margin-top:8px}
+.msg.me.imgme .msgactions button{background:#203b65!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important}
 </style>
 </head>
 <body>
@@ -1975,6 +1983,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   }else{if(!cls&&window.mdRender)textNode.appendChild(window.mdRender(t));else textNode.textContent=t}
   if(!cls&&window.__lastSteps&&window.__lastSteps.length&&!window.__stepsDone){window.__stepsDone=true;var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary'),sn=window.__lastSteps.length;sm.textContent='Activity \u00b7 '+sn+(sn===1?' step':' steps');dt.appendChild(sm);window.__lastSteps.forEach(function(x){var r=document.createElement('div');r.textContent='\u2713 '+x;dt.appendChild(r)});d.appendChild(dt)}
   d.appendChild(textNode);
+  if(cls==='me'&&img){d.classList.add('imgme');textNode.classList.add('me-pill')}
   if(!cls&&typeof t==='string'){
     var dlRe=/\[Download ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,pvRe=/\[Preview ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,mF,files=[];
     while((mF=dlRe.exec(t))!==null)files.push({name:mF[1],downloadUrl:mF[2],previewUrl:null});
