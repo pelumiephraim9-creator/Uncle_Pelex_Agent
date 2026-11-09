@@ -3860,25 +3860,25 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
   window.mdRender=function(src){
     var root=document.createElement('div');root.className='md';
     var lines=String(src==null?'':src).replace(/\r/g,'').replace(/[\u200B-\u200D\uFEFF]/g,'').split('\n').map(function(line){
-      // Remove stray model-emitted formatting glyphs at the start of headings/labels.
-      line=line.replace(/^\s*[#*]{1,4}\s*(?=[A-Za-z0-9])/,'');
-      line=line.replace(/^\s*[\u0600-\u06FF]{1,3}[#*]{1,4}\s*(?=[A-Za-z0-9])/,'');
-      line=line.replace(/^\s*[\u4E00-\u9FFF\uAC00-\uD7AF]{1,3}#{1,4}\s*(?=[A-Za-z0-9])/,'');
-      // Repair malformed emphasis such as *Caption:** and remove unmatched stars.
-      line=line.replace(/^\s*\*{1,3}([A-Za-z][A-Za-z ]{0,24}):\*{1,3}\s*/,'$1: ');
-      line=line.replace(/\*{1,3}(?=\s|$)/g,'');
+      // Normalize malformed Markdown without exposing formatting markers.
+      line=line.replace(/^\\s*[#*]{1,4}\\s*(?=[#*])/,'');
+      line=line.replace(/^\\s*\\*{1,3}([A-Za-z][A-Za-z /&-]{0,28}):\\*{1,3}\\s*/,'$1: ');
+      line=line.replace(/^\\s*([A-Za-z][A-Za-z /&-]{0,28}):\\*{1,3}\\s*/,'$1: ');
+      line=line.replace(/^\\s*(Content|Caption|Voiceover|Hashtags|Platform|Format)\\.\\*+\\s*/i,'$1: ');
+      line=line.replace(/\\*{1,3}(?=\\s|$)/g,'');
+      line=line.replace(/\\s+\\*{1,3}\\s*$/g,'');
       return line;
     }),i=0;
     function inl(p,s){
-      var re=/!\[([^\]]*)\]\((https:\/\/[^\s)]+)\)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\*\*([^*\n]+)\*\*|`([^`\n]+)`|(https?:\/\/[^\s<)\]]+)/g,last=0,m;
+      var re=/!\\[([^\\]]*)\\]\\((https:\\/\\/[^\\s)]+)\\)|\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)|\\*\\*([^*\\n]+)\\*\\*|\\*([^*\\n]+)\\*|`([^`\\n]+)`|(https?:\\/\\/[^\\s<)\\]]+)/g,last=0,m;
       function link(h,t){var a=document.createElement('a');a.href=h;a.textContent=t;a.target='_blank';a.rel='noopener noreferrer nofollow';return a}
       while((m=re.exec(s))){
         if(m.index>last)p.appendChild(document.createTextNode(s.slice(last,m.index)));
         if(m[2]){var im=document.createElement('img');im.src=m[2];im.alt=m[1]||'Image';im.loading='lazy';im.referrerPolicy='no-referrer';im.onerror=function(){this.style.display='none'};p.appendChild(im)}
         else if(m[4])p.appendChild(link(m[4],m[3]));
-        else if(m[5]){var b=document.createElement('strong');b.textContent=m[5];p.appendChild(b)}
-        else if(m[6]){var c=document.createElement('code');c.textContent=m[6];p.appendChild(c)}
-        else if(m[7]){var u=m[7],tail='';while(/[.,;:!?]$/.test(u)){tail=u.slice(-1)+tail;u=u.slice(0,-1)}p.appendChild(link(u,u));if(tail)p.appendChild(document.createTextNode(tail))}
+        else if(m[5]||m[6]){var b=document.createElement('strong');b.textContent=m[5]||m[6];p.appendChild(b)}
+        else if(m[7]){var c=document.createElement('code');c.textContent=m[7];p.appendChild(c)}
+        else if(m[8]){var u=m[8],tail='';while(/[.,;:!?]$/.test(u)){tail=u.slice(-1)+tail;u=u.slice(0,-1)}p.appendChild(link(u,u));if(tail)p.appendChild(document.createTextNode(tail))}
         last=re.lastIndex}
       if(last<s.length)p.appendChild(document.createTextNode(s.slice(last)))}
     function tbl(rows){var t=document.createElement('table'),n=Math.max.apply(null,rows.map(function(r){return r.length}));
