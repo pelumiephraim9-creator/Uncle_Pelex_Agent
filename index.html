@@ -2876,12 +2876,38 @@ async function loadRecents(){
 async function openChat(id){
   if(!dbOk())return;
   go('chat');
+  var c=(chatsCache||[]).filter(function(x){return String(x.id)===String(id)})[0];
   var r=await sb.from('messages').select('role,content').eq('chat_id',id).order('created_at',{ascending:true}).limit(500);
-  if(r.error)return;
-  var c=chatsCache.filter(function(x){return x.id===id})[0];
+  if(r.error){
+    console.warn('Pelex: chat messages could not be opened',r.error);
+    chatFail('messages for this chat could not be opened',r.error);
+    return;
+  }
+  var messages=Array.isArray(r.data)?r.data:[];
+  // Recovery path for scheduled-result chats: if the chat row exists but its
+  // messages were not visible/saved, load the completed result from its task row.
+  if(!messages.length){
+    var marker='<!--pelex-scheduled-chat:'+String(id)+'-->';
+    var task=await sb.from('scheduled_tasks')
+      .select('instruction,last_result')
+      .ilike('last_result','%'+marker+'%')
+      .order('delivered_at',{ascending:false})
+      .limit(1);
+    if(!task.error&&task.data&&task.data[0]){
+      var saved=String(task.data[0].last_result||'').replace(/\\n?\\n?<!--pelex-scheduled-chat:[0-9a-f-]{20,}-->/ig,'').trim();
+      messages=[
+        {role:'user',content:'Scheduled task: '+String(task.data[0].instruction||'').slice(0,6000)},
+        {role:'assistant',content:saved}
+      ];
+    }
+  }
+  if(!messages.length){
+    chatFail('this chat has no saved messages yet',{message:'No messages were returned for chat '+id+'. The scheduled result may still be processing.'});
+    return;
+  }
   curChatId=id;curProjectId=c?c.project_id:null;pendingDoc=null;
   resetChatView();
-  (r.data||[]).forEach(function(m){if(m.role==='user')add(m.content,'me');else add(m.content)});
+  messages.forEach(function(m){if(m.role==='user')add(m.content,'me');else add(m.content)});
   chat.scrollTop=chat.scrollHeight;loadRecents();
 }
 async function delChat(id){
