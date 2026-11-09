@@ -3029,11 +3029,13 @@ async function loadTasks(){
   var r=await sb.from('scheduled_tasks').select('*').order('created_at',{ascending:false});
   if(r.error)return;
   var list=(r.data||[]).filter(function(t){
-    // Remove completed one-time items only; paused or failed tasks remain visible.
+    // Hide completed tasks of any frequency. A recurring task remains visible
+    // between runs while it is still scheduled; only a terminal status removes it.
     var oneTime=String(t.frequency||'').trim().toLowerCase()==='once';
     var taskStatus=String(t.status||'').trim().toLowerCase();
-    var completed=!!t.delivered_at || ['closed','complete','completed','done'].indexOf(taskStatus)>=0;
-    return !(oneTime && completed);
+    var terminal=['closed','complete','completed','done'].indexOf(taskStatus)>=0;
+    var deliveredOnce=oneTime && !!t.delivered_at;
+    return !(terminal || deliveredOnce);
   });box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
   try{var rr=await sb.from('scheduled_task_runs').select('task_id,status,started_at,error').order('started_at',{ascending:false}).limit(120);window.__runs={};((rr&&rr.data)||[]).forEach(function(x){(window.__runs[x.task_id]=window.__runs[x.task_id]||[]).push(x)})}catch(e){window.__runs={}}
   list.forEach(function(t){
