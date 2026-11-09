@@ -1996,7 +1996,11 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   var textNode=document.createElement('span');
   // File action URLs are consumed below to build the in-app preview/download card.
   // Keep those backend URLs out of the visible chat message.
-  var displayT=(!cls&&typeof t==='string')?t.replace(/\[Download [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\[Preview [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\n{3,}/g,'\n\n').trim():t;
+  var displayT=(!cls&&typeof t==='string')?t
+    .replace(/\\[(?:Download|Preview)\\s+([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)/gi,'')
+    .replace(/https?:\\/\\/[^\\s<>)]+(?:pelexn8n\\.onrender\\.com|pelexNA10\\.runrender\\.com)[^\\s<>) ]*/gi,'')
+    .replace(/\\b(?:Download|Preview)\\s+(?:PDF|file)\\s*:?\\s*/gi,'')
+    .replace(/\\n[ \\t]*\\n[ \\t]*\\n+/g,'\\n\\n').trim():t;
   if(!cls&&displayT.indexOf('```')>-1){
     displayT.split('```').forEach(function(seg,k){
       if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';var sg=seg.replace(/^\n+|\n+$/g,'');if(window.mdRender)tp.appendChild(window.mdRender(sg));else tp.textContent=sg;textNode.appendChild(tp)}}
@@ -2018,9 +2022,12 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   d.appendChild(textNode);
   if(cls==='me'&&img){d.classList.add('imgme');textNode.classList.add('me-pill')}
   if(!cls&&typeof t==='string'){
-    var dlRe=/\[Download ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,pvRe=/\[Preview ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,mF,files=[];
-    while((mF=dlRe.exec(t))!==null)files.push({name:mF[1],downloadUrl:mF[2],previewUrl:null});
-    while((mF=pvRe.exec(t))!==null){var fnd=files.filter(function(f){return f.name===mF[1]})[0];if(fnd)fnd.previewUrl=mF[2];else files.push({name:mF[1],previewUrl:mF[2],downloadUrl:mF[2]})}
+    var dlRe=/\[Download ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,pvRe=/\[Preview ([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,mF,files=[],seenFiles={};
+    while((mF=dlRe.exec(t))!==null){var key=mF[1].trim().toLowerCase();if(!seenFiles[key]){seenFiles[key]={name:mF[1].trim(),downloadUrl:mF[2],previewUrl:null};files.push(seenFiles[key])}else if(!seenFiles[key].downloadUrl)seenFiles[key].downloadUrl=mF[2]}
+    while((mF=pvRe.exec(t))!==null){var key=mF[1].trim().toLowerCase(),fnd=seenFiles[key];if(fnd){if(!fnd.previewUrl)fnd.previewUrl=mF[2]}else{fnd={name:mF[1].trim(),previewUrl:mF[2],downloadUrl:mF[2]};seenFiles[key]=fnd;files.push(fnd)}}
+    // Also recognize plain backend download URLs returned by older model responses.
+    var rawUrlRe=/https?:\/\/[^\s<>)]+\/media\/download\?[^\s<>)]+/gi;
+    while((mF=rawUrlRe.exec(t))!==null){try{var u=new URL(mF[0]),nm=u.searchParams.get('name')||'Generated file',key=nm.toLowerCase();if(!seenFiles[key]){seenFiles[key]={name:nm,downloadUrl:mF[0],previewUrl:mF[0]+'&view=1'};files.push(seenFiles[key])}}catch(e){}}
     files.forEach(function(file){
       var card=document.createElement('div');card.className='file-card';
       var info=document.createElement('div');info.className='file-card-info';
@@ -2037,7 +2044,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
     var row=document.createElement('div');row.className='msgactions';
     var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='Copy';
     cp.onclick=function(){
-      var text=t;
+      var text=displayT;
       (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject())
         .catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()})
         .then(function(){var o=cp.textContent;cp.textContent='✓';setTimeout(function(){cp.textContent=o},1200)});
