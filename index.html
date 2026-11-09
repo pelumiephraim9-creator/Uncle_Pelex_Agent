@@ -1587,10 +1587,10 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="scard"><button class="srow" data-t="custom"><svg viewBox="0 0 24 24"><path d="M5 8h9M18 8h1M5 16h1M10 16h9"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg><span>Personalisation</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="plugins"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v5a5 5 0 0 1-10 0zM12 17v4"/></svg><span>Connectors</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Scheduled tasks</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><button class="srow" data-go="voice"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4"/></svg><span>Voice</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button><div class="srow"><svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 9v6M20 9v6"/></svg><span>Haptic feedback</span><label class="tog"><input type="checkbox" id="pvHaptic" aria-label="Haptic feedback"><i></i></label></div>
 </div>
 <div class="sgroup">Notifications</div>
-<p class="muted" style="margin:0 0 8px;font-size:13px">Reply alerts arrive when Pelex answers while this page is in the background.</p>
+<p class="muted" style="margin:0 0 8px;font-size:13px">Choose which Pelex events can notify you. Scheduled task alerts appear when a task finishes while Pelex is open.</p>
 <div class="scard">
 <div class="srow"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Push notifications</span><label class="tog"><input type="checkbox" id="pvPush" aria-label="Push notifications"><i></i></label></div>
-<div class="srow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Scheduled task reminders <span class="badge soon" data-feat="notifications">Soon</span></span><label class="tog"><input type="checkbox" id="pvNotifTasks" disabled aria-label="Scheduled task reminders"><i></i></label></div>
+<div class="srow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Scheduled task reminders</span><label class="tog"><input type="checkbox" id="pvNotifTasks" aria-label="Scheduled task reminders"><i></i></label></div>
 <div class="srow"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Agent reply alerts</span><label class="tog"><input type="checkbox" id="pvNotifReply" checked aria-label="Agent reply alerts"><i></i></label></div>
 <div class="srow"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Weekly activity summary <span class="badge soon" data-feat="notifications">Soon</span></span><label class="tog"><input type="checkbox" id="pvNotifWeekly" disabled aria-label="Weekly activity summary"><i></i></label></div>
 <div class="srow"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Security alerts</span><label class="tog"><input type="checkbox" id="pvNotifSecurity" checked disabled aria-label="Security alerts"><i></i></label></div>
@@ -2699,25 +2699,58 @@ var _add=add;add=function(){var r=_add.apply(this,arguments);syncWelcome();retur
 var _go=go;go=function(v,t){_go(v,t);if(v==='projects')loadProjects();if(v==='scheduled'){loadTasks();markSchedSeen()}};
 function schedSeen(){try{return localStorage.getItem('pelex_sched_seen')||'1970-01-01T00:00:00Z'}catch(e){return '1970-01-01T00:00:00Z'}}
 function markSchedSeen(){try{localStorage.setItem('pelex_sched_seen',new Date().toISOString())}catch(e){}var b=document.getElementById('schedBadge');if(b)b.hidden=true}
+function schedNotifSeen(){
+  try{
+    var v=localStorage.getItem('pelex_sched_notified');
+    if(v)return v;
+    v=new Date().toISOString();
+    localStorage.setItem('pelex_sched_notified',v);
+    return v;
+  }catch(e){return new Date().toISOString()}
+}
+function markSchedNotifSeen(v){try{localStorage.setItem('pelex_sched_notified',v)}catch(e){}}
 var _schedCount=0;
+async function notifyScheduledTask(row){
+  var push=document.getElementById('pvPush'),enabled=document.getElementById('pvNotifTasks');
+  if(!push||!push.checked||!enabled||!enabled.checked||!document.hidden)return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  var instruction=String(row.instruction||'Your scheduled task has finished.').replace(/\\s+/g,' ').slice(0,110);
+  var title='Pelex scheduled task completed';
+  var options={body:instruction,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'pelex-schedule-'+row.id,renotify:true,data:{url:'/'}};
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+      var registration=await navigator.serviceWorker.ready;
+      await registration.showNotification(title,options);
+    }else{
+      var notice=new Notification(title,options);
+      notice.onclick=function(){window.focus();notice.close()};
+    }
+  }catch(e){console.warn('Pelex: scheduled notification could not be shown',e)}
+}
 async function checkSched(){
   var b=document.getElementById('schedBadge');if(!b)return;
   if(!dbOk()){b.hidden=true;return}
   try{
     var r=await sb.from('scheduled_tasks')
       .select('id,instruction,delivered_at,last_result')
-      .gt('delivered_at',schedSeen())
+      .not('delivered_at','is',null)
       .order('delivered_at',{ascending:false})
-      .limit(20);
+      .limit(30);
     if(r.error||!r.data)return;
-    var rows=r.data||[],n=rows.length;
-    b.textContent=n>9?'9+':String(n);b.hidden=n===0;
-    if(n>_schedCount&&n>0&&window.Notification&&Notification.permission==='granted'){
-      try{new Notification('Pelex',{body:'A scheduled task result is ready in your chats.'})}catch(e){}
+    var rows=r.data||[];
+    var unseen=rows.filter(function(row){return row.delivered_at>schedSeen()});
+    b.textContent=unseen.length>9?'9+':String(unseen.length);b.hidden=unseen.length===0;
+    if(unseen.length>_schedCount&&unseen.length>0&&window.Notification&&Notification.permission==='granted'){
+      // Alerts are opt-in through Settings > Notifications > Push notifications
+      // and Scheduled task reminders. Polling is active while Pelex is open.
+      var notifCursor=schedNotifSeen();
+      var fresh=rows.filter(function(row){return row.delivered_at>notifCursor}).sort(function(a,b){return new Date(a.delivered_at)-new Date(b.delivered_at)});
+      for(var i=0;i<fresh.length;i++)await notifyScheduledTask(fresh[i]);
+      if(fresh.length)markSchedNotifSeen(fresh[fresh.length-1].delivered_at);
     }
-    _schedCount=n;
-    if(!n)return;
-    var newest=rows[0],match=String(newest.last_result||'').match(/<!--pelex-scheduled-chat:([0-9a-f-]{20,})-->/i);
+    _schedCount=unseen.length;
+    if(!unseen.length)return;
+    var newest=unseen[0],match=String(newest.last_result||'').match(/<!--pelex-scheduled-chat:([0-9a-f-]{20,})-->/i);
     markSchedSeen();
     if(document.getElementById('v-scheduled').hidden===false)loadTasks();
     if(match&&match[1]){
@@ -2729,7 +2762,6 @@ async function checkSched(){
 setInterval(checkSched,60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)checkSched()});
 setTimeout(checkSched,4000);
-
 var dbWarned=false;
 function chatFail(what,err){
   console.warn('Pelex: '+what,err);
@@ -3260,7 +3292,7 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
     if(e.target.closest('button,.chip-sugg,.srow'))navigator.vibrate(8);
   },true);
   /* notification toggles - saved locally + synced to account when signed in */
-  var NOTIF_IDS=['pvPush:0','pvNotifReply:1'];
+  var NOTIF_IDS=['pvPush:0','pvNotifReply:1','pvNotifTasks:1'];
   function notifPrefs(){
     var out={};NOTIF_IDS.forEach(function(spec){
       var id=spec.split(':')[0],el=document.getElementById(id);if(el)out[id]=el.checked});
