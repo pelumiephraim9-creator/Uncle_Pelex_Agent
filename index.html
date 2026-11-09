@@ -3028,7 +3028,13 @@ async function loadTasks(){
   if(!dbOk()){box.innerHTML='';em.hidden=false;em.textContent='Sign in to schedule tasks.';return}
   var r=await sb.from('scheduled_tasks').select('*').order('created_at',{ascending:false});
   if(r.error)return;
-  var list=(r.data||[]).filter(function(t){\n    // Completed one-time tasks are retained in the database for history/recovery,\n    // but must disappear from the active Schedule card list. Failed or pending\n    // one-time tasks remain visible until the scheduler actually deactivates them.\n    var oneTime=String(t.frequency||'').trim().toLowerCase()==='once';\n    return !(oneTime && t.active===false);\n  });box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
+  var list=(r.data||[]).filter(function(t){
+    // A one-time task is no longer an active schedule item once delivered or closed.
+    // Keep recurring, paused, failed and still-pending tasks visible.
+    var oneTime=String(t.frequency||'').trim().toLowerCase()==='once';
+    var completed=!!t.delivered_at || String(t.status||'').toLowerCase()==='closed' || t.active===false;
+    return !(oneTime && completed);
+  });box.innerHTML='';em.hidden=list.length>0;em.textContent='Nothing scheduled yet.';
   try{var rr=await sb.from('scheduled_task_runs').select('task_id,status,started_at,error').order('started_at',{ascending:false}).limit(120);window.__runs={};((rr&&rr.data)||[]).forEach(function(x){(window.__runs[x.task_id]=window.__runs[x.task_id]||[]).push(x)})}catch(e){window.__runs={}}
   list.forEach(function(t){
     var c=document.createElement('div');c.className='stask'+(t.active?'':' off');
