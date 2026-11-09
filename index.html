@@ -941,6 +941,24 @@ aside .nav,aside .sback,.srow,.srow span,.srow h2,.ctext h2,.settings-nav,.setti
 #pvSide iframe{border:0;width:100%;height:100%;background:#fff}
 #pvSide img{max-width:100%;max-height:100%;object-fit:contain}
 #pvSide .ps-note{padding:8px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+#pvSide .ps-body{display:block;padding:22px 24px;box-sizing:border-box}
+#pvSide .ps-body .pv-text{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.75 system-ui,sans-serif;margin:0;max-width:100%;color:var(--ink)}
+#pvSide .ps-body .pv-doc{max-width:760px;margin:0 auto;width:100%;font:15px/1.75 system-ui,sans-serif;color:var(--ink)}
+#pvSide .ps-body .pv-doc h1,#pvSide .ps-body .pv-doc h2,#pvSide .ps-body .pv-doc h3{line-height:1.3;margin:1.4em 0 .55em}
+#pvSide .ps-body .pv-doc p{margin:.65em 0}
+#pvSide .ps-body .pv-doc ul,#pvSide .ps-body .pv-doc ol{padding-left:1.5em;margin:.65em 0}
+#pvSide .ps-body .pv-doc li{margin:.35em 0}
+#pvSide .ps-body .pv-doc strong{font-weight:700}
+#pvSide .ps-body .pv-doc blockquote{border-left:3px solid var(--btn);margin:1em 0;padding:.3em 1em;color:var(--muted)}
+#pvSide .ps-body .pv-table,#pvSide .ps-body .pv-sheet-table table{border-collapse:collapse;width:100%;font-size:13px}
+#pvSide .ps-body .pv-table th,#pvSide .ps-body .pv-table td,#pvSide .ps-body .pv-sheet-table td,#pvSide .ps-body .pv-sheet-table th{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+#pvSide .ps-body .pv-table th,#pvSide .ps-body .pv-sheet-table th{background:var(--soft);font-weight:700}
+#pvSide .ps-body .pv-sheets section{margin-bottom:24px}
+#pvSide .ps-body .pv-sheets h3{margin:0 0 10px}
+#pvSide .ps-body .pv-sheet-table{overflow:auto}
+#pvSide .ps-head #psRead{white-space:nowrap}
+#pvSide .ps-head #psRead[aria-pressed="true"]{background:var(--btn);color:white;border-color:var(--btn)}
+
 
 /* ===== ROUND 8: agent dashboards (Business, Pitch, Gmail) ===== */
 .dash{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px}
@@ -4356,12 +4374,13 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 /* Universal non-image file preview. Preview never downloads; only the Download control saves. */
 (function(){
  var side=document.createElement('div');side.id='pvSide';side.setAttribute('role','dialog');side.setAttribute('aria-label','File preview');
- side.innerHTML='<div class="ps-head"><span class="ps-title" id="psTitle">Preview</span><button type="button" id="psDl">Download</button><button type="button" id="psX" aria-label="Close">&times;</button></div><div class="ps-body" id="psBody"></div><div class="ps-note" id="psNote">Preview only. Use Download to save the file to your device.</div>';
+ side.innerHTML='<div class="ps-head"><span class="ps-title" id="psTitle">Preview</span><button type="button" id="psRead" aria-pressed="false">Read aloud</button><button type="button" id="psDl">Download</button><button type="button" id="psX" aria-label="Close">&times;</button></div><div class="ps-body" id="psBody"></div><div class="ps-note" id="psNote">Preview only. Use Download to save the file to your device.</div>';
  document.body.appendChild(side);
  var cur={url:'',name:'',blobUrl:''};
  function note(m){document.getElementById('psNote').textContent=m}
  function body(){return document.getElementById('psBody')}
- function close(){side.classList.remove('open');setTimeout(function(){body().innerHTML='';if(cur.blobUrl)URL.revokeObjectURL(cur.blobUrl);cur.blobUrl=''},240)}
+ function close(){stopReadIfReady();side.classList.remove('open');setTimeout(function(){body().innerHTML='';if(cur.blobUrl)URL.revokeObjectURL(cur.blobUrl);cur.blobUrl=''},240)}
+ function stopReadIfReady(){if(typeof readBtn!=='undefined'&&readBtn){try{speechSynthesis.cancel()}catch(e){}readBtn.textContent='Read aloud';readBtn.setAttribute('aria-pressed','false')}}
  function safeText(tag,value){var el=document.createElement(tag);el.textContent=value;body().appendChild(el);return el}
  function renderCsv(text){
   var rows=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(Boolean).map(function(line){
@@ -4380,7 +4399,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var blob=await response.blob();cur.blobUrl=URL.createObjectURL(blob);body().innerHTML='';
    if(ext==='pdf'||blob.type==='application/pdf'){var frame=document.createElement('iframe');frame.src=cur.blobUrl;frame.title=cur.name;body().appendChild(frame)}
    else if(/^(txt|md|json|xml|html|htm|log|js|css|yaml|yml)$/.test(ext)||/^text\//.test(blob.type)){
-    var text=await blob.text();if(ext==='csv'||ext==='tsv'){renderCsv(text.replace(/\t/g,','))}else{var pre=safeText('pre',text);pre.className='pv-text'}
+    var text=await blob.text();if(ext==='csv'||ext==='tsv'){renderCsv(text.replace(/\t/g,','))}else if(ext==='md'||ext==='markdown'){var article=document.createElement('article');article.className='pv-doc';article.appendChild(window.mdRender?window.mdRender(text):safeText('pre',text));body().appendChild(article)}else if(ext==='html'||ext==='htm'){var frame=document.createElement('iframe');frame.srcdoc=text;frame.title=cur.name;body().appendChild(frame)}else{var pre=safeText('pre',text);pre.className='pv-text'}
    }
    else if(ext==='csv'||ext==='tsv'){renderCsv(await blob.text())}
    else if(ext==='xlsx'||ext==='xls'){
@@ -4409,7 +4428,23 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    setTimeout(function(){URL.revokeObjectURL(o);a.remove()},2000);note('Download started.');return true
   }).catch(function(){note('Could not download this file. Please try again.');return false})
  }
- document.getElementById('psX').onclick=close;
+ function readablePreviewText(){
+  var b=body(),clone=b.cloneNode(true);
+  clone.querySelectorAll('iframe,button,script,style').forEach(function(x){x.remove()});
+  return String(clone.innerText||clone.textContent||'').replace(/\\s+/g,' ').trim().slice(0,12000)
+ }
+ var readBtn=document.getElementById('psRead'),speaking=false;
+ function stopRead(){try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}speaking=false;readBtn.textContent='Read aloud';readBtn.setAttribute('aria-pressed','false')}
+ readBtn.onclick=function(){
+  if(speaking){stopRead();return}
+  var text=readablePreviewText();if(!text){note('There is no readable text in this preview.');return}
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){note('Read aloud is not supported by this browser.');return}
+  stopRead();speaking=true;readBtn.textContent='Stop reading';readBtn.setAttribute('aria-pressed','true');
+  var u=new SpeechSynthesisUtterance(text);u.lang=document.documentElement.lang||'en';
+  u.onend=stopRead;u.onerror=function(){stopRead();note('Read aloud could not start. Check your device sound and try again.')};
+  try{speechSynthesis.cancel();speechSynthesis.speak(u);note('Reading preview aloud. Tap Stop reading to stop.')}catch(e){stopRead();note('Read aloud could not start in this browser.')}
+ };
+ document.getElementById('psX').onclick=function(){stopRead();close()};
  document.getElementById('psDl').onclick=function(){if(cur.url)save(cur.url,cur.name)};
  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
  window.addEventListener('click',function(e){
