@@ -1256,7 +1256,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="chip" id="chip"></div>
 <div class="barwrap"><div class="bar"><div class="field">
 <div class="attach" id="attach" hidden><div class="th" id="attachTh"></div><span class="nm" id="attachNm"></span><button class="x" id="attachX" type="button" aria-label="Remove attachment">×</button></div>
-<label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv" multiple hidden></label>
+<label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv,.tsv,.json,.xls,.xlsx,.docx" multiple hidden></label>
 <textarea id="in" rows="1" placeholder="Reply or hold to talk" aria-label="Message" aria-multiline="true"></textarea>
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
 <button class="ic" id="imgBtn" type="button" aria-label="Create an image" title="Create an image" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg></button> <button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -1944,6 +1944,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <ol id="instSteps"></ol>
 </dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ====== SET THIS ======
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
@@ -2349,8 +2350,21 @@ function resizeDataUrl(src,maxSide){return new Promise(function(resolve,reject){
 async function readPdf(file){
   if(!window.pdfjsLib) throw new Error('The PDF reader did not load. Check your connection and try again.');
   var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out='';
-  for(var p=1;p<=Math.min(pdf.numPages,30);p++){var c=await(await pdf.getPage(p)).getTextContent();out+=c.items.map(function(i){return i.str}).join(' ')+'\n'}
-  return out}
+  for(var p=1;p<=Math.min(pdf.numPages,100);p++){
+    var c=await(await pdf.getPage(p)).getTextContent();
+    out+='[Page '+p+'] '+c.items.map(function(i){return i.str}).join(' ')+'\n';
+  }
+  if(pdf.numPages>100) out+='\n[Only the first 100 pages were extracted.]';
+  return out;
+}
+async function readOfficeDocument(file){
+  if(!window.XLSX) throw new Error('The spreadsheet reader did not load. Please try again.');
+  var book=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+  return book.SheetNames.map(function(name){
+    var rows=XLSX.utils.sheet_to_json(book.Sheets[name],{header:1,raw:false,defval:''});
+    return 'SHEET: '+name+'\n'+XLSX.utils.sheet_to_csv(XLSX.utils.aoa_to_sheet(rows));
+  }).join('\n\n').slice(0,100000);
+}
 var pendingImgs=[],attach=$('attach');
 function showAttach(kind,data,name){
   var th=$('attachTh');th.innerHTML='';
@@ -2410,8 +2424,12 @@ $('file').onchange=async function(e){
       showAttach('img');input.focus();
     }else{
       var f=fs[0];clearAttach();
-      var text=f.name.toLowerCase().slice(-4)==='.pdf'?await readPdf(f):await f.text();
-      text=text.trim().slice(0,12000);
+      var lower=f.name.toLowerCase(),text='';
+      if(lower.endsWith('.pdf')) text=await readPdf(f);
+      else if(lower.endsWith('.xlsx')||lower.endsWith('.xls')) text=await readOfficeDocument(f);
+      else if(lower.endsWith('.docx')) throw new Error('Word DOCX reading is not enabled yet. Save the document as PDF or TXT and attach it again.');
+      else text=await f.text();
+      text=text.trim().slice(0,100000);
       if(!text) throw new Error('No readable text was found in that file.');
       pendingDoc={name:f.name,text:text};libAdd({name:f.name,thumb:'',at:Date.now()});showAttach('doc',null,f.name);input.focus();
     }
