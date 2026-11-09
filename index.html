@@ -1994,6 +1994,9 @@ if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudf
 function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__hist=window.__hist||[]);if(cls==='me')hh.push({role:'user',content:t});else if(!cls)hh.push({role:'assistant',content:t});if(hh.length>40)hh.splice(0,hh.length-40)}}catch(e){}var d=document.createElement('div');d.className='msg '+(cls||'');
   if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt='Uploaded image';box.appendChild(im)})}
   var textNode=document.createElement('span');
+  // File action URLs are consumed below to build the in-app preview/download card.
+  // Keep those backend URLs out of the visible chat message.
+  var displayT=(!cls&&typeof t==='string')?t.replace(/\[Download [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\[Preview [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\n{3,}/g,'\n\n').trim():t;
   if(!cls&&t.indexOf('```')>-1){
     t.split('```').forEach(function(seg,k){
       if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';var sg=seg.replace(/^\n+|\n+$/g,'');if(window.mdRender)tp.appendChild(window.mdRender(sg));else tp.textContent=sg;textNode.appendChild(tp)}}
@@ -2010,7 +2013,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
         if(isHtml){var pv=document.createElement('button');pv.type='button';pv.className='cpcode';pv.textContent='Preview';pv.onclick=function(){window.openPreview(codeTxt)};bar.insertBefore(pv,bar.firstChild)}
         pre.appendChild(bar);textNode.appendChild(pre)}
     });
-  }else{if(!cls&&window.mdRender)textNode.appendChild(window.mdRender(t));else textNode.textContent=t}
+  }else{if(!cls&&window.mdRender)textNode.appendChild(window.mdRender(displayT));else textNode.textContent=displayT}
   if(!cls&&window.__lastSteps&&window.__lastSteps.length&&!window.__stepsDone){window.__stepsDone=true;var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary'),sn=window.__lastSteps.length;sm.textContent='Activity \u00b7 '+sn+(sn===1?' step':' steps');dt.appendChild(sm);window.__lastSteps.forEach(function(x){var r=document.createElement('div');r.textContent='\u2713 '+x;dt.appendChild(r)});d.appendChild(dt)}
   d.appendChild(textNode);
   if(cls==='me'&&img){d.classList.add('imgme');textNode.classList.add('me-pill')}
