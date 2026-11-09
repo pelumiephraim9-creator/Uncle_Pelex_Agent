@@ -2389,7 +2389,7 @@ async function sendImage(){
   saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
   stepWait(w);
   try{
-    var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,512)})):datas;
+    var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,500)})):datas;
     var r;
     if(AGENT_URL.indexOf('PASTE_')!==0){
       try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}))}}
