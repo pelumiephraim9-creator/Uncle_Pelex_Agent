@@ -4353,29 +4353,61 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 })();
 </script>
 <script>
-/* Preview opens a side panel in the chat; Download saves in place. Nothing navigates away. */
+/* Universal non-image file preview. Preview never downloads; only the Download control saves. */
 (function(){
  var side=document.createElement('div');side.id='pvSide';side.setAttribute('role','dialog');side.setAttribute('aria-label','File preview');
  side.innerHTML='<div class="ps-head"><span class="ps-title" id="psTitle">Preview</span><button type="button" id="psDl">Download</button><button type="button" id="psX" aria-label="Close">&times;</button></div><div class="ps-body" id="psBody"></div><div class="ps-note" id="psNote">Preview only. Use Download to save the file to your device.</div>';
  document.body.appendChild(side);
- var cur={url:'',name:''};
+ var cur={url:'',name:'',blobUrl:''};
  function note(m){document.getElementById('psNote').textContent=m}
- function close(){side.classList.remove('open');setTimeout(function(){document.getElementById('psBody').innerHTML=''},240)}
- function open(url,name){
-  cur={url:url,name:name||'pelex-file'};
-  document.getElementById('psTitle').textContent=cur.name;
-  var body=document.getElementById('psBody');body.innerHTML='';
-  if(/\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i.test(url)||/\.(png|jpe?g|webp|gif|svg)$/i.test(cur.name)){var im=document.createElement('img');im.src=url;im.alt=cur.name;body.appendChild(im)}
-  else{var f=document.createElement('iframe');f.src=url;f.title=cur.name;body.appendChild(f)}
-  note('Preview only. Use Download to save the file to your device.');
-  side.classList.add('open');
+ function body(){return document.getElementById('psBody')}
+ function close(){side.classList.remove('open');setTimeout(function(){body().innerHTML='';if(cur.blobUrl)URL.revokeObjectURL(cur.blobUrl);cur.blobUrl=''},240)}
+ function safeText(tag,value){var el=document.createElement(tag);el.textContent=value;body().appendChild(el);return el}
+ function renderCsv(text){
+  var rows=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(Boolean).map(function(line){
+   var out=[],v='',q=false;
+   for(var i=0;i<line.length;i++){var ch=line[i];if(ch==='"'&&line[i+1]==='"'&&q){v+='"';i++}else if(ch==='"'){q=!q}else if(ch===','&&!q){out.push(v);v=''}else v+=ch}out.push(v);return out
+  });
+  var table=document.createElement('table');table.className='pv-table';
+  rows.forEach(function(row,ri){var tr=document.createElement('tr');row.forEach(function(cell){var td=document.createElement(ri===0?'th':'td');td.textContent=cell;tr.appendChild(td)});table.appendChild(tr)});body().appendChild(table)
+ }
+ async function open(url,name){
+  cur={url:url,name:name||'pelex-file',blobUrl:''};
+  document.getElementById('psTitle').textContent=cur.name;body().innerHTML='<div class="pv-loading">Loading preview…</div>';side.classList.add('open');note('Loading preview. Your file will not be downloaded.');
+  var ext=(cur.name.split('.').pop()||'').toLowerCase();
+  try{
+   var response=await fetch(url);if(!response.ok)throw new Error('File could not be retrieved');
+   var blob=await response.blob();cur.blobUrl=URL.createObjectURL(blob);body().innerHTML='';
+   if(ext==='pdf'||blob.type==='application/pdf'){var frame=document.createElement('iframe');frame.src=cur.blobUrl;frame.title=cur.name;body().appendChild(frame)}
+   else if(/^(txt|md|json|xml|html|htm|log|js|css|yaml|yml)$/.test(ext)||/^text\//.test(blob.type)){
+    var text=await blob.text();if(ext==='csv'||ext==='tsv'){renderCsv(text.replace(/\t/g,','))}else{var pre=safeText('pre',text);pre.className='pv-text'}
+   }
+   else if(ext==='csv'||ext==='tsv'){renderCsv(await blob.text())}
+   else if(ext==='xlsx'||ext==='xls'){
+    if(!window.XLSX)throw new Error('Spreadsheet preview library is unavailable');
+    var data=await blob.arrayBuffer(),wb=XLSX.read(data,{type:'array'}),tabs=document.createElement('div');tabs.className='pv-sheets';body().appendChild(tabs);
+    wb.SheetNames.forEach(function(sheetName,index){var section=document.createElement('section');var h=document.createElement('h3');h.textContent=sheetName;section.appendChild(h);var table=document.createElement('div');table.className='pv-sheet-table';var html=XLSX.utils.sheet_to_html(wb.Sheets[sheetName]);table.innerHTML=html;section.appendChild(table);tabs.appendChild(section)})
+   }
+   else if(ext==='docx'){
+    if(!window.mammoth)throw new Error('Word preview library is unavailable');
+    var result=await mammoth.convertToHtml({arrayBuffer:await blob.arrayBuffer()});var article=document.createElement('article');article.className='pv-docx';article.innerHTML=result.value;body().appendChild(article)
+   }
+   else{
+    var msg=document.createElement('div');msg.className='pv-unavailable';msg.textContent='A browser preview is not available for this file type yet. The file has not been downloaded. You can still use Download above.';body().appendChild(msg)
+   }
+   note('Preview only. Use Download to save the file to your device.')
+  }catch(err){
+   body().innerHTML='';
+   var msg=document.createElement('div');msg.className='pv-unavailable';msg.textContent='Preview could not be loaded: '+(err&&err.message?err.message:'file access failed')+'. No download was started. Use Download only when you are ready to save the file.';body().appendChild(msg);
+   note('Preview unavailable. No file was downloaded.')
+  }
  }
  function save(url,name){
-  note('Saving...');
-  return fetch(url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){
+  note('Preparing download…');
+  return fetch(url).then(function(r){if(!r.ok)throw new Error('Download failed');return r.blob()}).then(function(b){
    var o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download=name||'pelex-file';document.body.appendChild(a);a.click();
-   setTimeout(function(){URL.revokeObjectURL(o);a.remove()},2000);note('Saved to your device.');return true
-  }).catch(function(){note('Could not save this file. Please try again.');return false});
+   setTimeout(function(){URL.revokeObjectURL(o);a.remove()},2000);note('Download started.');return true
+  }).catch(function(){note('Could not download this file. Please try again.');return false})
  }
  document.getElementById('psX').onclick=close;
  document.getElementById('psDl').onclick=function(){if(cur.url)save(cur.url,cur.name)};
