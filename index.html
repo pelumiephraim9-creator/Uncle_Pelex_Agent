@@ -2338,6 +2338,14 @@ function shrink(file){return new Promise(function(res,rej){
     c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
     URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.8))};
   img.onerror=function(){rej(new Error('That image could not be opened.'))};img.src=u})}
+function resizeDataUrl(src,maxSide){return new Promise(function(resolve,reject){
+  var img=new Image();img.onload=function(){
+    var scale=Math.min(1,maxSide/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    resolve(c.toDataURL('image/jpeg',0.82));
+  };img.onerror=function(){reject(new Error('The attached image could not be prepared for editing.'))};img.src=src;
+})}
 async function readPdf(file){
   if(!window.pdfjsLib) throw new Error('The PDF reader did not load. Check your connection and try again.');
   var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out='';
@@ -2380,7 +2388,15 @@ async function sendImage(){
   try{await ensureChat(q)}catch(e){}
   saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
   stepWait(w);
-  try{var r;if(AGENT_URL.indexOf('PASTE_')!==0){try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:datas,intent:intent}))}}catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:datas,prompt:q})}}else{r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:datas,prompt:q})}w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}}
+  try{
+    var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,512)})):datas;
+    var r;
+    if(AGENT_URL.indexOf('PASTE_')!==0){
+      try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}))}}
+      catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
+    }else{r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
+    w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}
+  }
   catch(err){w.remove();await showErr(err)}
 }
 $('file').onchange=async function(e){
@@ -2688,14 +2704,27 @@ async function checkSched(){
   var b=document.getElementById('schedBadge');if(!b)return;
   if(!dbOk()){b.hidden=true;return}
   try{
-    var r=await sb.from('scheduled_tasks').select('id').gt('delivered_at',schedSeen());
-    if(r.error||!r.data){return}
-    var n=r.data.length;
-    if(n>0&&document.getElementById('v-scheduled').hidden===false){markSchedSeen();loadTasks();return}
+    var r=await sb.from('scheduled_tasks')
+      .select('id,instruction,delivered_at,last_result')
+      .gt('delivered_at',schedSeen())
+      .order('delivered_at',{ascending:false})
+      .limit(20);
+    if(r.error||!r.data)return;
+    var rows=r.data||[],n=rows.length;
     b.textContent=n>9?'9+':String(n);b.hidden=n===0;
-    if(n>_schedCount&&n>0&&window.Notification&&Notification.permission==='granted'){try{new Notification('Pelex',{body:'A scheduled task just landed.'})}catch(e){}}
+    if(n>_schedCount&&n>0&&window.Notification&&Notification.permission==='granted'){
+      try{new Notification('Pelex',{body:'A scheduled task result is ready in your chats.'})}catch(e){}
+    }
     _schedCount=n;
-  }catch(e){}
+    if(!n)return;
+    var newest=rows[0],match=String(newest.last_result||'').match(/<!--pelex-scheduled-chat:([0-9a-f-]{20,})-->/i);
+    markSchedSeen();
+    if(document.getElementById('v-scheduled').hidden===false)loadTasks();
+    if(match&&match[1]){
+      await loadRecents();
+      await openChat(match[1]);
+    }
+  }catch(e){console.warn('Pelex: scheduled result check failed',e)}
 }
 setInterval(checkSched,60000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)checkSched()});
@@ -2933,7 +2962,6 @@ async function loadTasks(){
     var meta=document.createElement('div');meta.className='meta';
     meta.textContent=(AGL[t.agent||t.bot]||'General Agent')+' · '+when+' · '+(t.channel==='website'?'sent to this app':'sent to '+t.channel)+(t.active&&nx?' · next '+nx.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'}):' · paused');
     c.appendChild(meta);
-    if(t.last_result&&window.pxResultCard){window.pxResultCard(t,c)}
     var sl=schedStatusLine(t);if(sl){var ld=document.createElement('div');ld.className='meta';ld.textContent=sl;c.appendChild(ld)}
     var hr=(window.__runs||{})[t.id];if(hr&&hr.length){var dt=document.createElement('details');dt.className='actlog';var sm=document.createElement('summary');sm.textContent='History · '+hr.length+(hr.length===1?' run':' runs');dt.appendChild(sm);hr.slice(0,5).forEach(function(x){var rw=document.createElement('div');rw.textContent=new Date(x.started_at).toLocaleString([],{dateStyle:'short',timeStyle:'short'})+' · '+String(x.status).replace(/_/g,' ')+(x.error?' · '+x.error:'');dt.appendChild(rw)});c.appendChild(dt)}
     var a=document.createElement('div');a.className='acts';
