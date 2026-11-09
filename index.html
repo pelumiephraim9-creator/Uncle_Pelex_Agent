@@ -1997,8 +1997,8 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   // File action URLs are consumed below to build the in-app preview/download card.
   // Keep those backend URLs out of the visible chat message.
   var displayT=(!cls&&typeof t==='string')?t.replace(/\[Download [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\[Preview [^\]]+\]\(https?:\/\/[^\s)]+\)/gi,'').replace(/\n{3,}/g,'\n\n').trim():t;
-  if(!cls&&t.indexOf('```')>-1){
-    t.split('```').forEach(function(seg,k){
+  if(!cls&&displayT.indexOf('```')>-1){
+    displayT.split('```').forEach(function(seg,k){
       if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';var sg=seg.replace(/^\n+|\n+$/g,'');if(window.mdRender)tp.appendChild(window.mdRender(sg));else tp.textContent=sg;textNode.appendChild(tp)}}
       else{var code=seg.replace(/^[^\n]*\n/,'');var pre=document.createElement('pre'),cd=document.createElement('code');cd.textContent=code.replace(/\n$/,'');pre.appendChild(cd);
         var cb=document.createElement('button');cb.type='button';cb.className='cpcode';cb.textContent='Copy';
