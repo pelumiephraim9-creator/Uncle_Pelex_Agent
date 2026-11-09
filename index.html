@@ -1945,6 +1945,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js"></script>
 <script>
 // ====== SET THIS ======
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
@@ -2365,6 +2366,11 @@ async function readOfficeDocument(file){
     return 'SHEET: '+name+'\n'+XLSX.utils.sheet_to_csv(XLSX.utils.aoa_to_sheet(rows));
   }).join('\n\n').slice(0,100000);
 }
+async function readWordDocument(file){
+  if(!window.mammoth) throw new Error('The Word document reader did not load. Please try again.');
+  var result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
+  return String(result.value||'').slice(0,100000);
+}
 var pendingImgs=[],attach=$('attach');
 function showAttach(kind,data,name){
   var th=$('attachTh');th.innerHTML='';
@@ -2427,7 +2433,7 @@ $('file').onchange=async function(e){
       var lower=f.name.toLowerCase(),text='';
       if(lower.endsWith('.pdf')) text=await readPdf(f);
       else if(lower.endsWith('.xlsx')||lower.endsWith('.xls')) text=await readOfficeDocument(f);
-      else if(lower.endsWith('.docx')) throw new Error('Word DOCX reading is not enabled yet. Save the document as PDF or TXT and attach it again.');
+      else if(lower.endsWith('.docx')) text=await readWordDocument(f);
       else text=await f.text();
       text=text.trim().slice(0,100000);
       if(!text) throw new Error('No readable text was found in that file.');
