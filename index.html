@@ -2767,7 +2767,7 @@ function chatFail(what,err){
   console.warn('Pelex: '+what,err);
   if(dbWarned)return;dbWarned=true;
   var m=String((err&&(err.message||err.details))||'unknown error');
-  try{add('Your '+what+' ('+m+'). Run chat_history_fix.sql in Supabase to repair it.','sys')}catch(x){}
+  try{add('Your '+what+' ('+m+'). Please refresh Pelex and try again. If this continues, share this error with support.','sys')}catch(x){}
 }
 async function ensureChat(firstText){
   if(!dbOk()||curChatId||!window.histOn())return;
