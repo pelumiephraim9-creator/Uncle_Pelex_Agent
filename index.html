@@ -1998,7 +1998,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   // Keep those backend URLs out of the visible chat message.
   var displayT=(!cls&&typeof t==='string')?t
     .replace(/\[(?:Download|Preview)\s+([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,'')
-    .replace(/https?:\/\/[^\s<>)]+(?:pelexn8n\.onrender\.com|pelexNA10\.runrender\.com)[^\s<>) ]*/gi,'')
+    .replace(/https?:\/\/(?:pelexn8n\.onrender\.com|pelexNA10\.runrender\.com)[^\s<>) ]*/gi,'')
     .replace(/\b(?:Download|Preview)\s+(?:PDF|file)\s*:?\s*/gi,'')
     .replace(/\n[ \t]*\n[ \t]*\n+/g,'\n\n').trim():t;
   if(!cls&&displayT.indexOf('```')>-1){
