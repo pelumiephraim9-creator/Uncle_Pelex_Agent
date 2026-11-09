@@ -2888,17 +2888,35 @@ async function openChat(id){
   // messages were not visible/saved, load the completed result from its task row.
   if(!messages.length){
     var marker='<!--pelex-scheduled-chat:'+String(id)+'-->';
+    // Recover exact-marker deliveries first, then older results by matching
+    // the scheduled chat title to the task instruction for this signed-in user.
     var task=await sb.from('scheduled_tasks')
-      .select('instruction,last_result')
-      .ilike('last_result','%'+marker+'%')
+      .select('instruction,last_result,delivered_at')
+      .eq('user_id',curUser.id)
+      .not('delivered_at','is',null)
+      .not('last_result','is',null)
       .order('delivered_at',{ascending:false})
-      .limit(1);
-    if(!task.error&&task.data&&task.data[0]){
-      var saved=String(task.data[0].last_result||'').replace(/\\n?\\n?<!--pelex-scheduled-chat:[0-9a-f-]{20,}-->/ig,'').trim();
-      messages=[
-        {role:'user',content:'Scheduled task: '+String(task.data[0].instruction||'').slice(0,6000)},
-        {role:'assistant',content:saved}
-      ];
+      .limit(60);
+    if(!task.error&&Array.isArray(task.data)&&task.data.length){
+      var candidates=task.data;
+      var chosen=candidates.find(function(t){return String(t.last_result||'').indexOf(marker)>=0});
+      if(!chosen&&c&&/^Scheduled:/i.test(String(c.title||''))){
+        var titleKey=String(c.title).replace(/^Scheduled:\\s*/i,'').split(/\\s+·\\s+/)[0].toLowerCase();
+        chosen=candidates.find(function(t){
+          var instruction=String(t.instruction||'').split(/\\nSource website:/i)[0].replace(/\\s+/g,' ').trim().toLowerCase();
+          var key=instruction.slice(0,Math.min(60,titleKey.length));
+          return key.length>=18&&titleKey.indexOf(key)>=0;
+        });
+      }
+      if(chosen){
+        var saved=String(chosen.last_result||'').replace(/\\n?\\n?<!--pelex-scheduled-chat:[0-9a-f-]{20,}-->/ig,'').trim();
+        if(saved)messages=[
+          {role:'user',content:'Scheduled task: '+String(chosen.instruction||'').slice(0,6000)},
+          {role:'assistant',content:saved}
+        ];
+      }
+    }else if(task.error){
+      console.warn('Pelex: scheduled result recovery query failed',task.error);
     }
   }
   if(!messages.length){
