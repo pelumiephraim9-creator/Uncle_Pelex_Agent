@@ -1997,10 +1997,10 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   // File action URLs are consumed below to build the in-app preview/download card.
   // Keep those backend URLs out of the visible chat message.
   var displayT=(!cls&&typeof t==='string')?t
-    .replace(/\\[(?:Download|Preview)\\s+([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)/gi,'')
-    .replace(/https?:\\/\\/[^\\s<>)]+(?:pelexn8n\\.onrender\\.com|pelexNA10\\.runrender\\.com)[^\\s<>) ]*/gi,'')
-    .replace(/\\b(?:Download|Preview)\\s+(?:PDF|file)\\s*:?\\s*/gi,'')
-    .replace(/\\n[ \\t]*\\n[ \\t]*\\n+/g,'\\n\\n').trim():t;
+    .replace(/\[(?:Download|Preview)\s+([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,'')
+    .replace(/https?:\/\/[^\s<>)]+(?:pelexn8n\.onrender\.com|pelexNA10\.runrender\.com)[^\s<>) ]*/gi,'')
+    .replace(/\b(?:Download|Preview)\s+(?:PDF|file)\s*:?\s*/gi,'')
+    .replace(/\n[ \t]*\n[ \t]*\n+/g,'\n\n').trim():t;
   if(!cls&&displayT.indexOf('```')>-1){
     displayT.split('```').forEach(function(seg,k){
       if(k%2===0){if(seg.trim()){var tp=document.createElement('span');tp.className='txtp';var sg=seg.replace(/^\n+|\n+$/g,'');if(window.mdRender)tp.appendChild(window.mdRender(sg));else tp.textContent=sg;textNode.appendChild(tp)}}
