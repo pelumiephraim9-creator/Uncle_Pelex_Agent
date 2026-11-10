@@ -174,7 +174,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   }catch(err){box.innerHTML='<div class="an-card muted">Could not load startup balance: '+esc(err.message||err)+'</div>'}
   finally{box.removeAttribute('data-loading')}
  }
- setInterval(dashboardCard,5000); setInterval(dashboardCard,2000);
+ setInterval(dashboardCard,5000);
  async function months(id,cur){
   var box=document.getElementById('pxMonths');if(!box)return;
   var r=await window.sb.rpc('project_months',{p_project:id});
