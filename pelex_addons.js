@@ -148,26 +148,33 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
     return '<div class="irow" style="font-size:13px;display:flex;justify-content:space-between;gap:8px"><span>'+esc(x.cat_name)+' <small class="muted">('+esc(x.entries)+')</small></span><span style="color:'+col+'">'+sign+' '+esc(money(x.total_amount,cur))+'</span></div>';
   }).join('');
  }
- function dashboardCard(){
-  var wrap=document.getElementById('lsWrap'); if(!wrap||!window.sb)return;
-  var cards=wrap.querySelectorAll('.dcard'); var host=null;
-  for(var i=0;i<cards.length;i++){var t=(cards[i].querySelector('h2')||{}).textContent||'';if(t==='Analysis'){host=cards[i];break}}
-  if(!host||document.getElementById('pxStartupBal'))return;
-  var box=document.createElement('div'); box.id='pxStartupBal'; box.style.margin='8px 0';
-  host.insertBefore(box, host.firstChild.nextSibling||null);
-  (async function(){
-    var pr=await window.sb.from('business_projects').select('id').eq('workspace_id',wsId()).order('created_at',{ascending:true});
-    var pid=(pr.data&&pr.data[0])?pr.data[0].id:null; if(!pid){box.innerHTML='';return}
-    var r=await window.sb.rpc('project_summary',{p_project:pid,p_month:null});
-    if(r.error)return; var s=r.data||{}; var base=Math.max(Number(s.foundation)||0,1), prof=Number(s.profit)||0;
-    var part=Math.min(100,Math.round(Math.abs(prof)/base*100));
-    var col=prof>=0?'#15803d':'#b91c1c';
-    var ring='conic-gradient(#0b1b4a 0% '+(100-part)+'%, '+col+' '+(100-part)+'% 100%)';
-    box.innerHTML='<div class="an-card" style="display:flex;gap:14px;align-items:center"><div style="width:84px;height:84px;border-radius:50%;background:'+ring+';flex:none"></div>'+
-     '<div><b>Startup balance (yearly)</b><div class="dnote">Foundation '+esc(money(s.foundation,s.currency))+'</div><div class="dnote">Money out so far '+esc(money(s.total_out,s.currency))+' \u00b7 back in '+esc(money(s.total_in,s.currency))+'</div><div class="dnote" style="color:'+col+'">Profit so far '+esc(money(prof,s.currency))+' \u00b7 '+(prof>=0?'Gaining':'Depreciating')+'</div><div style="font-size:16px"><b>Balance '+esc(money(s.balance,s.currency))+'</b></div></div></div>';
-  })();
+ function selectedProjectId(){try{return localStorage.getItem('px_project_'+wsId())||''}catch(e){return ''}}
+ function rememberProject(id){try{localStorage.setItem('px_project_'+wsId(),String(id||''))}catch(e){}}
+ async function dashboardCard(){
+  var wrap=document.getElementById('lsWrap');if(!wrap||!window.sb||!wsId())return;
+  var cards=wrap.querySelectorAll('.dcard'),host=null;
+  for(var i=0;i<cards.length;i++){var title=(cards[i].querySelector('h2')||{}).textContent||'';if(title==='Analysis'){host=cards[i];break}}
+  if(!host)return;
+  var box=document.getElementById('pxStartupBal');
+  if(!box){box=document.createElement('div');box.id='pxStartupBal';box.style.margin='8px 0';host.insertBefore(box,host.firstChild.nextSibling||null)}
+  if(box.getAttribute('data-loading')==='1')return;
+  box.setAttribute('data-loading','1');
+  try{
+   var pr=await window.sb.from('business_projects').select('id,name').eq('workspace_id',wsId()).order('created_at',{ascending:true});
+   if(pr.error)throw pr.error;
+   var list=pr.data||[];
+   if(!list.length){box.innerHTML='<div class="an-card">No business projects are available yet.</div>';return}
+   var pid=selectedProjectId();if(!list.some(function(p){return String(p.id)===String(pid)})){pid=String(list[0].id);rememberProject(pid)}
+   var r=await window.sb.rpc('project_summary',{p_project:pid,p_month:null});if(r.error)throw r.error;
+   var x=r.data||{},profit=Number(x.profit)||0,foundation=Number(x.foundation)||0;
+   var part=foundation>0?Math.min(100,Math.round(Math.abs(profit)/foundation*100)):0,col=profit>=0?'#15803d':'#b91c1c';
+   var ring='conic-gradient(#0b1b4a 0% '+(100-part)+'%, '+col+' '+(100-part)+'% 100%)';
+   box.innerHTML='<div class="an-card"><label class="dnote" for="pxStartupProject"><b>Startup balance · select project</b></label><select id="pxStartupProject" style="width:100%;padding:8px;margin:6px 0">'+list.map(function(p){return '<option value="'+esc(p.id)+'"'+(String(p.id)===pid?' selected':'')+'>'+esc(p.name)+'</option>'}).join('')+'</select><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div aria-label="Profit relative to startup capital" style="width:84px;height:84px;border-radius:50%;background:'+ring+';flex:none"></div><div><div class="dnote">Foundation '+esc(money(x.foundation,x.currency))+'</div><div class="dnote">Money out '+esc(money(x.total_out,x.currency))+' · money back in '+esc(money(x.total_in,x.currency))+'</div><div class="dnote" style="color:'+col+'">Profit '+esc(money(profit,x.currency))+' · '+(profit>=0?'Gaining':'Depreciating')+'</div><div><b>Balance '+esc(money(x.balance,x.currency))+'</b></div></div></div></div>';
+   var picker=document.getElementById('pxStartupProject');if(picker)picker.onchange=function(){rememberProject(picker.value);box.removeAttribute('data-loading');dashboardCard()};
+  }catch(err){box.innerHTML='<div class="an-card muted">Could not load startup balance: '+esc(err.message||err)+'</div>'}
+  finally{box.removeAttribute('data-loading')}
  }
- setInterval(dashboardCard,2000);
+ setInterval(dashboardCard,5000); setInterval(dashboardCard,2000);
  async function months(id,cur){
   var box=document.getElementById('pxMonths');if(!box)return;
   var r=await window.sb.rpc('project_months',{p_project:id});
@@ -190,15 +197,11 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   var r=await window.sb.from('business_projects').select('id,name,business_type,currency,startup_year').eq('workspace_id',wsId()).order('created_at',{ascending:true});
   var list=r.data||[];
   if(!list.length){host.innerHTML='<div class="muted dnote">No business projects yet. Save your business setup to create one.</div>';return}
-  host.innerHTML='<div class="dnote"><b>Your projects</b> <span class="muted">tap one to see its summary</span></div>'+
-   list.map(function(p){return '<div class="irow" data-project="'+esc(p.id)+'" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>'+esc(p.name)+'</b><br><small class="muted">'+esc(p.business_type)+' \u00b7 start '+esc(money(p.startup_year,p.currency))+'</small></span><span class="muted dnote">Open \u203a</span></div>'}).join('')+
-   '<div id="pxProjectView"></div>';
- }
- document.addEventListener('click',function(e){
-  var row=e.target.closest&&e.target.closest('[data-project]');
-  if(!row)return;
-  summary(row.getAttribute('data-project'),document.getElementById('pxProjectView'),null);
- });
+  var selected=selectedProjectId();if(!list.some(function(p){return String(p.id)===String(selected)})){selected=String(list[0].id);rememberProject(selected)}
+  host.innerHTML='<div class="dnote"><b>Your projects</b> <span class="muted">choose a project to view its finances</span></div>'+'<select id="pxProjectSelect" style="width:100%;padding:8px;margin:6px 0">'+list.map(function(p){return '<option value="'+esc(p.id)+'"'+(String(p.id)===selected?' selected':'')+'>'+esc(p.name)+' · '+esc(p.business_type)+'</option>'}).join('')+'</select>'+'<div id="pxProjectView"></div>';
+  summary(selected,document.getElementById('pxProjectView'),null);
+  var picker=document.getElementById('pxProjectSelect');if(picker)picker.onchange=function(){rememberProject(picker.value);summary(picker.value,document.getElementById('pxProjectView'),null)}; }
+ // Project selection is handled by the dedicated project selector above.
  // re-check when the page changes view, and once shortly after load
  setInterval(function(){if(!document.getElementById('pxProjects'))render()},1500);
  pxReady(function(){setTimeout(render,800)});
@@ -293,9 +296,9 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   if(!rows.length){msg.textContent='Nothing ticked to save.';return}
   var bad=rows.filter(function(x){return !(x.amount>0)});
   if(bad.length){msg.textContent='Every saved line needs an amount above zero.';return}
-  var done=0;
+  var done=0,currency='NGN';try{var biz=await window.sb.rpc('list_my_businesses',{});var active=(biz.data||[]).find(function(x){return String(x.id)===String(wsId())});if(active&&active.currency)currency=active.currency}catch(e){}
   for(var i=0;i<rows.length;i++){
-    var r=await window.sb.rpc('add_slip',{p_workspace:wsId(),p_type:type,p_amount:rows[i].amount,p_date:date,p_party:rows[i].party,p_currency:'NGN',p_category:rows[i].category});
+    var r=await window.sb.rpc('add_slip',{p_workspace:wsId(),p_type:type,p_amount:rows[i].amount,p_date:date,p_party:rows[i].party,p_currency:currency,p_category:rows[i].category});
     if(r.error){msg.textContent='Saved '+done+' of '+rows.length+'. Not saved: '+r.error.message;return}
     done++;
   }
@@ -303,13 +306,19 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   doc.getElementById('slipForm').innerHTML='';
   if(window.__lsLoad)window.__lsLoad();
  }
+ function openInlineCapture(){
+  var existing=document.getElementById('pxSlipModal');if(existing){existing.hidden=false;return}
+  var modal=document.createElement('div');modal.id='pxSlipModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(10,20,40,.55);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box';
+  modal.innerHTML='<div style="width:min(520px,100%);height:min(760px,92dvh);background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25)"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #dfe4ee;color:#0b1b4a"><b>Capture a slip</b><button type="button" id="pxSlipClose" style="border:0;background:#eef2fb;border-radius:8px;padding:8px 12px">Close</button></div><iframe title="Slip capture form" style="border:0;flex:1;width:100%;min-height:0"></iframe></div>';
+  document.body.appendChild(modal);var frame=modal.querySelector('iframe');frame.addEventListener('load',function(){build(frame.contentDocument)});frame.src='about:blank';
+  modal.querySelector('#pxSlipClose').onclick=function(){modal.remove()};modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
+ }
  window.pxOpenSlipCapture=async function(){
-  if(!('documentPictureInPicture' in window)){alert('Slip capture window works in Chrome or Edge on a computer.');return}
-  if(pip){pip.focus();return}
-  pip=await documentPictureInPicture.requestWindow({width:340,height:520});
-  build(pip.document);
-  pip.addEventListener('pagehide',function(){pip=null});
+  if(pip){try{pip.focus();return}catch(e){pip=null}}
+  if('documentPictureInPicture' in window){try{pip=await documentPictureInPicture.requestWindow({width:360,height:620});build(pip.document);pip.addEventListener('pagehide',function(){pip=null});return}catch(e){/* use the in-page fallback */}}
+  openInlineCapture();
  };
+ window.pxBuildSlipUI=build;;
  window.pxBuildSlipUI=build;
  document.addEventListener('click',function(e){
   var b=e.target.closest&&e.target.closest('#pxSlipOpen');
@@ -318,7 +327,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
  pxReady(function(){
   var w=setInterval(function(){
    var host=document.getElementById('lsWrap');
-   if(host&&!document.getElementById('pxSlipOpen')){var bt=document.createElement('button');bt.id='pxSlipOpen';bt.type='button';bt.className='btn';bt.textContent='Capture a slip (floating window)';bt.style.margin='8px 0';host.insertBefore(bt,host.firstChild);clearInterval(w)}
+   if(host&&!document.getElementById('pxSlipOpen')){var bt=document.createElement('button');bt.id='pxSlipOpen';bt.type='button';bt.className='btn';bt.textContent='Capture a slip';bt.style.margin='8px 0';host.insertBefore(bt,host.firstChild);clearInterval(w)}
   },1000);
   setTimeout(function(){clearInterval(w)},30000);
  });
