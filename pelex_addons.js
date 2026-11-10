@@ -393,16 +393,27 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   p.innerHTML='<div id="pxBizCreateForm" class="an-card" style="margin-top:8px"><b>Create a business</b><label class="dnote" style="display:block;margin-top:8px">Business name<input id="pxBizName" type="text" maxlength="100" placeholder="Enter business name" style="display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:4px"></label><label class="dnote" style="display:block;margin-top:8px">Business type<select id="pxBizType" style="display:block;width:100%;padding:10px;margin-top:4px">'+TYPES.map(function(x){return '<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>'}).join('')+'</select></label><label class="dnote" style="display:block;margin-top:8px">Currency<input id="pxBizCurrency" type="text" maxlength="5" value="NGN" style="display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:4px"></label><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button id="pxBizCreateSubmit" type="button" class="btn">Create business</button><button id="pxBizCancel" type="button" class="btn alt">Cancel</button></div><div id="pxBizCreateMsg" class="muted dnote" role="status" style="margin-top:8px"></div></div>';
  }
  async function activity(){
-  var p=$('pxBizPanel'); p.innerHTML='<div class="muted dnote">Loading activity\u2026</div>';
-  var r=await window.sb.rpc('list_audit',{p_workspace:wsId(),p_limit:100});
-  if(r.error){p.innerHTML='<div class="muted dnote">Only the owner can see the activity log.</div>';return}
-  var rows=r.data||[];
-  p.innerHTML='<div class="an-card" style="margin-top:8px"><b>Activity log</b>'+(rows.length?rows.map(function(x){
-    var what=(x.detail&&(x.detail.party||x.detail.file_name||x.detail.name))||'';
-    return '<div class="irow" style="font-size:13px"><b>'+esc(x.action)+'</b> '+esc(x.table_name)+' \u00b7 '+esc(what)+(x.detail&&x.detail.amount?' \u00b7 '+esc(x.detail.amount):'')+'<br><small class="muted">'+esc(new Date(x.created_at).toLocaleString())+' \u00b7 by '+esc((x.actor||'').slice(0,8))+'</small></div>';
-  }).join(''):'<div class="muted dnote">No activity yet.</div>')+'</div>';
+  var p=$('pxBizPanel'); p.innerHTML='<div class="muted dnote">Loading activity…</div>';
+  try{
+   var r=await window.sb.rpc('list_audit',{p_workspace:wsId(),p_limit:100});
+   if(r.error){p.innerHTML='<div class="muted dnote">Could not load activity: '+esc(r.error.message)+'</div>';return}
+   var rows=r.data||[];
+   p.innerHTML='<div class="an-card" style="margin-top:8px"><b>Activity log</b><input id="pxActivitySearch" type="search" aria-label="Search activity" placeholder="Search activity…" style="width:100%;box-sizing:border-box;padding:9px;margin:8px 0"><div id="pxActivityRows"></div></div>';
+   function render(q){
+    q=(q||'').trim().toLowerCase();
+    var filtered=rows.filter(function(x){
+     var what=(x.detail&&(x.detail.party||x.detail.file_name||x.detail.name))||'';
+     return !q||[x.action,x.table_name,what,x.detail&&x.detail.amount,x.actor,x.created_at].join(' ').toLowerCase().indexOf(q)!==-1;
+    });
+    $('pxActivityRows').innerHTML=filtered.map(function(x){
+     var what=(x.detail&&(x.detail.party||x.detail.file_name||x.detail.name))||'';
+     return '<div class="irow" style="font-size:13px"><b>'+esc(x.action)+'</b> '+esc(x.table_name)+' · '+esc(what)+(x.detail&&x.detail.amount?' · '+esc(x.detail.amount):'')+'<br><small class="muted">'+esc(new Date(x.created_at).toLocaleString())+' · by '+esc((x.actor||'').slice(0,8))+'</small></div>';
+    }).join('')||'<div class="muted dnote">'+(rows.length?'No activity matches that search.':'No activity yet.')+'</div>';
+   }
+   $('pxActivitySearch').addEventListener('input',function(){render(this.value)});render('');
+  }catch(err){p.innerHTML='<div class="muted dnote">Activity could not be loaded: '+esc(err.message||err)+'</div>'}
  }
- var editingKnowledgeId=null;
+var editingKnowledgeId=null;
  async function knowledge(){
   var p=$('pxBizPanel');editingKnowledgeId=null;
   var kinds=['product','service','price','policy','faq','hours','delivery','refund','other'];
@@ -461,10 +472,16 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
    return;
   }
   var b=e.target.closest&&e.target.closest('[data-decide]');if(!b)return;
-  b.disabled=true;
-  var r=await window.sb.rpc('decide_agent_action',{p_id:Number(b.getAttribute('data-decide')),p_approve:b.getAttribute('data-ok')==='1'});
-  if(r.error){b.disabled=false;var panel=$('pxBizPanel');var msg=document.createElement('div');msg.className='muted dnote';msg.textContent='Decision was not saved: '+r.error.message;panel.appendChild(msg);return}
-  approvals();
+  var actionButtons=document.querySelectorAll('[data-decide="'+b.getAttribute('data-decide')+'"]');
+  actionButtons.forEach(function(x){x.disabled=true});
+  try{
+   var r=await window.sb.rpc('decide_agent_action',{p_id:Number(b.getAttribute('data-decide')),p_approve:b.getAttribute('data-ok')==='1'});
+   if(r.error)throw r.error;
+   await approvals();
+  }catch(err){
+   actionButtons.forEach(function(x){x.disabled=false});
+   var panel=$('pxBizPanel');var msg=document.createElement('div');msg.className='muted dnote';msg.textContent='Decision was not saved: '+(err.message||err);panel.appendChild(msg);
+  }
  });
  pxReady(function(){
   var w=setInterval(function(){ if(hostCard()&&!document.getElementById('pxBusinesses')){clearInterval(w);switcher()} },800);
