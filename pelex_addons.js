@@ -402,29 +402,37 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
     return '<div class="irow" style="font-size:13px"><b>'+esc(x.action)+'</b> '+esc(x.table_name)+' \u00b7 '+esc(what)+(x.detail&&x.detail.amount?' \u00b7 '+esc(x.detail.amount):'')+'<br><small class="muted">'+esc(new Date(x.created_at).toLocaleString())+' \u00b7 by '+esc((x.actor||'').slice(0,8))+'</small></div>';
   }).join(''):'<div class="muted dnote">No activity yet.</div>')+'</div>';
  }
+ var editingKnowledgeId=null;
  async function knowledge(){
-  var p=$('pxBizPanel');
+  var p=$('pxBizPanel');editingKnowledgeId=null;
   var kinds=['product','service','price','policy','faq','hours','delivery','refund','other'];
-  p.innerHTML='<div class="an-card" style="margin-top:8px"><b>Knowledge base</b><div class="muted dnote">The customer assistant answers only from what you write here.</div>'+
+  p.innerHTML='<div class="an-card" style="margin-top:8px"><b>Knowledge base</b><div class="muted dnote">Keep business facts and customer-service reference information here. Agent-side retrieval must be connected separately.</div>'+
    '<select id="kbKind" style="width:100%;padding:6px;margin:6px 0">'+kinds.map(function(k){return '<option>'+k+'</option>'}).join('')+'</select>'+
    '<input id="kbTitle" placeholder="Title, for example Rice 5kg" style="width:100%;padding:6px;margin-bottom:6px">'+
    '<textarea id="kbBody" placeholder="Details, price or policy" style="width:100%;padding:6px;min-height:70px"></textarea>'+
-   '<button type="button" id="kbSave" class="btn" style="margin-top:6px">Save entry</button><div id="kbList"></div><div id="kbMsg" class="muted dnote"></div></div>';
-  $('kbSave').onclick=async function(){
-   var title=$('kbTitle').value.trim(),body=$('kbBody').value.trim();
-   if(!title||!body){$('kbMsg').textContent='Enter a title and details.';return}
-   var r=await window.sb.from('business_knowledge').insert({workspace_id:wsId(),kind:$('kbKind').value,title:title,body:body});
-   $('kbMsg').textContent=r.error?('Not saved: '+r.error.message):'Saved.';
-   if(!r.error){$('kbTitle').value='';$('kbBody').value='';loadKb()}
-  };
-  loadKb();
+   '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="kbSave" class="btn" style="margin-top:6px">Save entry</button><button type="button" id="kbStopEdit" class="btn alt" style="margin-top:6px" hidden>Cancel edit</button></div><div id="kbList"></div><div id="kbMsg" class="muted dnote"></div></div>';
+  $('kbSave').onclick=saveKnowledge;$('kbStopEdit').onclick=resetKnowledgeForm;loadKb();
+ }
+ function resetKnowledgeForm(){
+  editingKnowledgeId=null;$('kbKind').value='product';$('kbTitle').value='';$('kbBody').value='';
+  $('kbSave').textContent='Save entry';$('kbStopEdit').hidden=true;
+ }
+ async function saveKnowledge(){
+  var title=$('kbTitle').value.trim(),body=$('kbBody').value.trim();
+  if(!title||!body){$('kbMsg').textContent='Enter a title and details.';return}
+  var payload={kind:$('kbKind').value,title:title,body:body};
+  var r=editingKnowledgeId
+   ?await window.sb.from('business_knowledge').update(payload).eq('id',editingKnowledgeId).eq('workspace_id',wsId())
+   :await window.sb.from('business_knowledge').insert(Object.assign({workspace_id:wsId()},payload));
+  $('kbMsg').textContent=r.error?('Not saved: '+r.error.message):(editingKnowledgeId?'Changes saved.':'Entry saved.');
+  if(!r.error){resetKnowledgeForm();loadKb()}
  }
  async function loadKb(){
   var r=await window.sb.from('business_knowledge').select('id,kind,title,body').eq('workspace_id',wsId()).order('updated_at',{ascending:false});
-  var l=$('kbList'); if(!l)return;
+  var l=$('kbList');if(!l)return;
   if(r.error){l.innerHTML='<div class="muted dnote">Could not load saved knowledge: '+esc(r.error.message)+'</div>';return}
   var rows=r.data||[];
-  l.innerHTML=rows.map(function(x){return '<div class="irow" style="font-size:13px;margin-top:6px"><b>'+esc(x.title)+'</b> <span class="muted">'+esc(x.kind)+'</span><br>'+esc(x.body)+'</div>'}).join('')||'<div class="muted dnote">Nothing written yet.</div>';
+  l.innerHTML=rows.map(function(x){return '<div class="irow" style="font-size:13px;margin-top:6px"><b>'+esc(x.title)+'</b> <span class="muted">'+esc(x.kind)+'</span><br>'+esc(x.body)+'<div style="display:flex;gap:6px;margin-top:5px"><button type="button" class="btn alt" data-kb-edit="'+esc(x.id)+'">Edit</button><button type="button" class="btn alt" data-kb-delete="'+esc(x.id)+'">Delete</button></div></div>'}).join('')||'<div class="muted dnote">Nothing written yet.</div>';
  }
  async function approvals(){
   var p=$('pxBizPanel');
@@ -436,7 +444,23 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
    }).join(''):'<div class="muted dnote">Nothing waiting.</div>')+'</div>';
  }
  document.addEventListener('click',async function(e){
-  var b=e.target.closest&&e.target.closest('[data-decide]'); if(!b)return;
+  var edit=e.target.closest&&e.target.closest('[data-kb-edit]');
+  if(edit){
+   var er=await window.sb.from('business_knowledge').select('id,kind,title,body').eq('id',edit.getAttribute('data-kb-edit')).eq('workspace_id',wsId()).maybeSingle();
+   if(er.error||!er.data){$('kbMsg').textContent='Could not open entry: '+(er.error?er.error.message:'Entry not found.');return}
+   editingKnowledgeId=er.data.id;$('kbKind').value=er.data.kind;$('kbTitle').value=er.data.title;$('kbBody').value=er.data.body;$('kbSave').textContent='Save changes';$('kbStopEdit').hidden=false;return;
+  }
+  var del=e.target.closest&&e.target.closest('[data-kb-delete]');
+  if(del){
+   if(!confirm('Delete this knowledge entry?'))return;
+   del.disabled=true;
+   var dr=await window.sb.from('business_knowledge').delete().eq('id',del.getAttribute('data-kb-delete')).eq('workspace_id',wsId());
+   $('kbMsg').textContent=dr.error?'Could not delete: '+dr.error.message:'Entry deleted.';
+   if(!dr.error){if(String(editingKnowledgeId)===String(del.getAttribute('data-kb-delete')))resetKnowledgeForm();loadKb()}else del.disabled=false;
+   return;
+  }
+  var b=e.target.closest&&e.target.closest('[data-decide]');if(!b)return;
+  b.disabled=true;
   b.disabled=true;
   var r=await window.sb.rpc('decide_agent_action',{p_id:Number(b.getAttribute('data-decide')),p_approve:b.getAttribute('data-ok')==='1'});
   if(r.error){b.disabled=false;var panel=$('pxBizPanel');var msg=document.createElement('div');msg.className='muted dnote';msg.textContent='Decision was not saved: '+r.error.message;panel.appendChild(msg);return}
