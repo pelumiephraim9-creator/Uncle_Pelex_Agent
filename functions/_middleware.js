@@ -1,15 +1,22 @@
-/* PELEX ADD-ONS: adds the Pelex add-on script to every HTML page at the edge.
-   Install once. New features go into pelex_addons.js (or extra files listed here); index.html never needs editing again. */
-const ADDONS = ['/pelex_addons.js'];
+/* PELEX BUSINESS ADD-ON LOADER
+   Load the add-on only on the main Pelex application document.
+   The add-on itself checks for the Business dashboard before rendering anything.
+   Existing HTML, authentication and other application routes are left untouched. */
+const ADDON = '/pelex_addons.js';
 
 export async function onRequest(context) {
+  const pathname = new URL(context.request.url).pathname;
+  if (pathname !== '/' && pathname !== '/index.html') {
+    return context.next();
+  }
+
   const response = await context.next();
   const type = response.headers.get('content-type') || '';
   if (!type.includes('text/html')) return response;
-  let rewriter = new HTMLRewriter();
-  rewriter = rewriter.on('body', {
-    element(el) {
-      for (const src of ADDONS) el.append(`<script src="${src}" defer></script>`, { html: true });
+
+  const rewriter = new HTMLRewriter().on('body', {
+    element(element) {
+      element.append('<script src="' + ADDON + '" defer></script>', { html: true });
     }
   });
   return rewriter.transform(response);
