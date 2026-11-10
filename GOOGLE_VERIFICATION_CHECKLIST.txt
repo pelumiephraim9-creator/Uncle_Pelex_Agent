@@ -1,33 +1,97 @@
-Google OAuth verification: what to submit (Pelex)
+Google OAuth and Gmail API verification checklist — Pelex
+Last reviewed: 10 November 2026
 
-1. Website and domain
+IMPORTANT — CURRENT PRODUCT STATUS
+- Google sign-in is already used for account authentication through Supabase Auth. This is not Gmail API access.
+- The Gmail Bot currently drafts email text and opens a Gmail compose window for the user to review and send manually.
+- Gmail inbox connection, message reading, labels, account switches and Gmail API sending are NOT currently enabled.
+- Google Calendar, Drive and Sheets connectors are NOT currently enabled.
+- Do not request Gmail, Calendar, Drive or Sheets scopes, and do not submit a Gmail API verification request, until the relevant connector is implemented, tested and accurately described in the live product and privacy policy.
+
+1. Website, branding and domain
    - Homepage: https://pelex.tech
    - Privacy policy: https://pelex.tech/privacy.html
    - Terms of service: https://pelex.tech/terms.html
-   - Verify pelex.tech in Google Search Console (DNS TXT record in Cloudflare, set to DNS only).
-   - Both pages must be live and match what the app does before you submit.
-
-2. OAuth consent screen
    - App name: Pelex
    - Support email: support@pelex.tech
    - Developer contact: hello@pelex.tech
-   - Authorised domain: pelex.tech
+   - Verify pelex.tech in Google Search Console using an account that is an Owner or Editor on the Google Cloud project.
+   - Make sure the homepage, privacy policy and terms are publicly accessible over HTTPS on the verified domain.
+   - Confirm the homepage clearly describes Pelex and links to the privacy policy and terms.
+   - Confirm that every domain used for homepage, privacy, terms, JavaScript origins and redirect URIs is owned/authorised and verified.
 
-3. Scopes: request only what each feature needs. Justify each one in one or two sentences.
-   - gmail.send (sending an email the user has approved)
-   - gmail.readonly (only if the feature reads mail the user chose to search)
-   - calendar.readonly or calendar.events (only for meeting suggestions and bookings the user approves)
-   - sheets / drive.file (only for files the user creates or picks through Pelex)
+2. Google sign-in only (current Google integration)
+   - Keep sign-in scopes limited to basic identity/profile scopes required for authentication.
+   - Google sign-in does not require Gmail API scopes.
+   - Complete Google OAuth brand verification for the app name, logo, homepage, privacy policy, terms and support contact as requested by Google.
+   - Use HTTPS JavaScript origins and redirect URIs that match the deployed application and Supabase Auth callback configuration.
+   - Test sign-in and sign-out on the production domain.
 
-4. Demo video (unlisted YouTube), shows:
-   - Sign-in, and the consent screen with the scopes listed
-   - The user connecting Google, and choosing the feature
-   - The approval step before any email is sent
-   - Disconnecting Google from Settings
+3. Gmail API scopes — FUTURE, only after the Gmail connector is implemented
+   Request only the exact scopes needed by the shipped feature. Use the full scope URI in Google Cloud Console and provide a clear user-benefit justification.
 
-5. Limited Use statement (already in the privacy policy, section 5): keep it exactly as written.
+   - https://www.googleapis.com/auth/gmail.send
+     Classification: sensitive.
+     Use only if Pelex actually sends messages through the Gmail API after the user's explicit approval.
 
-6. Before you submit
-   - Do not request scopes for features that are not switched on yet; add them when they are built.
-   - Keep the Google features in Testing mode until verification is approved (up to 100 test users).
-   - Make sure every claim in the privacy policy is true of the live app on the day you submit.
+   - https://www.googleapis.com/auth/gmail.readonly
+     Classification: restricted.
+     Use only if Pelex actually reads messages/settings for a clearly described user-requested feature, such as searching or summarising selected mail.
+
+   - https://www.googleapis.com/auth/gmail.compose
+     Classification: restricted.
+     Use only if Pelex actually creates/manages drafts or sends through the Gmail API and this scope is necessary. Do not request it merely to open a Gmail compose window in the user's browser.
+
+   - Do not request https://mail.google.com/ unless the product genuinely needs its broad read/compose/send/permanent-delete access. Prefer narrower scopes.
+
+   Google classifies Gmail scopes by sensitivity. Restricted-scope data stored on or transmitted through Pelex servers may require a third-party security assessment. Confirm the current requirements for the exact scopes before submission.
+
+4. Other Google Workspace connectors — FUTURE
+   - Calendar: request only the specific read or event-management scopes required by implemented meeting features.
+   - Drive: request only file access needed by the feature; prefer file-specific access where possible.
+   - Sheets: request only the spreadsheet access needed by the feature.
+   - Do not request scopes for connectors that are still marked Soon or are not implemented.
+   - Recheck the sensitivity/restricted classification of every exact scope in Google Cloud Console before submission.
+
+5. OAuth consent and user experience
+   - Use separate Google Cloud projects for development/testing and production.
+   - Configure the correct app name, logo, support email, developer contact and authorised domains.
+   - Show a clear explanation before asking users to connect Google.
+   - The consent screen must match the scopes the app actually requests.
+   - Users must be able to disconnect a connected account and revoke access.
+   - Keep testing access limited while the app is under development; follow the current test-user limits shown in Google Cloud Console.
+
+6. Privacy, Limited Use and security
+   - The published Privacy Policy must accurately describe how Google user data is accessed, used, stored, shared, retained and deleted.
+   - Keep the Google API Services User Data Policy and Limited Use disclosure in the Privacy Policy when Google API data is used.
+   - Do not use Google user data for advertising or to train AI models.
+   - Do not allow human access to Google user data except as permitted by Google's policy, law, or the user's explicit request/consent.
+   - Document which AI/service providers receive Google data, why they receive it, and the contractual safeguards that apply.
+   - Store OAuth tokens securely on the server; do not expose them to the browser or log them.
+   - Implement disconnect/revocation and deletion of stored tokens and associated Google data.
+   - Complete a security assessment if required for the restricted scopes and data handling model.
+
+7. Demo video — only when the connector is implemented
+   Record an unlisted YouTube demonstration showing:
+   - Sign-in and the OAuth consent screen with the exact requested scopes.
+   - The user connecting their Google account.
+   - The user choosing the Gmail feature and seeing what data it accesses.
+   - The user reviewing and approving an email before any API send.
+   - Disconnecting Google and explaining what data/tokens are deleted.
+
+8. Before submitting
+   - Confirm the production build matches the reviewed code.
+   - Confirm the homepage, privacy and terms URLs are live and publicly accessible.
+   - Confirm domain ownership and all OAuth origins/redirect URIs.
+   - Confirm the requested scopes are implemented, necessary and justified individually.
+   - Confirm the demo video shows the real production behaviour.
+   - Confirm the privacy policy accurately reflects actual data flows and retention.
+   - Do not submit Gmail API verification while the Gmail connector is still disabled.
+   - Google verification is an approval process; completing this checklist does not guarantee approval.
+
+Official references
+- Gmail API scopes: https://developers.google.com/workspace/gmail/api/auth/scopes
+- OAuth policy compliance: https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance
+- Sensitive scope verification: https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification
+- Restricted scope verification: https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification
+- Google API Services User Data Policy: https://developers.google.com/terms/api-services-user-data-policy
