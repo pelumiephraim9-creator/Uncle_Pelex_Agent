@@ -527,6 +527,7 @@ var editingKnowledgeId=null;
  @media (min-width: 900px){
    #v-business>.wrap,#v-pitch>.wrap,#v-gmail>.wrap,#v-spotlight>.wrap{width:100%;max-width:1600px;margin-left:auto;margin-right:auto;padding-left:clamp(20px,2.4vw,42px);padding-right:clamp(20px,2.4vw,42px);box-sizing:border-box}
    #v-business .dash,#v-pitch .dash,#v-gmail .dash{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:18px;width:100%}
+   #v-business .dash[hidden],#v-pitch .dash[hidden],#v-gmail .dash[hidden]{display:none!important}
    #v-business .dash>.dcard,#v-pitch .dash>.dcard,#v-gmail .dash>.dcard{min-width:0;width:100%;margin:0;box-sizing:border-box}
    #v-business #bDash,#v-pitch #pDash,#v-gmail #gDash{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
    #v-gmail #gDash>.dcard{align-self:stretch}
