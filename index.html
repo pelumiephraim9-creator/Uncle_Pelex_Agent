@@ -1370,11 +1370,11 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div id="gmOut" class="md" style="margin-top:12px" hidden></div>
 <div id="gmTools" style="display:none;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="gmCopy">Copy</button><button class="btn" type="button" id="gmOpen">Open in Gmail</button><button class="btn" type="button" data-gm="Make it shorter and more direct.">Shorter</button><button class="btn" type="button" data-gm="Make it warmer and more personal.">Warmer</button><button class="btn" type="button" data-gm="Make it more formal and professional.">More formal</button></div></div>
 <div class="card" style="margin-top:14px"><h2>Your Gmail accounts</h2>
-<div class="muted" id="gmStatus">Connecting your inbox (reading, summarising, labels and replies) turns on by itself once Google approves Pelex. Writing and voice work now.</div>
+<div class="muted" id="gmStatus">Inbox connection, reading, labels and replies are not available yet. You can draft email text with AI and open it in Gmail to review and send yourself.</div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="gmConnect" disabled>Connect Gmail</button></div>
-<div class="muted" style="margin-top:12px">When connected, each account has its own ON/OFF switch. Switching OFF stops Pelex working on that account. Disconnecting removes its access and stored sign-in. They are separate actions.</div></div>
+<div class="muted" style="margin-top:12px">Gmail account connection and account ON/OFF switches are not available yet. Pelex does not currently access your inbox or send email through the Gmail API.</div></div>
 <div class="card" style="margin-top:14px"><h2>How your privacy is handled</h2>
-<div class="muted">Pelex drafts for you to review and never sends on its own. Attachments and images are not read. Voice input uses your browser's speech service, which may send audio to your device maker. Sign-in tokens are kept on the server, never in your browser.</div></div>
+<div class="muted">Pelex drafts email text for you to review and open in Gmail. You send it yourself. Pelex does not currently read your inbox, attachments or labels. Voice input uses your browser's speech service, which may send audio to your device maker.</div></div>
 </div></section>
 <section class="view" id="v-business" hidden><div class="wrap"><div class="abanner" data-agent="business" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="business">Schedule a task for this agent</button></div>
 <h1>Business Bot</h1><div class="muted">Tell Pelex about your business. Your bot answers customers in your tone and stays inside the limits you set.</div>
@@ -1792,15 +1792,13 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </ul>
 <p class="note">Read-only tasks you request in chat, such as summarising one email you choose, run after your request. Bulk reading, exporting, or reading beyond the task is treated as a sensitive action and needs both steps.</p>
 <p>We keep a record of approved actions so you can review what was done and when.</p></section><section class="sec" id="google"><h2>7. Google user data</h2>
-<p>When you sign in with Google, we receive your basic profile (name, email and picture). If you connect Gmail or Calendar later, the Service asks for the specific permissions each feature needs, and only uses them for those features.</p>
-<p>Pelex's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including its Limited Use requirements. We do not use Google user data for advertising. We do not sell it. We do not let humans read your Gmail content, except where you ask us to for support, or where the law requires it. Gmail content is sent to our AI providers only to deliver the feature you asked for, under contracts that prohibit them from using it to train their models.</p>
-<p>You can disconnect any Google account at any time in Settings, or from your Google account settings. Disconnecting removes Pelex's access and stored sign-in tokens.</p></section><section class="sec" id="gmail"><h2>8. Gmail Bot</h2>
+<p>Google sign-in is separate from Gmail access. When you choose Google sign-in, we receive your basic profile (name, email and picture) through Supabase Auth. This does not grant access to Gmail, Calendar, Drive or Sheets.</p>
+<p>Google Workspace connectors are not currently enabled in Pelex. The Gmail Bot currently drafts email text and can open a compose window in Gmail for you to review and send yourself. Pelex does not currently read Gmail messages, attachments or labels, and does not send through the Gmail API. It does not currently access Calendar, Drive or Sheets content through Google APIs.</p>
+<p>If a Google API connector is introduced, Pelex will explain it and request the necessary permissions on a separate Google consent screen before accessing that data. You can decline or disconnect it. Before launch, this policy will be updated to describe the data accessed, use, processing, retention and deletion. When and if Google API data is processed, Pelex's use and transfer of that data will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including its Limited Use requirements. We do not sell Google user data or use it for advertising or AI model training.</p></section><section class="sec" id="gmail"><h2>8. Gmail Bot</h2>
 <ul>
-<li><b>Several accounts, each with a switch.</b> Turn an account on or off at any time. When it is off, Pelex stops reading or acting on it.</li>
-<li><b>Drafts and sends with your approval.</b> Pelex drafts emails and shows them to you. Nothing is sent until you approve it in two steps (see section 6).</li>
-<li><b>Labels and summaries.</b> Pelex can suggest a label or a summary. It asks before it creates or changes anything.</li>
-<li><b>Sensitive content is left alone.</b> The Gmail Bot is built not to act on PINs, passwords or payment details it sees in an email.</li>
-<li><b>Flip-card view.</b> Your recent emails appear as summary cards. They are only shown to you.</li>
+<li><b>Current capability.</b> The Gmail Bot uses AI to draft email text and can open a compose window in Gmail. You review the draft and send it yourself from Gmail.</li>
+<li><b>No inbox connection yet.</b> Gmail account connection, inbox reading, message summaries, labels, account switches and sending through the Gmail API are not currently enabled in Pelex.</li>
+<li><b>Future permissions.</b> If inbox or sending connectors become available, Pelex will show the Google permissions requested and obtain your separate authorisation before using them.</li>
 </ul></section><section class="sec" id="pitch"><h2>9. Pitch Agent (jobs and clients)</h2>
 <ul>
 <li><b>What it reads.</b> Public company websites, public job pages and public company information (such as published funding or revenue, news and hiring activity). It does not log into private accounts, bypass access controls, or collect personal data about other people beyond what a public job posting shows.</li>
@@ -1869,7 +1867,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 </ul></section><section class="sec" id="changes"><h2>19. Changes and contact</h2>
 <p>When we change this policy, we update the date at the top and, for important changes, tell you in the app. Questions or requests: <a href="mailto:hello@pelex.tech">hello@pelex.tech</a>.</p></section></div></div><div class="pp-part"><div class="pp-sec"><section class="sec" id="accept"><h2>1. Agreement to these terms</h2>
 <p>These Terms of Service ("Terms") are a contract between you and PelexSkillHub, which builds and runs Pelex in Nigeria. By creating an account, or using the chat, voice, image, Business Agent, Pitch Agent, Gmail Bot, scheduled tasks, meeting notes or any other part of the Service, you agree to these Terms and to our Privacy Policy. If you do not agree, do not use the Service.</p>
-<p>You must be at least 13 years old to use the Service. If you are under 18, you need permission from a parent or guardian.</p></section><section class="sec" id="service"><h2>2. What the Service includes</h2>
+<p>You must be at least 18 years old to use the Service.</p></section><section class="sec" id="service"><h2>2. What the Service includes</h2>
 <ul>
 <li><b>General chat.</b> Ask questions, plan, write, search the web, analyse files and images, write code, and use voice.</li>
 <li><b>Images.</b> Create images from a description, or edit an image you attach. Generated images are kept for 2 days.</li>
@@ -1877,7 +1875,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <li><b>Scheduled tasks.</b> Set tasks to run on a schedule, with results shown in the app.</li>
 <li><b>Business Agent.</b> A business support bot, a revenue chart and report, a calendar of meetings, an inbox for customer messages, and meeting notes.</li>
 <li><b>Pitch Agent.</b> Searches public job and company information, builds proposals for your approval, and tracks your progress.</li>
-<li><b>Gmail Bot.</b> Works on the Gmail accounts you connect and switch on.</li>
+<li><b>Gmail Bot.</b> Drafts email text with AI and opens a compose window in Gmail for you to review and send yourself. Inbox connection and Gmail API access are not currently enabled.</li>
 <li><b>Connectors and creative tools</b> that we make available from time to time. Features marked "Soon" are not yet available.</li>
 </ul>
 <p>We may change, add or remove features. We will try to give notice of material changes.</p></section><section class="sec" id="account"><h2>3. Your account</h2>
@@ -1903,10 +1901,10 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <li>use the Service to create unlawful, sexual content involving minors, or content that is defamatory or infringes intellectual property.</li>
 </ul></section><section class="sec" id="you"><h2>6. Your responsibility for what is sent</h2>
 <ul>
-<li><b>You approve every message.</b> The Pitch Agent and the Gmail Bot send an email only after you approve it in two steps (see section 7). You are responsible for the content you approve and send.</li>
+<li><b>Email drafts and sending.</b> The current Gmail Bot drafts email text and opens a compose window in Gmail; you review and send it yourself. Any future Pelex feature that sends email through a connected account must obtain your approval before sending.</li>
 <li><b>Customer messages.</b> The Business Agent answers your customers using the information and limits you set. You are responsible for the business information you provide, the prices and promises your bot gives, and your dealings with your customers.</li>
 <li><b>Meetings.</b> If you use meeting notes, you must tell the participants and get any consent the law requires before recording or transcribing.</li>
-<li><b>Gmail.</b> Your use of connected Google accounts is also subject to Google's terms.</li>
+<li><b>Google accounts.</b> Google sign-in is separate from any future Gmail or Google Workspace connector. Any future connector will be subject to Google's terms and a separate permission screen.</li>
 </ul></section><section class="sec" id="perm"><h2>7. Permissions and two-step approval</h2>
 <p>Pelex agents must not take a sensitive action on your behalf, or on any Google or other connected third-party app, without your approval in two steps:</p>
 <ul>
