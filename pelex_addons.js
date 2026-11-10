@@ -373,20 +373,25 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
  });
  document.addEventListener('click',async function(e){
   var t=e.target;
-  if(t.id==='pxBizNew'){
-   var name=prompt('Name of the new business:');if(!name)return;
-   var typeList=TYPES.map(function(x,i){return (i+1)+'. '+x[1]}).join('\n');
-   var pick=prompt('Choose the business type (type its number):\n'+typeList,'1');
-   var code=TYPES[(parseInt(pick,10)||1)-1]||TYPES[0];
-   var cur=prompt('Currency (for example NGN or USD):','NGN')||'NGN';
-   var r=await window.sb.rpc('create_business',{p_name:name,p_business_type:code[0],p_currency:cur});
-   if(r.error){alert('Could not create the business: '+r.error.message);return}
-   setWs(r.data); location.reload();
+  if(t.id==='pxBizNew'){showNewBusinessForm();return}
+  if(t.id==='pxBizCancel'){var form=$('pxBizCreateForm');if(form)form.remove();return}
+  if(t.id==='pxBizCreateSubmit'){
+   e.preventDefault();
+   var name=$('pxBizName').value.trim(),kind=$('pxBizType').value,cur=$('pxBizCurrency').value.trim().toUpperCase()||'NGN';
+   if(!name){$('pxBizCreateMsg').textContent='Enter a business name.';return}
+   t.disabled=true;$('pxBizCreateMsg').textContent='Creating business…';
+   var r=await window.sb.rpc('create_business',{p_name:name,p_business_type:kind,p_currency:cur});
+   if(r.error){$('pxBizCreateMsg').textContent='Could not create the business: '+r.error.message;t.disabled=false;return}
+   setWs(r.data);location.reload();
   }
   if(t.id==='pxActivity')activity();
   if(t.id==='pxKnow')knowledge();
   if(t.id==='pxApprovals')approvals();
  });
+ function showNewBusinessForm(){
+  var p=$('pxBizPanel');if(!p)return;
+  p.innerHTML='<div id="pxBizCreateForm" class="an-card" style="margin-top:8px"><b>Create a business</b><label class="dnote" style="display:block;margin-top:8px">Business name<input id="pxBizName" type="text" maxlength="100" placeholder="Enter business name" style="display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:4px"></label><label class="dnote" style="display:block;margin-top:8px">Business type<select id="pxBizType" style="display:block;width:100%;padding:10px;margin-top:4px">'+TYPES.map(function(x){return '<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>'}).join('')+'</select></label><label class="dnote" style="display:block;margin-top:8px">Currency<input id="pxBizCurrency" type="text" maxlength="5" value="NGN" style="display:block;width:100%;box-sizing:border-box;padding:10px;margin-top:4px"></label><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button id="pxBizCreateSubmit" type="button" class="btn">Create business</button><button id="pxBizCancel" type="button" class="btn alt">Cancel</button></div><div id="pxBizCreateMsg" class="muted dnote" role="status" style="margin-top:8px"></div></div>';
+ }
  async function activity(){
   var p=$('pxBizPanel'); p.innerHTML='<div class="muted dnote">Loading activity\u2026</div>';
   var r=await window.sb.rpc('list_audit',{p_workspace:wsId(),p_limit:100});
