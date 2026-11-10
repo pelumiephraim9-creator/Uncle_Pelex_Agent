@@ -460,17 +460,18 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   return null;
  }
  async function paint(){
-  var tile=findTile(); if(!tile||tile.id==='pxPieTile'||!window.sb)return;
-  var pr=await window.sb.from('business_projects').select('id').eq('workspace_id',wsId()).order('created_at',{ascending:true});
-  var pid=(pr.data&&pr.data[0])?pr.data[0].id:null; if(!pid)return;
-  var r=await window.sb.rpc('project_summary',{p_project:pid,p_month:null}); if(r.error)return;
-  var s=r.data||{}, base=Math.max(Number(s.foundation)||0,1), prof=Number(s.profit)||0, c=s.currency||'NGN';
-  var part=Math.min(100,Math.round(Math.abs(prof)/base*100));
-  var col=prof>=0?'#15803d':'#b91c1c';
+  var tile=document.getElementById('pxPieTile')||findTile();if(!tile||!window.sb)return;
+  var pid='';try{pid=localStorage.getItem('px_project_'+wsId())||''}catch(e){}
+  if(!pid){
+   var pr=await window.sb.from('business_projects').select('id').eq('workspace_id',wsId()).order('created_at',{ascending:true});
+   pid=(pr.data&&pr.data[0])?String(pr.data[0].id):'';
+  }
+  if(!pid)return;
+  var r=await window.sb.rpc('project_summary',{p_project:pid,p_month:null});if(r.error)return;
+  var x=r.data||{},profit=Number(x.profit)||0,foundation=Number(x.foundation)||0,c=x.currency||'NGN';
+  var part=foundation>0?Math.min(100,Math.round(Math.abs(profit)/foundation*100)):0,col=profit>=0?'#15803d':'#b91c1c';
   var ring='conic-gradient(#0b1b4a 0% '+(100-part)+'%, '+col+' '+(100-part)+'% 100%)';
   tile.id='pxPieTile';
-  tile.innerHTML='<div style="display:flex;gap:14px;align-items:center;padding:8px"><div style="width:110px;height:110px;border-radius:50%;background:'+ring+';flex:none;position:relative"><div style="position:absolute;inset:26px;border-radius:50%;background:#fff"></div></div>'+
-   '<div style="font-size:13px"><b>Startup balance</b><div>Foundation '+esc(Number(s.foundation).toLocaleString())+' '+esc(c)+'</div><div style="color:'+col+'">'+(prof>=0?'Profit':'Loss')+' so far '+esc(Math.abs(prof).toLocaleString())+'</div><div><b>Balance '+esc(Number(s.balance).toLocaleString())+' '+esc(c)+'</b></div></div></div>';
- }
- setInterval(paint,2500);
+  tile.innerHTML='<div style="display:flex;gap:14px;align-items:center;padding:8px;flex-wrap:wrap"><div style="width:110px;height:110px;border-radius:50%;background:'+ring+';flex:none;position:relative"><div style="position:absolute;inset:26px;border-radius:50%;background:var(--panel,#fff)"></div></div><div style="font-size:13px"><b>Startup balance</b><div>Foundation '+esc(Number(x.foundation||0).toLocaleString())+' '+esc(c)+'</div><div style="color:'+col+'">'+(profit>=0?'Profit':'Loss')+' so far '+esc(Math.abs(profit).toLocaleString())+'</div><div><b>Balance '+esc(Number(x.balance||0).toLocaleString())+' '+esc(c)+'</b></div></div></div>';
+ } setInterval(paint,2500);
 })();
