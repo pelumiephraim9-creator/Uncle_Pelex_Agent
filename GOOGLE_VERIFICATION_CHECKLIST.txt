@@ -1,0 +1,33 @@
+Google OAuth verification: what to submit (Pelex)
+
+1. Website and domain
+   - Homepage: https://pelex.tech
+   - Privacy policy: https://pelex.tech/privacy.html
+   - Terms of service: https://pelex.tech/terms.html
+   - Verify pelex.tech in Google Search Console (DNS TXT record in Cloudflare, set to DNS only).
+   - Both pages must be live and match what the app does before you submit.
+
+2. OAuth consent screen
+   - App name: Pelex
+   - Support email: support@pelex.tech
+   - Developer contact: hello@pelex.tech
+   - Authorised domain: pelex.tech
+
+3. Scopes: request only what each feature needs. Justify each one in one or two sentences.
+   - gmail.send (sending an email the user has approved)
+   - gmail.readonly (only if the feature reads mail the user chose to search)
+   - calendar.readonly or calendar.events (only for meeting suggestions and bookings the user approves)
+   - sheets / drive.file (only for files the user creates or picks through Pelex)
+
+4. Demo video (unlisted YouTube), shows:
+   - Sign-in, and the consent screen with the scopes listed
+   - The user connecting Google, and choosing the feature
+   - The approval step before any email is sent
+   - Disconnecting Google from Settings
+
+5. Limited Use statement (already in the privacy policy, section 5): keep it exactly as written.
+
+6. Before you submit
+   - Do not request scopes for features that are not switched on yet; add them when they are built.
+   - Keep the Google features in Testing mode until verification is approved (up to 100 test users).
+   - Make sure every claim in the privacy policy is true of the live app on the day you submit.
