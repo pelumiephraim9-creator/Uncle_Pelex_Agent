@@ -422,12 +422,14 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
  async function loadKb(){
   var r=await window.sb.from('business_knowledge').select('id,kind,title,body').eq('workspace_id',wsId()).order('updated_at',{ascending:false});
   var l=$('kbList'); if(!l)return;
+  if(r.error){l.innerHTML='<div class="muted dnote">Could not load saved knowledge: '+esc(r.error.message)+'</div>';return}
   var rows=r.data||[];
   l.innerHTML=rows.map(function(x){return '<div class="irow" style="font-size:13px;margin-top:6px"><b>'+esc(x.title)+'</b> <span class="muted">'+esc(x.kind)+'</span><br>'+esc(x.body)+'</div>'}).join('')||'<div class="muted dnote">Nothing written yet.</div>';
  }
  async function approvals(){
   var p=$('pxBizPanel');
   var r=await window.sb.from('agent_actions').select('id,level,action,payload,status,created_at').eq('workspace_id',wsId()).eq('status','pending').order('created_at',{ascending:true});
+  if(r.error){p.innerHTML='<div class="an-card muted">Could not load approvals: '+esc(r.error.message)+'</div>';return}
   var rows=r.data||[];
   p.innerHTML='<div class="an-card" style="margin-top:8px"><b>Waiting for your approval</b>'+(rows.length?rows.map(function(x){
     return '<div class="irow" style="font-size:13px;margin-top:6px"><b>Level '+x.level+'</b> \u00b7 '+esc(x.action)+'<br><small class="muted">'+esc(new Date(x.created_at).toLocaleString())+'</small><div style="display:flex;gap:6px;margin-top:4px"><button type="button" class="btn" data-decide="'+x.id+'" data-ok="1">Approve</button><button type="button" class="btn alt" data-decide="'+x.id+'" data-ok="0">Reject</button></div></div>'
@@ -435,8 +437,9 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
  }
  document.addEventListener('click',async function(e){
   var b=e.target.closest&&e.target.closest('[data-decide]'); if(!b)return;
+  b.disabled=true;
   var r=await window.sb.rpc('decide_agent_action',{p_id:Number(b.getAttribute('data-decide')),p_approve:b.getAttribute('data-ok')==='1'});
-  if(r.error){alert('Not decided: '+r.error.message);return}
+  if(r.error){b.disabled=false;var panel=$('pxBizPanel');var msg=document.createElement('div');msg.className='muted dnote';msg.textContent='Decision was not saved: '+r.error.message;panel.appendChild(msg);return}
   approvals();
  });
  pxReady(function(){
