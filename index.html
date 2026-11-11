@@ -6522,7 +6522,7 @@ function pxCommandHelp(){
   activeProject=stored;
   picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · including unassigned</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
   currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';
-  picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';load()};
+  picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';load();if(window.__lsLoad)window.__lsLoad();if(window.__pxRegisterReady)window.__pxRegisterReady()};
  }
  async function load(){
   if(!mounted||!(window.sb&&window.curUser&&ws()))return;
