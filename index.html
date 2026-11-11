@@ -5069,21 +5069,22 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var parsed=cached.parsed;
   if(!parsed||!parsed.rows.length){upSay('No valid rows to import. Nothing was saved. Check the date, amount and transaction type columns.',true);return}
   var chosen=(document.querySelector('input[name="upcur"]:checked')||{}).value;
-  var cur=chosen||(parsed.currencies.length===1?parsed.currencies[0]:null);
-  if(parsed.currencies.length>1&&!chosen){upSay('Choose the reporting currency first.',true);return}
-  if(!cur){var wc=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();cur=(wc.data&&wc.data.reporting_currency)||null}
-  if(!cur){upSay('Set the business reporting currency before importing this file.',true);return}
   var projectId=null;
   var projectPicker=$w('pxTrProject');
   if(projectPicker&&projectPicker.value&&projectPicker.value!=='all')projectId=projectPicker.value;
   else{try{var saved=localStorage.getItem('px_project_'+ws);if(saved&&saved!=='all')projectId=saved}catch(e){}}
-  var projectsRes=await sb.from('business_projects').select('id').eq('workspace_id',ws).order('created_at',{ascending:true});
+  var projectsRes=await sb.from('business_projects').select('id,currency').eq('workspace_id',ws).order('created_at',{ascending:true});
   if(projectsRes.error){upSay('Could not check the business projects: '+errText(projectsRes.error),true);return}
   var projectList=projectsRes.data||[];
   if(!projectId&&projectList.length===1)projectId=projectList[0].id;
   if(!projectId&&projectList.length>1){upSay('Choose one project in the Transaction register before importing. The file has not been saved.',true);return}
   if(!projectId){upSay('Create or select a business project before importing. The file has not been saved.',true);return}
-  if(projectId&&!projectList.some(function(p){return p.id===projectId})){upSay('The selected project does not belong to this workspace. Refresh and choose it again.',true);return}
+  var selectedProject=projectList.find(function(p){return p.id===projectId});
+  if(!selectedProject){upSay('The selected project does not belong to this workspace. Refresh and choose it again.',true);return}
+  var cur=String(selectedProject.currency||'').toUpperCase();
+  if(!/^[A-Z]{3}$/.test(cur)){upSay('Set a valid reporting currency in this project before importing.',true);return}
+  if(chosen&&String(chosen).toUpperCase()!==cur){upSay('The selected currency does not match this project. Use '+cur+' or create a separate project for another currency.',true);return}
+  if((parsed.currencies||[]).some(function(c){return String(c).toUpperCase()!==cur})){upSay('This file contains a currency different from the selected project ('+cur+'). Convert the file or import it into a separate project. No data was saved.',true);return}
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var path=ws+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
   upSay('Checking for duplicates…');
@@ -6251,8 +6252,10 @@ window.pxDuplicate=async function(hash){
  async function refreshDeleted(){
   var box=$r('lsDeleted');if(!box)return;
   if(!(await isOwner())){box.innerHTML='';return}
-  var ws=localStorage.getItem('pelex_ws')||'';
-  var r=await sb.from('uploads').select('id,file_name,deleted_at').eq('workspace_id',ws).not('deleted_at','is',null).order('deleted_at',{ascending:false});
+  var ws=localStorage.getItem('pelex_ws')||'',projectId='';
+  try{projectId=localStorage.getItem('px_project_'+ws)||''}catch(e){}
+  if(!projectId||projectId==='all'){box.innerHTML='<div class="muted dnote">Select one business project to view its deleted files.</div>';return}
+  var r=await sb.from('uploads').select('id,file_name,deleted_at,project_id').eq('workspace_id',ws).eq('project_id',projectId).not('deleted_at','is',null).order('deleted_at',{ascending:false});
   var list=r.data||[];
   box.innerHTML='<div style="margin-top:14px"><b>Deleted files</b> <span class="muted dnote">kept for one year, you can restore them</span></div>'+
    (list.length?list.map(function(u){return '<div class="irow" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>'+esc(u.file_name)+'<br><small class="muted">Deleted '+new Date(u.deleted_at).toLocaleDateString()+'</small></span><button type="button" class="btn alt" data-restore="'+u.id+'" style="padding:4px 8px;font-size:12px">Restore</button></div>'}).join(''):'<div class="muted dnote">Nothing deleted.</div>');
@@ -6291,9 +6294,12 @@ window.pxDuplicate=async function(hash){
  function today(){return new Date().toLocaleDateString('sv-SE')}
  async function totals(){
   if(!(window.sb&&window.curUser&&wsId()))return {text:'Sign in to see today',count:0};
-  var s=await sb.from('workspace_settings').select('currency').eq('workspace_id',wsId()).maybeSingle();
-  var cur=(s.data&&s.data.currency)||'NGN';
-  var r=await sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',wsId()).eq('entry_date',today());
+  var projectId='';try{projectId=localStorage.getItem('px_project_'+wsId())||''}catch(e){}
+  if(!projectId||projectId==='all')return {text:'Select a business project',count:0};
+  var p=await sb.from('business_projects').select('currency').eq('workspace_id',wsId()).eq('id',projectId).maybeSingle();
+  if(p.error||!p.data)return {text:'Select a valid business project',count:0};
+  var cur=p.data.currency||'NGN';
+  var r=await sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',wsId()).eq('project_id',projectId).eq('entry_date',today());
   if(r.error)return {text:'Could not load',count:0};
   var rows=(r.data||[]).filter(function(x){return ['sale','receipt','invoice','payment'].indexOf(x.entry_type)>=0&&x.currency===cur});
   var t=rows.reduce(function(a,x){return a+Number(x.amount)},0);
