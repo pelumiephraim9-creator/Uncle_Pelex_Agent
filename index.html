@@ -6383,9 +6383,12 @@ function pxCommandHelp(){
   try{
    await loadProjects();
    if(!activeProject){rows=[];render();message('Create a project in business setup before recording transactions.',true);return}
-   var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject==='all'?null:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000});
-   if(r.error)throw r.error;
-   rows=r.data||[];
+   rows=[];var offset=0,batchSize=1000,more=true;
+   while(more&&offset<50000){
+    var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject==='all'?null:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000}).range(offset,offset+batchSize-1);
+    if(r.error)throw r.error;
+    var batch=r.data||[];rows=rows.concat(batch);offset+=batch.length;more=batch.length===batchSize;
+   }
    var years=Array.from(new Set(rows.map(function(x){return String(x.entry_date||'').slice(0,4)}).filter(Boolean))).sort().reverse();
    var y=el('pxTrYear'),old=y.value;
    y.innerHTML='<option value="">All years</option>'+years.map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>'}).join('');
@@ -6506,8 +6509,9 @@ function pxCommandHelp(){
    $('pxYearCards').innerHTML=[
     ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing],['Recorded receivables outstanding',d.recorded_receivables_outstanding]
    ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
-   $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td>'+esc(x.month)+'</td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
-   $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Monthly rows only appear where transactions exist.';
+   $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td><button type="button" class="btn alt" data-px-month-open="'+esc(x.month)+'" style="padding:4px 8px">'+esc(x.month)+'</button></td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
+   $('pxYearTable').querySelectorAll('[data-px-month-open]').forEach(function(b){b.onclick=function(){var v=b.getAttribute('data-px-month-open');$('pxMonthPick').value=v;$('pxTrYear').value=v.slice(0,4);$('pxTrMonth').value=v.slice(5,7);$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));$('pxMonthPick').dispatchEvent(new Event('change',{bubbles:true}));var reg=$('pxTransactionRegister');if(reg)reg.scrollIntoView({behavior:'smooth',block:'start'});};});
+   $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Select a month to open its detailed transactions in the register.';
   }catch(e){$('pxMonthNote').textContent='Financial summaries could not be loaded: '+(e.message||e);$('pxYearTable').textContent='Unable to load yearly figures.'}
   finally{busy=false}
  }
