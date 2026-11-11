@@ -83,7 +83,7 @@ create policy business_project_records_write on public.business_project_records
  for all to authenticated using (public.can_edit(workspace_id))
  with check (
   public.can_edit(workspace_id)
-  and exists(select 1 from public.business_projects bp where bp.id=project_id and bp.workspace_id=workspace_id)
+  and exists(select 1 from public.business_projects bp where bp.id=business_project_records.project_id and bp.workspace_id=business_project_records.workspace_id)
  );
 grant select,insert,update,delete on public.business_project_records to authenticated;
 
