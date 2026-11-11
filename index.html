@@ -5955,6 +5955,7 @@ function parseSheet(text){
  window.pxWatchFolder=watchFolder;window.pxScanFolder=function(){if(dirHandle)scanFolder(dirHandle)};window.pxHasFolderPicker=(typeof window.showDirectoryPicker==='function');
 var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300)};
  window.addEventListener('load',function(){setTimeout(function(){if($x('bWork'))buildSetup()},1200)});
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')setTimeout(renderAgreements,0)});
 })();
 </script>
 <script>
