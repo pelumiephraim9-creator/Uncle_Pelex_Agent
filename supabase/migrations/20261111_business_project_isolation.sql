@@ -573,3 +573,104 @@ $function$
 
 revoke all on function public.business_project_dashboard_summary(uuid,uuid,text) from public, anon;
 grant execute on function public.business_project_dashboard_summary(uuid,uuid,text) to authenticated, service_role;
+
+
+-- Server-side module record validation and inventory waste handling.
+CREATE OR REPLACE FUNCTION public.business_add_project_record(p_workspace uuid, p_project uuid, p_module text, p_record_type text, p_date date, p_amount numeric, p_currency text, p_quantity numeric, p_unit_cost numeric, p_party text, p_reference text, p_status text, p_data jsonb)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  pid uuid; cur text; mods text[]; allowed_types text[]; record_kind text;
+begin
+  if not public.can_edit(p_workspace) then raise exception 'You cannot edit this business project.'; end if;
+  select bp.id,bp.currency,bt.modules into pid,cur,mods
+  from public.business_projects bp join public.business_types bt on bt.code=bp.business_type
+  where bp.id=p_project and bp.workspace_id=p_workspace;
+  if pid is null then raise exception 'Choose a valid business project.'; end if;
+  if not (p_module=any(mods)) then raise exception 'The selected business type does not enable the % module.',p_module; end if;
+
+  record_kind:=lower(coalesce(nullif(trim(p_record_type),''),''));
+  allowed_types:=case p_module
+    when 'sales' then array['sale','refund','discount']
+    when 'pos_sales' then array['pos_sale','pos_refund','cash_variance']
+    when 'inventory' then array['stock_in','stock_out','stock_adjustment','stock_waste']
+    when 'orders' then array['order','order_refund','order_fulfilment']
+    when 'bookings' then array['booking','booking_payment','cancellation']
+    when 'payroll' then array['payroll','payroll_tax','staff_advance']
+    when 'fees' then array['fee_charged','fee_collected','fee_waiver']
+    when 'trips' then array['trip','fuel','vehicle_maintenance']
+    when 'expenses' then array['operating_cost','supplier_payment']
+    when 'payables' then array['purchase','supplier_payment']
+    when 'receivables' then array['invoice_issued','customer_payment']
+    when 'production_batches' then array['production_batch','raw_material','finished_goods']
+    when 'costing' then array['production_cost','unit_cost_update']
+    when 'seasons' then array['season','harvest']
+    when 'tenancies' then array['rent_due','rent_received','property_maintenance']
+    when 'maintenance' then array['maintenance_job','maintenance_cost']
+    when 'contributions' then array['contribution','member_payout']
+    when 'payouts' then array['payout','distribution']
+    when 'deliveries' then array['delivery','delivery_cost']
+    when 'projects' then array['project_milestone','project_cost']
+    when 'shifts' then array['shift_open','shift_close','cash_variance']
+    when 'expiry' then array['expired_stock','near_expiry_stock']
+    when 'collections' then array['collection_received','collection_due','collection_overdue']
+    when 'deposits' then array['deposit_received','deposit_refunded','deposit_released']
+    when 'cash' then array['cash_opening','cash_closing','cash_variance']
+    when 'payment_webhooks' then array['payment_received','payment_refunded','payment_failed']
+    else array[]::text[]
+  end;
+  if not (record_kind=any(allowed_types)) then
+    raise exception 'Record type % is not permitted for the % module.',record_kind,p_module;
+  end if;
+  if (p_amount is not null and p_amount<0) or (p_quantity is not null and p_quantity<0) or (p_unit_cost is not null and p_unit_cost<0) then
+    raise exception 'Amounts, quantities and unit costs cannot be negative.';
+  end if;
+  if p_currency is not null and upper(p_currency)<>upper(cur) then raise exception 'Use this project reporting currency (%).',cur; end if;
+  if p_data is not null and jsonb_typeof(p_data)<>'object' then raise exception 'Record details must be a JSON object.'; end if;
+
+  insert into public.business_project_records
+    (workspace_id,project_id,module_key,record_type,record_date,amount,currency,quantity,unit_cost,party,reference,status,data,created_by)
+  values
+    (p_workspace,p_project,p_module,record_kind,coalesce(p_date,current_date),p_amount,cur,p_quantity,p_unit_cost,
+     nullif(trim(p_party),''),nullif(trim(p_reference),''),coalesce(nullif(p_status,''),'recorded'),coalesce(p_data,'{}'::jsonb),auth.uid())
+  returning id into pid;
+  return pid;
+end;
+$function$
+
+
+CREATE OR REPLACE FUNCTION public.business_project_inventory_summary(p_workspace uuid, p_project uuid)
+ RETURNS TABLE(item text, quantity_in numeric, quantity_out numeric, quantity_adjusted numeric, quantity_on_hand numeric, average_unit_cost numeric, estimated_stock_value numeric)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+ if not public.is_member(p_workspace) then raise exception 'You are not a member of this business.';end if;
+ if p_project is null or not exists(
+  select 1 from public.business_projects bp join public.business_types bt on bt.code=bp.business_type
+  where bp.id=p_project and bp.workspace_id=p_workspace and 'inventory'=any(bt.modules)
+ ) then raise exception 'Inventory is not enabled for this project.';
+ end if;
+ return query
+ with grouped as (
+  select coalesce(nullif(r.reference,''),nullif(r.party,''),'Unlabelled item') item,
+   coalesce(sum(r.quantity) filter(where r.record_type='stock_in'),0) qin,
+   coalesce(sum(r.quantity) filter(where r.record_type in ('stock_out','stock_waste')),0) qout,
+   coalesce(sum(r.quantity) filter(where r.record_type='stock_adjustment'),0) qadj,
+   case when coalesce(sum(r.quantity) filter(where r.record_type='stock_in'),0)>0
+    then sum(r.quantity*r.unit_cost) filter(where r.record_type='stock_in' and r.unit_cost is not null)
+      / nullif(sum(r.quantity) filter(where r.record_type='stock_in' and r.unit_cost is not null),0)
+    else 0 end avgcost
+  from public.business_project_records r
+  where r.workspace_id=p_workspace and r.project_id=p_project and r.module_key='inventory'
+  group by 1
+ )
+ select item,qin,qout,qadj,qin-qout+qadj,avgcost,greatest(0,qin-qout+qadj)*avgcost
+ from grouped order by item;
+end;
+$function$
+
