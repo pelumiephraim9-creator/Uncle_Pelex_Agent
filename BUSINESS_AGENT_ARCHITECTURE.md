@@ -63,7 +63,7 @@ Examples:
 - `ledger_entries`, `uploads`, `agreements` and `business_project_records` carry project and workspace ownership.
 - Composite foreign keys prevent a project ID from being paired with another workspace ID.
 - Project update RPCs preserve the existing project ID and lock type/currency after records exist.
-- Project dashboard summaries validate workspace membership and project ownership. File fingerprints are unique within a project, not across the workspace, so the same source file may legitimately be used by two different businesses; folder-sync memory and duplicate checks are project-specific.
+- Project dashboard summaries validate workspace membership and project ownership. File fingerprints are unique within a project, not across the workspace, so the same source file may legitimately be used by two different businesses; folder-sync memory and duplicate checks are project-specific. Storage object paths include both workspace and project IDs, and the workspace upload bucket's read/write/delete policies validate that project path against the business project and upload metadata.
 - Business Agent context filters ledger, operational records, uploads, agreements and schedules by the selected project.
 - Selected month is validated as `YYYY-MM`; monthly data is filtered by date range.
 - Existing RLS policies, account records and unrelated agent data must not be weakened or modified to implement this architecture.
