@@ -937,3 +937,30 @@ revoke all on function public.save_setup_project(uuid,text,text,text,numeric,num
 grant execute on function public.save_setup_project(uuid,text,text,text,numeric,numeric,numeric,text,numeric) to authenticated, service_role;
 revoke all on function public.save_setup_project_v2(uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) from public, anon;
 grant execute on function public.save_setup_project_v2(uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) to authenticated, service_role;
+
+
+-- Duplicate uploads are unique within a project, not across an entire workspace.
+drop index if exists public.uploads_file_hash_uniq;
+create unique index if not exists uploads_project_file_hash_uniq
+  on public.uploads(workspace_id,project_id,file_hash)
+  where file_hash is not null and deleted_at is null;
+
+create or replace function public.check_duplicate_project_upload(
+  p_workspace uuid,p_project uuid,p_hash text
+)
+returns boolean language plpgsql stable security invoker set search_path=public
+as $function$
+begin
+  if not public.is_member(p_workspace) then raise exception 'You do not have access to this business workspace.'; end if;
+  if not exists(select 1 from public.business_projects where id=p_project and workspace_id=p_workspace) then
+    raise exception 'Choose a valid business project.';
+  end if;
+  if coalesce(trim(p_hash),'')='' then raise exception 'A file fingerprint is required.'; end if;
+  return exists(select 1 from public.uploads where workspace_id=p_workspace and project_id=p_project and file_hash=p_hash and deleted_at is null);
+end;
+$function$;
+
+revoke all on function public.check_duplicate_project_upload(uuid,uuid,text) from public, anon;
+grant execute on function public.check_duplicate_project_upload(uuid,uuid,text) to authenticated, service_role;
+revoke all on function public.check_duplicate_upload(uuid,text) from public, anon, authenticated;
+grant execute on function public.check_duplicate_upload(uuid,text) to service_role;
