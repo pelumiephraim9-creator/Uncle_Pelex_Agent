@@ -2810,13 +2810,10 @@ async function checkSched(){
     }
     _schedCount=unseen.length;
     if(!unseen.length)return;
-    var newest=unseen[0],match=String(newest.last_result||'').match(/<!--pelex-scheduled-chat:([0-9a-f-]{20,})-->/i);
-    markSchedSeen();
+    // Never force-open a chat when a scheduled result is delivered.
+    // The result is already stored on its task; opening it here can interrupt
+    // the current conversation and recreate the appearance of duplicate chats.
     if(document.getElementById('v-scheduled').hidden===false)loadTasks();
-    if(match&&match[1]){
-      await loadRecents();
-      await openChat(match[1]);
-    }
   }catch(e){console.warn('Pelex: scheduled result check failed',e)}
 }
 setInterval(checkSched,60000);
