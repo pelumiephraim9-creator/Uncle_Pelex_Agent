@@ -6526,7 +6526,7 @@ function pxCommandHelp(){
   if(stored!=='all'&&!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
   try{if(stored!==saved)localStorage.setItem('px_project_'+ws(),stored)}catch(e){}
   activeProject=stored;
-  picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · including unassigned</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
+  picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · portfolio view</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
   currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';
   picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';load();if(window.__lsLoad)window.__lsLoad();if(window.__pxRegisterReady)window.__pxRegisterReady()};
  }
