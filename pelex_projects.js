@@ -14,9 +14,9 @@
  function type(code){return types.find(function(x){return x.code===code})||types[0]}
  function ensure(){
   var legacy=$('setupCard');if(legacy){legacy.hidden=true;legacy.style.display='none'}
-  var host=$('pxBusinessProjectsHost')||$('lsWrap');if(!host||$('pxProjectManager'))return !!$('pxProjectManager');
+  var host=$('bWork');if(!host||$('pxProjectManager'))return !!$('pxProjectManager');
   var card=document.createElement('section');card.className='dcard';card.id='pxProjectManager';
-  card.innerHTML='<div class="dhead"><h2>Projects · business setup</h2><span class="ttag">Each project is independent</span></div>'+
+  card.innerHTML='<div class="dhead"><h2>Your businesses · business setup</h2><span class="ttag">Each project is independent</span></div>'+
    '<p class="dnote">Create one project for each business you operate. Its business type, currency, configuration, transactions and reports stay separate from every other project.</p>'+
    '<div id="pxProjectList" class="ilist"></div>'+
    '<div class="an-card" style="margin-top:12px"><b id="pxProjectFormTitle">Create a business project</b>'+
@@ -28,9 +28,8 @@
    '<div class="prow" style="margin-top:12px"><button class="btn" id="pxProjectSave" type="button">Save project setup</button><button class="btn alt" id="pxProjectReset" type="button">Clear form</button></div>'+
    '<p class="muted dnote" id="pxProjectMsg" role="status" aria-live="polite"></p></div>'+
    '<div class="an-card" id="pxProjectOperations" style="margin-top:12px;display:none"><b>Business operations · selected project only</b><p class="dnote">Record operational activity using only the modules enabled for this business type. These records remain separate from every other project.</p><label class="dnote">Reporting month<input class="inp" type="month" id="pxOpsMonth"></label><label class="dnote">Enabled module<select class="inp" id="pxOpsModule"></select></label><label class="dnote">Record type<select class="inp" id="pxOpsRecordType"></select></label><div class="two"><label class="dnote">Record date<input class="inp" type="date" id="pxOpsDate"></label><label class="dnote">Amount (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsAmount"></label></div><div class="two"><label class="dnote">Quantity (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsQuantity"></label><label class="dnote">Unit cost (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsUnitCost"></label></div><div class="two"><label class="dnote">Customer / supplier / item<input class="inp" id="pxOpsParty" maxlength="160"></label><label class="dnote">Reference / item code<input class="inp" id="pxOpsReference" maxlength="120"></label></div><div class="two"><label class="dnote">Status<input class="inp" id="pxOpsStatus" maxlength="40" value="recorded"></label><label class="dnote">Details<input class="inp" id="pxOpsDetails" maxlength="500" placeholder="Optional operational details"></label></div><div class="prow" style="margin-top:10px"><button class="btn" id="pxOpsSave" type="button">Save operational record</button><button class="btn alt" id="pxOpsRefresh" type="button">Refresh records</button></div><p class="muted dnote" id="pxOpsMsg" role="status" aria-live="polite"></p><div id="pxOpsRows"></div></div>';
-  if(host.id==='pxBusinessProjectsHost')host.innerHTML='';
-  host.appendChild(card);
-  var dataHost=$('pxBusinessDataHost'),opsCard=$('pxProjectOperations');if(dataHost){dataHost.innerHTML='';if(opsCard)dataHost.appendChild(opsCard);['importCard','monitorCard'].forEach(function(id){var node=$(id);if(node)dataHost.appendChild(node)})}
+  var workspaceCard=host.firstElementChild;
+  if(workspaceCard)host.insertBefore(card,workspaceCard.nextSibling);else host.appendChild(card);
   $('pxProjectType').onchange=renderFields;
   $('pxProjectReset').onclick=reset;
   $('pxProjectSave').onclick=save;
@@ -208,6 +207,6 @@
  var oldGo=window.go;
  if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business'||v==='business-projects')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1500)});
- setInterval(function(){if(!mounted&&($('pxBusinessProjectsHost')||$('pxBusinessDataHost')||$('lsWrap')))start()},2000);
+ setInterval(function(){if(!mounted&&$('bWork'))start()},2000);
  window.pxBusinessProjects={reload:start,select:select,refreshOperations:loadOpsRecords};
 })();
