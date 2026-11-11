@@ -5090,7 +5090,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var path=ws+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
   upSay('Checking for duplicates…');
   var fh=await window.pxFileHash(f);
-  if(await window.pxDuplicate(fh)){upSay('This file is already recorded. Nothing was imported again.',true);return}
+  var duplicate=false;try{duplicate=await window.pxDuplicate(fh,projectId)}catch(e){upSay('Could not verify this file against the selected project: '+errText(e),true);return}
+  if(duplicate){upSay('This file is already recorded in this project. Nothing was imported again.',true);return}
   upSay('Saving the file and importing '+parsed.rows.length+' rows…');
   var up=await sb.storage.from('workspace-uploads').upload(path,f,{upsert:false});
   if(up.error){upSay('Could not store the file: '+errText(up.error),true);return}
@@ -5821,9 +5822,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
 
  /* IMPORT: a watched folder (Chrome and Edge on a computer) or a published Google Sheet link. */
- var SEEN_KEY='pelex_seen_files';
- function seen(){try{return JSON.parse(localStorage.getItem(SEEN_KEY)||'{}')}catch(e){return {}}}
- function markSeen(k){var s=seen();s[k]=1;try{localStorage.setItem(SEEN_KEY,JSON.stringify(s))}catch(e){}}
+ function seenKey(){var id='none';try{id=localStorage.getItem('px_project_'+ws())||'none'}catch(e){}return 'pelex_seen_files_'+id}
+ function seen(){try{return JSON.parse(localStorage.getItem(seenKey())||'{}')}catch(e){return {}}}
+ function markSeen(k){var s=seen();s[k]=1;try{localStorage.setItem(seenKey(),JSON.stringify(s))}catch(e){}}
  function splitCsv(line){return line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.trim().replace(/^"|"$/g,'')})}
  function findCol(h,re){for(var i=0;i<h.length;i++)if(re.test(h[i]))return i;return -1}
  function pxDate(s){
@@ -5896,7 +5897,8 @@ function parseSheet(text,projectConfig){
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var cur=p.rows[0].currency;
   var fh=await window.pxFileHash(text);
-  if(await window.pxDuplicate(fh))return {ok:false,msg:name+': this file is already recorded.'};
+  var duplicate=false;try{duplicate=await window.pxDuplicate(fh,projectId)}catch(e){return {ok:false,msg:name+': could not verify duplicates for this project ('+errT(e)+').'}}
+  if(duplicate)return {ok:false,msg:name+': this file is already recorded in this project.'};
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,project_id:projectId,file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
   var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){return Object.assign({},x,{project_id:projectId})})});
@@ -6157,11 +6159,14 @@ window.pxFileHash=async function(data){
  var d=await crypto.subtle.digest('SHA-256',buf);
  return [...new Uint8Array(d)].map(function(x){return x.toString(16).padStart(2,'0')}).join('');
 };
-window.pxDuplicate=async function(hash){
- if(!(window.sb&&window.curUser))return false;
+window.pxDuplicate=async function(hash,projectId){
+ if(!(window.sb&&window.curUser))throw new Error('Sign in before checking for duplicate uploads.');
  var ws=localStorage.getItem('pelex_ws')||'';
- var r=await sb.rpc('check_duplicate_upload',{p_workspace:ws,p_hash:hash});
- return !!(r&&r.data===true);
+ if(!projectId){try{projectId=localStorage.getItem('px_project_'+ws)||''}catch(e){}}
+ if(!projectId||projectId==='all')throw new Error('Select one business project before checking duplicate uploads.');
+ var r=await sb.rpc('check_duplicate_project_upload',{p_workspace:ws,p_project:projectId,p_hash:hash});
+ if(r.error)throw r.error;
+ return r.data===true;
 };
 </script>
 <script>
