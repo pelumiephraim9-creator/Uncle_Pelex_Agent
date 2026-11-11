@@ -2375,7 +2375,7 @@ async function listenRec(){
   $('mic').classList.add('recording');
   if(ptt&&!pttHeld){recording.stop();return}
   timer=setInterval(function(){
-    if(record!==recording||recording.state!=='recording')return;
+    if(rec!==recording||recording.state!=='recording')return;
     var now=Date.now(),l=level();
     if(an&&now-startedAt<400){samples.push(l);return}
     if(an&&!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.12,Math.max(0.025,m*3+0.012));calibrated=true}
