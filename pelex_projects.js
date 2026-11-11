@@ -97,14 +97,30 @@
   msg('Selected project. Data entry and financial summaries will now use this project only.');
  }
  function moduleLabel(m){return ({pos_sales:'POS sales',sales:'Sales',inventory:'Inventory',agreements:'Loan agreements',schedule:'Repayment schedules',collections:'Collections',deposits:'Deposits',contributions:'Contributions',payouts:'Payouts',receivables:'Receivables',payables:'Payables',bookings:'Bookings',maintenance:'Maintenance',tenancies:'Tenancies',trips:'Trips',expenses:'Expenses',payroll:'Payroll',fees:'Fees',orders:'Orders',payment_webhooks:'Payment events',production_batches:'Production batches',costing:'Costing',seasons:'Seasons',deliveries:'Deliveries',cash:'Cash operations',shifts:'Shifts',expiry:'Expiry tracking',projects:'Work projects',ledger:'Ledger',reports:'Reports'})[m]||m.replace(/_/g,' ').replace(/\\b\\w/g,function(x){return x.toUpperCase()})}
+ function recordTypes(module){
+  return ({
+   sales:['sale','refund','discount'],pos_sales:['pos_sale','pos_refund','cash_variance'],
+   inventory:['stock_in','stock_out','stock_adjustment','stock_waste'],orders:['order','order_refund','order_fulfilment'],
+   bookings:['booking','booking_payment','cancellation'],payroll:['payroll','payroll_tax','staff_advance'],
+   fees:['fee_charged','fee_collected','fee_waiver'],trips:['trip','fuel','vehicle_maintenance'],
+   expenses:['operating_cost','supplier_payment'],payables:['purchase','supplier_payment'],
+   receivables:['invoice_issued','customer_payment'],production_batches:['production_batch','raw_material','finished_goods'],
+   costing:['production_cost','unit_cost_update'],seasons:['season','harvest'],tenancies:['rent_due','rent_received','property_maintenance'],
+   maintenance:['maintenance_job','maintenance_cost'],contributions:['contribution','member_payout'],
+   payouts:['payout','distribution'],deliveries:['delivery','delivery_cost'],projects:['project_milestone','project_cost'],
+   shifts:['shift_open','shift_close','cash_variance'],expiry:['expired_stock','near_expiry_stock']
+  })[module]||[module+'_record','other'];
+ }
  function renderOperations(){
   var box=$('pxProjectOperations');if(!box)return;
   var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,mods=t&&t.modules||[];
-  if(!p||!mods.length){box.style.display='none';return}
-  box.style.display='';$('pxOpsModule').innerHTML=mods.map(function(m){return '<option value="'+esc(m)+'">'+esc(moduleLabel(m))+'</option>'}).join('');
+  var dataMods=mods.filter(function(m){return ['ledger','reports','agreements','schedule','collections','deposits','cash','payment_webhooks'].indexOf(m)<0});
+  if(!p||!dataMods.length){box.style.display='none';return}
+  box.style.display='';$('pxOpsModule').innerHTML=dataMods.map(function(m){return '<option value="'+esc(m)+'">'+esc(moduleLabel(m))+'</option>'}).join('');
+  function setTypes(){var a=recordTypes($('pxOpsModule').value);$('pxOpsRecordType').innerHTML=a.map(function(x){return '<option value="'+esc(x)+'">'+esc(x.replace(/_/g,' '))+'</option>'}).join('')}
+  setTypes();$('pxOpsModule').onchange=function(){setTypes();loadOpsRecords()};
   $('pxOpsDate').value=new Date().toISOString().slice(0,10);
-  $('pxOpsModule').onchange=loadOpsRecords;$('pxOpsRefresh').onclick=loadOpsRecords;
-  $('pxOpsSave').onclick=saveOpsRecord;loadOpsRecords();
+  $('pxOpsRefresh').onclick=loadOpsRecords;$('pxOpsSave').onclick=saveOpsRecord;loadOpsRecords();
  }
  async function loadOpsRecords(){
   if(!selected||!$('pxOpsModule'))return;
@@ -119,7 +135,7 @@
   if((amount!==''&&Number(amount)<0)||(qty!==''&&Number(qty)<0)||(cost!==''&&Number(cost)<0)){$('pxOpsMsg').textContent='Amounts, quantities and unit costs cannot be negative.';return}
   var p=projects.find(function(x){return x.id===selected});
   var b=$('pxOpsSave');b.disabled=true;$('pxOpsMsg').textContent='Saving operational record…';
-  var r=await window.sb.rpc('business_add_project_record',{p_workspace:ws(),p_project:selected,p_module:module,p_record_type:module,p_date:date,p_amount:amount===''?null:Number(amount),p_currency:p.currency,p_quantity:qty===''?null:Number(qty),p_unit_cost:cost===''?null:Number(cost),p_party:$('pxOpsParty').value,p_reference:$('pxOpsReference').value,p_status:$('pxOpsStatus').value,p_data:{details:$('pxOpsDetails').value||''}});
+  var r=await window.sb.rpc('business_add_project_record',{p_workspace:ws(),p_project:selected,p_module:module,p_record_type:$('pxOpsRecordType').value,p_date:date,p_amount:amount===''?null:Number(amount),p_currency:p.currency,p_quantity:qty===''?null:Number(qty),p_unit_cost:cost===''?null:Number(cost),p_party:$('pxOpsParty').value,p_reference:$('pxOpsReference').value,p_status:$('pxOpsStatus').value,p_data:{details:$('pxOpsDetails').value||''}});
   b.disabled=false;
   if(r.error){$('pxOpsMsg').textContent='Record not saved: '+r.error.message;return}
   $('pxOpsMsg').textContent='Operational record saved to '+p.name+'.';$('pxOpsAmount').value='';$('pxOpsQuantity').value='';$('pxOpsUnitCost').value='';$('pxOpsParty').value='';$('pxOpsReference').value='';$('pxOpsDetails').value='';
