@@ -995,3 +995,18 @@ with check (
       and bp.id::text=(storage.foldername(name))[2]
   )
 );
+
+
+drop policy if exists wu_delete on storage.objects;
+create policy wu_delete on storage.objects
+for delete to authenticated
+using (
+  bucket_id='workspace-uploads'
+  and case when (storage.foldername(name))[1] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.can_edit(((storage.foldername(name))[1])::uuid) else false end
+  and exists (
+    select 1 from public.business_projects bp
+    where bp.workspace_id::text=(storage.foldername(name))[1]
+      and bp.id::text=(storage.foldername(name))[2]
+  )
+);
