@@ -4839,7 +4839,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   for(var i=1;i<matrix.length;i++){
    var c=matrix[i]||[];if(!c.some(function(v){return String(v==null?'':v).trim()}))continue;
    var date=cd>=0?parseDate(c[cd]):null,amount=ca>=0?parseAmount(c[ca]):NaN;
-   if(!date||!isFinite(amount)||amount<=0){skipped++;continue}
+   if(!date||!isFinite(amount)||amount===0){skipped++;continue}
    var rawType=ct>=0?normHead(c[ct]):'';
    var type='other';
    if(/^(sale|sales|sold|order|purchase sale)$/.test(rawType))type='sale';
@@ -4854,6 +4854,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var validKinds=['income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in'];
    var kind=validKinds.indexOf(rawKind)>=0?rawKind:(type==='expense'?'expense':(['sale','invoice','receipt','payment'].indexOf(type)>=0?'income':null));
    if(!kind){skipped++;continue}
+   if(amount<0){if(['expense','principal_out','transfer'].indexOf(kind)>=0)amount=Math.abs(amount);else{skipped++;continue}}
    var currency=cc>=0?String(c[cc]||'').trim().toUpperCase().slice(0,3):'';
    if(currency&&/^[A-Z]{3}$/.test(currency))curs[currency]=1;else currency=null;
    var party=cp>=0?String(c[cp]==null?'':c[cp]).trim():'';
