@@ -4782,58 +4782,166 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  };
  $w('wsReport').onclick=function(){say('Report view links come in phase 3. Share only the Report window during a meeting.')};
 
- /* ---------- uploads ---------- */
- var TYPES=[['invoice',/invoice|bill to|amount due|due date/i],['receipt',/receipt|thank you for your purchase/i],['sales',/sale|sku|qty|quantity|unit price/i],['expense',/expense|vendor|category|paid to/i]];
+ /* ---------- uploads: CSV + Excel parsing and confirmed ledger import ---------- */
+ var TYPES=[['invoice',/invoice|bill to|amount due|due date|invoice no/i],['receipt',/receipt|paid|payment reference/i],['sales',/sale|sku|qty|quantity|unit price|product/i],['expense',/expense|vendor|supplier|purchase|debit/i]];
  function detect(t){var best='other',s=0;TYPES.forEach(function(x){var n=(t.match(new RegExp(x[1].source,'gi'))||[]).length;if(n>s){s=n;best=x[0]}});return {type:best,conf:s>=3?'High':s>=1?'Medium':'Low'}}
- function splitCsv(line){return line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.trim().replace(/^"|"$/g,'')})}
- function findCol(hdr,re){for(var i=0;i<hdr.length;i++)if(re.test(hdr[i]))return i;return -1}
- function toDate(s){var d=new Date(s);if(isNaN(d))return null;return d.toISOString().slice(0,10)}
- function parseEntries(text){
-  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0,currencies:[]};
-  var hdr=splitCsv(lines[0]).map(function(x){return x.toLowerCase()});
-  var cd=findCol(hdr,/date/),ca=findCol(hdr,/amount|total|value|sum|price/),cc=findCol(hdr,/currency|curr/),cp=findCol(hdr,/customer|client|vendor|party|name|item|description/),ct=findCol(hdr,/type|entry type|transaction type/),ck=findCol(hdr,/kind|classification/),cCat=findCol(hdr,/category/),cdue=findCol(hdr,/due/);
-  var rows=[],skipped=0,curs={};
-  for(var i=1;i<lines.length;i++){
-    var c=splitCsv(lines[i]);
-    var date=cd>=0?toDate(c[cd]):null, amt=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
-    if(!date||isNaN(amt)){skipped++;continue}
-    var cur=cc>=0&&c[cc]?c[cc].toUpperCase().slice(0,3):null; if(cur) curs[cur]=1;
-    var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';var kk=ck>=0&&c[ck]?c[ck].toLowerCase():null;if(kk&&['income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in'].indexOf(kk)<0)kk=null;var dd=cdue>=0?toDate(c[cdue]):null;rows.push({date:date,type:tv,kind:kk,category:cCat>=0?c[cCat]:null,amount:amt,currency:cur,party:cp>=0?c[cp]:null,due:dd});
+ function csvMatrix(text){
+  var rows=[],row=[],cell='',quoted=false;
+  text=String(text||'').replace(/^\uFEFF/,'');
+  for(var i=0;i<text.length;i++){
+   var ch=text[i],next=text[i+1];
+   if(ch==='"'&&quoted&&next==='"'){cell+='"';i++}
+   else if(ch==='"'){quoted=!quoted}
+   else if((ch===','||ch===';'||ch==='\t')&&!quoted){row.push(cell);cell=''}
+   else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(function(v){return String(v).trim()}))rows.push(row);row=[];cell=''}
+   else cell+=ch;
   }
-  return {rows:rows,skipped:skipped,currencies:Object.keys(curs)};
+  row.push(cell);if(row.some(function(v){return String(v).trim()}))rows.push(row);
+  return rows;
  }
+ function normHead(v){return String(v==null?'':v).toLowerCase().replace(/[\u00a0_\-\/]+/g,' ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+ function findCol(h,re){for(var i=0;i<h.length;i++)if(re.test(h[i]))return i;return -1}
+ function parseDate(v){
+  if(v instanceof Date&&!isNaN(v.getTime()))return v.toISOString().slice(0,10);
+  if(typeof v==='number'&&window.XLSX&&XLSX.SSF){var z=XLSX.SSF.parse_date_code(v);if(z)return String(z.y).padStart(4,'0')+'-'+String(z.m).padStart(2,'0')+'-'+String(z.d).padStart(2,'0')}
+  var s=String(v==null?'':v).trim();if(!s)return null;
+  var m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+  m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+  if(m){var y=Number(m[3]);if(y<100)y+=y<50?2000:1900;var a=Number(m[1]),b=Number(m[2]);var day=a>12?a:b,mon=a>12?b:a;if(day>31||mon>12||day<1||mon<1)return null;return String(y).padStart(4,'0')+'-'+String(mon).padStart(2,'0')+'-'+String(day).padStart(2,'0')}
+  var d=new Date(s);return isNaN(d.getTime())?null:d.toISOString().slice(0,10);
+ }
+ function parseAmount(v){
+  if(typeof v==='number')return isFinite(v)?v:NaN;
+  var s=String(v==null?'':v).trim();if(!s)return NaN;
+  var neg=/^\(.*\)$/.test(s)||/^-/.test(s);s=s.replace(/[^\d.,]/g,'');
+  if(s.indexOf(',')>=0&&s.indexOf('.')<0){var parts=s.split(',');if(parts.length===2&&parts[1].length!==3)s=parts[0]+'.'+parts[1];else s=parts.join('')}
+  else s=s.replace(/,/g,'');
+  var n=Number(s);return isFinite(n)?(neg?-n:n):NaN;
+ }
+ function parseMatrix(matrix){
+  if(!Array.isArray(matrix)||matrix.length<2)return {rows:[],skipped:0,currencies:[],headers:[]};
+  var headers=(matrix[0]||[]).map(normHead);
+  var cd=findCol(headers,/\b(date|transaction date|sale date|invoice date|order date|entry date|created at|timestamp)\b/);
+  var ca=findCol(headers,/\b(grand total|line total|total amount|amount paid|net amount|sales amount|total|amount|revenue|sales|value|sum|debit|credit)\b/);
+  if(ca<0)ca=findCol(headers,/\b(price)\b/);
+  var cc=findCol(headers,/\b(currency|curr)\b/);
+  var cp=findCol(headers,/\b(customer|client|vendor|supplier|party|customer name|vendor name|product|item|description|name)\b/);
+  var ct=findCol(headers,/\b(type|entry type|transaction type|transaction|record type)\b/);
+  var ck=findCol(headers,/\b(kind|classification|accounting classification)\b/);
+  var cCat=findCol(headers,/\b(category|account|department)\b/);
+  var cdue=findCol(headers,/\b(due date|payment due)\b/);
+  var cQty=findCol(headers,/\b(qty|quantity|units)\b/);
+  var rows=[],skipped=0,curs={};
+  var headerText=headers.join(' ');
+  for(var i=1;i<matrix.length;i++){
+   var c=matrix[i]||[];if(!c.some(function(v){return String(v==null?'':v).trim()}))continue;
+   var date=cd>=0?parseDate(c[cd]):null,amount=ca>=0?parseAmount(c[ca]):NaN;
+   if(!date||!isFinite(amount)||amount<=0){skipped++;continue}
+   var rawType=ct>=0?normHead(c[ct]):'';
+   var type='other';
+   if(/^(sale|sales|sold|order|purchase sale)$/.test(rawType))type='sale';
+   else if(/^(invoice|bill)$/.test(rawType)||/invoice/.test(headerText))type='invoice';
+   else if(/^(receipt|payment|paid|collection)$/.test(rawType))type='receipt';
+   else if(/^(expense|cost|purchase|debit)$/.test(rawType)||/\b(expense|vendor|supplier|debit|purchase)\b/.test(headerText))type='expense';
+   else if(rawType==='other')type='other';
+   else if(/\b(product|item|sku)\b/.test(headerText)&&cQty>=0&&/\b(total|amount|sales)\b/.test(headerText))type='sale';
+   else if(/\b(sales|revenue)\b/.test(headerText))type='sale';
+   else if(/\b(receipt|payment|paid)\b/.test(headerText))type='receipt';
+   var rawKind=ck>=0?normHead(c[ck]).replace(/ /g,'_'):'';
+   var validKinds=['income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in'];
+   var kind=validKinds.indexOf(rawKind)>=0?rawKind:(type==='expense'?'expense':(['sale','invoice','receipt','payment'].indexOf(type)>=0?'income':null));
+   if(!kind){skipped++;continue}
+   var currency=cc>=0?String(c[cc]||'').trim().toUpperCase().slice(0,3):'';
+   if(currency&&/^[A-Z]{3}$/.test(currency))curs[currency]=1;else currency=null;
+   var party=cp>=0?String(c[cp]==null?'':c[cp]).trim():'';
+   var due=cdue>=0?parseDate(c[cdue]):null;
+   var category=cCat>=0?String(c[cCat]==null?'':c[cCat]).trim():'';
+   rows.push({date:date,type:type,kind:kind,category:category||null,amount:amount,currency:currency,party:party||null,due:due});
+  }
+  return {rows:rows,skipped:skipped,currencies:Object.keys(curs),headers:headers};
+ }
+ async function readTabular(file){
+  var name=String(file.name||'').toLowerCase();
+  if(/\.csv$/.test(name)){var text=await file.text();return parseMatrix(csvMatrix(text))}
+  if(/\.(xlsx|xls)$/.test(name)){
+   if(!window.XLSX)throw new Error('Excel reader did not load. Refresh the page and try again.');
+   var buf=await file.arrayBuffer(),book=XLSX.read(buf,{type:'array',cellDates:true});
+   var sheetName=book.SheetNames.filter(function(n){return book.Sheets[n]})[0];
+   if(!sheetName)throw new Error('This Excel workbook has no readable worksheet.');
+   var matrix=XLSX.utils.sheet_to_json(book.Sheets[sheetName],{header:1,raw:true,defval:''});
+   var parsed=parseMatrix(matrix);parsed.sheetName=sheetName;return parsed;
+  }
+  return null;
+ }
+ function showUploadPreview(file,parsed){
+  var cur=parsed.currencies||[],sample=parsed.rows.slice(0,6);
+  $w('upReview').hidden=false;
+  $w('upReview').innerHTML='<div class="irow"><b>File read successfully:</b> '+esc(file.name)+'</div><div class="irow"><b>Rows recognised:</b> '+parsed.rows.length+' · <b>Skipped:</b> '+parsed.skipped+'</div>'+
+   (parsed.sheetName?'<div class="irow"><b>Worksheet:</b> '+esc(parsed.sheetName)+'</div>':'')+
+   '<div class="irow"><b>Columns found:</b> '+esc((parsed.headers||[]).join(', '))+'</div>'+
+   (sample.length?'<div style="overflow-x:auto"><table class="ls-table"><tr><th>Date</th><th>Type</th><th>Party / item</th><th>Amount</th><th>Category</th></tr>'+sample.map(function(x){return '<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.amount)+'</td><td>'+esc(x.category||'—')+'</td></tr>'}).join('')+'</table></div>':'<div class="irow">No usable transaction rows found. Check that your file has date and total/amount columns. If the file is a sales sheet, include product/item, quantity and total columns.</div>')+
+   '<div class="muted dnote">Nothing is saved until you press Confirm and save.</div>';
+  if(cur.length>1){$w('upCur').hidden=false;$w('upCur').innerHTML='<div class="irow"><b>Multiple currencies found:</b> '+esc(cur.join(', '))+'</div><div class="prow">'+cur.map(function(x){return '<label class="pchip"><input type="radio" name="upcur" value="'+esc(x)+'"> '+esc(x)+'</label>'}).join('')+'</div>'}
+  else{$w('upCur').hidden=true;$w('upCur').innerHTML=''}
+  $w('upActs').hidden=false;
+ }
+ $w('upFile').addEventListener('change',async function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  if(f.size>MAX){upSay('That file is larger than 10 MB.',true);return}
+  if(!/\.(csv|xlsx|xls)$/i.test(f.name))return;
+  try{
+   upSay('Reading your data…');var parsed=await readTabular(f);window.__pxUploadParsed={file:f,parsed:parsed};
+   showUploadPreview(f,parsed);
+   if(!parsed.rows.length)upSay('The file opened, but no usable transaction rows were found. Check the column headings and date/amount values.',true);
+   else upSay(parsed.rows.length+' rows read. Review the sample, then confirm to add them to your business ledger.');
+  }catch(e){window.__pxUploadParsed=null;upSay('Could not read this file: '+(e.message||e),true)}
+ });
+ $w('upCancel').onclick=function(){window.__pxUploadParsed=null;$w('upReview').hidden=true;$w('upCur').hidden=true;$w('upActs').hidden=true;$w('upFile').value='';$w('upLabel').textContent='Tap to choose a file';upSay('Upload cancelled.')};
  $w('upConfirm').onclick=async function(){
-  var f=$w('upFile').files[0];
+  var f=$w('upFile').files&&$w('upFile').files[0],cached=window.__pxUploadParsed;
   if(!f){upSay('Choose a file first.',true);return}
-  if(!ready()||!ws){upSay('Create or join a workspace first.',true);return}
+  if(!ready()||!ws){upSay('Sign in and create or join a workspace first.',true);return}
   if(myRole!=='owner'&&myRole!=='editor'){upSay('Only the owner or an editor can upload data.',true);return}
-  if(f.size>10*1024*1024){upSay('That file is larger than 10 MB.',true);return}
-  var isCsv=/\.csv$/i.test(f.name);
-  var text=isCsv?await f.text():'';
-  var parsed=isCsv?parseEntries(text):{rows:[],skipped:0,currencies:[]};
+  if(f.size>MAX){upSay('That file is larger than 10 MB.',true);return}
+  if(!cached||cached.file!==f){
+   try{cached={file:f,parsed:await readTabular(f)}}catch(e){upSay('Could not read this file: '+(e.message||e),true);return}
+  }
+  var parsed=cached.parsed;
+  if(!parsed||!parsed.rows.length){upSay('No valid rows to import. Nothing was saved. Check the date, amount and transaction type columns.',true);return}
   var chosen=(document.querySelector('input[name="upcur"]:checked')||{}).value;
   var cur=chosen||(parsed.currencies.length===1?parsed.currencies[0]:null);
   if(parsed.currencies.length>1&&!chosen){upSay('Choose the reporting currency first.',true);return}
-  if(isCsv&&!cur){var wc=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();cur=(wc.data&&wc.data.reporting_currency)||null}
-  if(isCsv&&!cur){upSay('Pick the reporting currency above before saving this sheet.',true);return}
+  if(!cur){var wc=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();cur=(wc.data&&wc.data.reporting_currency)||null}
+  if(!cur){upSay('Set the business reporting currency before importing this file.',true);return}
+  var projectId=null;
+  var projectPicker=$w('pxTrProject');
+  if(projectPicker&&projectPicker.value&&projectPicker.value!=='all')projectId=projectPicker.value;
+  else{try{var saved=localStorage.getItem('px_project_'+ws);if(saved&&saved!=='all')projectId=saved}catch(e){}}
+  var projectsRes=await sb.from('business_projects').select('id').eq('workspace_id',ws).order('created_at',{ascending:true});
+  if(projectsRes.error){upSay('Could not check the business projects: '+errText(projectsRes.error),true);return}
+  var projectList=projectsRes.data||[];
+  if(!projectId&&projectList.length===1)projectId=projectList[0].id;
+  if(!projectId&&projectList.length>1){upSay('Choose one project in the Transaction register before importing. The file has not been saved.',true);return}
+  if(projectId&&!projectList.some(function(p){return p.id===projectId})){upSay('The selected project does not belong to this workspace. Refresh and choose it again.',true);return}
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var path=ws+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
-  upSay('Saving...');
+  upSay('Checking for duplicates…');
   var fh=await window.pxFileHash(f);
-  if(await window.pxDuplicate(fh)){upSay('This file is already recorded. Nothing was added again.',true);return}
+  if(await window.pxDuplicate(fh)){upSay('This file is already recorded. Nothing was imported again.',true);return}
+  upSay('Saving the file and importing '+parsed.rows.length+' rows…');
   var up=await sb.storage.from('workspace-uploads').upload(path,f,{upsert:false});
   if(up.error){upSay('Could not store the file: '+errText(up.error),true);return}
-  var det=isCsv?detect(text):{type:'to be detected',conf:'Pending'};
-  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:det.conf,currency:cur});
-  if(ins.error){upSay('File stored, but its record was not saved: '+errText(ins.error),true);return}
-  if(isCsv){
-    var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:parsed.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws)||null;if(pid==='all')pid=null}catch(e){}return Object.assign({},x,{project_id:pid})})});
-    if(rc.error){upSay('Saved the file, but the rows were not added: '+errText(rc.error),true);return}
-    upSay('Saved. '+rc.data+' rows added to the ledger'+(parsed.skipped?' ('+parsed.skipped+' rows skipped because the date or amount was unclear)':'')+'.')
-  } else upSay('Saved for review. Non-CSV files are read in the next step, and nothing enters the ledger until you confirm.');
-  $w('upFile').value='';$w('upLabel').textContent='Tap to choose a file';$w('upActs').hidden=true;$w('upReview').hidden=true;$w('upCur').hidden=true;
+  var det=detect((parsed.headers||[]).join(' ')+' '+parsed.rows.map(function(x){return x.type+' '+x.category}).join(' '));
+  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:parsed.rows.length?'Reviewed':'Low',currency:cur});
+  if(ins.error){await sb.storage.from('workspace-uploads').remove([path]);upSay('File could not be registered: '+errText(ins.error),true);return}
+  var entries=parsed.rows.map(function(x){return Object.assign({},x,{currency:x.currency||cur,project_id:projectId})});
+  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:entries});
+  if(rc.error){await sb.from('uploads').delete().eq('id',id);await sb.storage.from('workspace-uploads').remove([path]);upSay('The file was read but could not be imported: '+errText(rc.error)+'. No upload record or ledger rows were kept.',true);return}
+  upSay('Success. '+rc.data+' transaction rows were read and added to your business ledger'+(parsed.skipped?' · '+parsed.skipped+' unclear rows skipped':'')+'.');
+  window.__pxUploadParsed=null;$w('upFile').value='';$w('upLabel').textContent='Tap to choose a file';$w('upActs').hidden=true;$w('upReview').hidden=true;$w('upCur').hidden=true;
+  if(window.__lsLoad)window.__lsLoad();if(window.__pxRegisterReady)window.__pxRegisterReady();
  };
-
+ 
  /* ---------- note archive ---------- */
  async function loadNotes(wsId){
   var box=$w('mtArchive');box.innerHTML='';
