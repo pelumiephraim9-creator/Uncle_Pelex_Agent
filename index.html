@@ -2081,7 +2081,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
    '<label class="dnote" style="flex:2;min-width:180px">Search<input id="pxTrSearch" class="inp" type="search" placeholder="Party, category or description"></label></div>'+
    '<div class="prow" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn" id="pxTrNew" type="button">Add transaction</button><button class="btn alt" id="pxTrRefresh" type="button">Refresh register</button><span class="muted dnote" id="pxTrCount"></span></div>'+
    '<div id="pxTrForm" class="an-card" hidden></div><div id="pxTrMsg" class="muted dnote" role="status" aria-live="polite"></div>'+
-   '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="7">Loading transactions…</td></tr></tbody></table></div>';
+   '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="8">Loading transactions…</td></tr></tbody></table></div>';
   var dataCard=el('lsUploads').closest('.dcard');if(dataCard&&dataCard.parentNode)dataCard.parentNode.insertBefore(card,dataCard.nextSibling);else root.appendChild(card);
   el('pxTrNew').onclick=function(){form(null)};
   el('pxTrRefresh').onclick=load;
@@ -2095,11 +2095,11 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   var picker=el('pxTrProject');if(!picker)return;
   if(!projects.length){picker.innerHTML='<option value="">No project set up yet</option>';activeProject='';return}
   var stored='';try{stored=localStorage.getItem('px_project_'+ws())||''}catch(e){}
-  if(!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
+  if(stored!=='all'&&!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
   activeProject=stored;
-  picker.innerHTML=projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
-  currency=(projects.filter(function(p){return p.id===activeProject})[0]||{}).currency||'NGN';
-  picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||{}).currency||'NGN';load()};
+  picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · including unassigned</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
+  currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';
+  picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';load()};
  }
  async function load(){
   if(!mounted||!(window.sb&&window.curUser&&ws()))return;
@@ -2107,7 +2107,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   try{
    await loadProjects();
    if(!activeProject){rows=[];render();message('Create a project in business setup before recording transactions.',true);return}
-   var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000});
+   var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject==='all'?null:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000});
    if(r.error)throw r.error;
    rows=r.data||[];
    var years=Array.from(new Set(rows.map(function(x){return String(x.entry_date||'').slice(0,4)}).filter(Boolean))).sort().reverse();
@@ -2126,8 +2126,8 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   if(!mounted)return;
   var list=filtered(),body=el('pxTrRows');
   el('pxTrCount').textContent=list.length+' shown · '+rows.length+' total';
-  if(!list.length){body.innerHTML='<tr><td colspan="7">No transactions match these filters.</td></tr>';return}
-  body.innerHTML=list.map(function(x){return '<tr><td>'+esc(x.entry_date)+'</td><td>'+esc(status(x.entry_type))+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.category||'—')+'</td><td>'+esc(money(x.amount,x.currency))+'</td><td>'+esc(classification(x.kind))+'</td><td><button type="button" class="btn alt" data-px-edit="'+esc(x.id)+'" style="padding:5px 10px">Edit</button></td></tr>'}).join('');
+  if(!list.length){body.innerHTML='<tr><td colspan="8">No transactions match these filters.</td></tr>';return}
+  body.innerHTML=list.map(function(x){return '<tr><td>'+esc(x.entry_date)+'</td><td>'+esc((projects.find(function(p){return p.id===x.project_id})||{}).name||(x.project_id?'Unknown project':'Unassigned'))+'</td><td>'+esc(status(x.entry_type))+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.category||'—')+'</td><td>'+esc(money(x.amount,x.currency))+'</td><td>'+esc(classification(x.kind))+'</td><td><button type="button" class="btn alt" data-px-edit="'+esc(x.id)+'" style="padding:5px 10px">Edit</button></td></tr>'}).join('');
   body.querySelectorAll('[data-px-edit]').forEach(function(b){b.onclick=function(){var x=rows.find(function(z){return String(z.id)===b.getAttribute('data-px-edit')});if(x)form(x)}});
  }
  var CLASSES=[
@@ -2143,6 +2143,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   ['other','transfer','Cash transfer out']
  ];
  function form(x){
+  if(!x&&activeProject==='all'){message('Choose a specific project before adding a transaction.',true);return}
   var box=el('pxTrForm'),kind=x?x.kind:'income',et=x?x.entry_type:'sale';
   var idx=CLASSES.findIndex(function(v){return v[0]===et&&v[1]===kind});if(idx<0)idx=0;
   box.hidden=false;
@@ -2161,7 +2162,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   el('pxFSave').onclick=async function(){
    var c=CLASSES[Number(el('pxFType').value)],amount=Number(el('pxFAmount').value),date=el('pxFDate').value,cur=el('pxFCurrency').value.trim().toUpperCase();
    if(!(amount>0)||!date||!/^[A-Z]{3}$/.test(cur)){message('Enter a valid date, amount greater than zero and three-letter currency.',true);return}
-   var args={p_workspace:ws(),p_project:activeProject,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
+   var args={p_workspace:ws(),p_project:x?(x.project_id||null):activeProject,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
    var btn=el('pxFSave');btn.disabled=true;message('Saving transaction…');
    var r=x?await window.sb.rpc('business_update_transaction',Object.assign({p_entry_id:x.id},args)):await window.sb.rpc('business_add_transaction',args);
    if(r.error){message('Not saved: '+r.error.message,true);btn.disabled=false;return}
