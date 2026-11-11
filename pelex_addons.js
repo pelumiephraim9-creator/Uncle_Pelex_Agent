@@ -23,9 +23,9 @@ var PX_DOC_TEMPLATES = [
   words:[/credit\s+note/i,/\brefund\b/i,/\breturn(ed)?\s+goods\b/i], total:/(total|credit\s*amount|refund\s*amount)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
  {id:'bank_transfer', name:'Bank transfer receipt', direction:'in', category:'Sales and income',
   words:[/transfer/i,/beneficiary|sender|narration/i,/transaction\s*(ref|reference|id)/i,/\bdebit\b|\bcredit\b/i], total:/(amount|transfer\s*amount|total)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
- {id:'delivery_note', name:'Delivery note or waybill', direction:'none', category:'Goods bought', draft:true,
+ {id:'delivery_note', name:'Delivery note or waybill', direction:'unknown', category:'Goods bought', draft:true,
   words:[/delivery\s+note/i,/waybill/i,/dispatch/i,/received\s+by/i], total:/(total|quantity\s*total)\s*[:\-]?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
- {id:'general_document', name:'General document (check the total)', direction:'out', category:'Other',
+ {id:'general_document', name:'General document (check the total)', direction:'unknown', category:'Other',
   words:[], total:/(total|amount|grand\s*total)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i}
 ];
 
@@ -264,7 +264,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
      '<select class="slLineCat" data-i="'+i+'" style="width:100%;padding:4px;margin:2px 0 6px;font-size:12px">'+cats.replace('<option>'+esc(d.category||'Other')+'</option>','<option selected>'+esc(d.category||'Other')+'</option>')+'</select>';
   }).join('')):'';
   f.innerHTML=kindLabel+
-   '<label style="font-size:12px">Type<select id="slType" style="width:100%;padding:6px;margin:2px 0 8px"><option value="receipt"'+(d.direction==='in'?' selected':'')+'>Money in</option><option value="expense"'+(d.direction!=='in'?' selected':'')+'>Money out</option></select></label>'+
+   '<label style="font-size:12px">Type<select id="slType" required style="width:100%;padding:6px;margin:2px 0 8px">'+(d.direction==='unknown'||d.direction==='none'?'<option value="" selected disabled>Choose money in or money out</option>':'')+'<option value="receipt"'+(d.direction==='in'?' selected':'')+'>Money in</option><option value="expense"'+(d.direction==='out'?' selected':'')+'>Money out</option></select></label>'+
    '<label style="font-size:12px">Total<input id="slAmount" type="number" min="0" step="0.01" value="'+esc(v.amount||'')+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
    '<label style="font-size:12px">Date<input id="slDate" type="date" value="'+esc(v.date)+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
    '<label style="font-size:12px">Party or description<input id="slParty" type="text" value="'+esc(v.party)+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
@@ -279,6 +279,8 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   var msg=doc.getElementById('slipMsg');
   var type=doc.getElementById('slType').value;
   var date=doc.getElementById('slDate').value;
+  if(type!=='receipt'&&type!=='expense'){msg.textContent='Please confirm whether this document records money in or money out.';return}
+  if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)||isNaN(Date.parse(date+'T00:00:00'))){msg.textContent='Please enter a valid transaction date.';return}
   var party=doc.getElementById('slParty').value;
   var rows=[];
   if(lines&&lines.length){
