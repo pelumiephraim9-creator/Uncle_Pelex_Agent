@@ -75,3 +75,10 @@ test('editing legacy unclassified rows requires an explicit accounting classific
   assert.match(html, /Choose classification for this older entry/);
   assert.match(html, /Choose the accounting classification before saving this older entry/);
 });
+
+
+test('business setup prevents currency changes after ledger activity exists', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /Currency cannot be changed after transactions have been recorded/);
+  assert.match(html, /select\('id',\{count:'exact',head:true\}\)/);
+});
