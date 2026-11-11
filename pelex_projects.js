@@ -26,7 +26,8 @@
    '<label class="dnote">Reporting cycle<select id="pxProjectCycle" class="inp"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option></select></label></div>'+
    '<div id="pxProjectFields"></div>'+
    '<div class="prow" style="margin-top:12px"><button class="btn" id="pxProjectSave" type="button">Save project setup</button><button class="btn alt" id="pxProjectReset" type="button">Clear form</button></div>'+
-   '<p class="muted dnote" id="pxProjectMsg" role="status" aria-live="polite"></p></div>';
+   '<p class="muted dnote" id="pxProjectMsg" role="status" aria-live="polite"></p></div>'+
+   '<div class="an-card" id="pxProjectOperations" style="margin-top:12px;display:none"><b>Business operations · selected project only</b><p class="dnote">Record operational activity using only the modules enabled for this business type. These records remain separate from every other project.</p><label class="dnote">Enabled module<select class="inp" id="pxOpsModule"></select></label><div class="two"><label class="dnote">Record date<input class="inp" type="date" id="pxOpsDate"></label><label class="dnote">Amount (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsAmount"></label></div><div class="two"><label class="dnote">Quantity (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsQuantity"></label><label class="dnote">Unit cost (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsUnitCost"></label></div><div class="two"><label class="dnote">Customer / supplier / item<input class="inp" id="pxOpsParty" maxlength="160"></label><label class="dnote">Reference / item code<input class="inp" id="pxOpsReference" maxlength="120"></label></div><div class="two"><label class="dnote">Status<input class="inp" id="pxOpsStatus" maxlength="40" value="recorded"></label><label class="dnote">Details<input class="inp" id="pxOpsDetails" maxlength="500" placeholder="Optional operational details"></label></div><div class="prow" style="margin-top:10px"><button class="btn" id="pxOpsSave" type="button">Save operational record</button><button class="btn alt" id="pxOpsRefresh" type="button">Refresh records</button></div><p class="muted dnote" id="pxOpsMsg" role="status" aria-live="polite"></p><div id="pxOpsRows"></div></div>';
   var before=host.querySelector('#lsWrap')||host.firstChild;host.insertBefore(card,before);
   $('pxProjectType').onchange=renderFields;
   $('pxProjectReset').onclick=reset;
@@ -69,7 +70,7 @@
   var saved='';try{saved=localStorage.getItem('px_project_'+ws())||''}catch(e){}
   selected=projects.some(function(p){return p.id===saved})?saved:(projects[0]&&projects[0].id)||'';
   if(selected){try{localStorage.setItem('px_project_'+ws(),selected)}catch(e){}}
-  syncModules();renderList();
+  syncModules();renderList();renderOperations();
   var picker=$('pxTrProject');
   if(picker&&projects.length){
    picker.value=selected;
@@ -92,8 +93,37 @@
  function syncModules(){var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,card=$('agreeCard');if(card){var enabled=!!(t&&t.modules&&t.modules.indexOf('agreements')>=0);card.hidden=!enabled;card.style.display=enabled?'':'none'}}
  function select(id){
   selected=id;try{localStorage.setItem('px_project_'+ws(),id)}catch(e){}
-  syncModules();renderList();var p=$('pxTrProject');if(p){p.value=id;p.dispatchEvent(new Event('change',{bubbles:true}))}
+  syncModules();renderList();renderOperations();var p=$('pxTrProject');if(p){p.value=id;p.dispatchEvent(new Event('change',{bubbles:true}))}
   msg('Selected project. Data entry and financial summaries will now use this project only.');
+ }
+ function moduleLabel(m){return ({pos_sales:'POS sales',sales:'Sales',inventory:'Inventory',agreements:'Loan agreements',schedule:'Repayment schedules',collections:'Collections',deposits:'Deposits',contributions:'Contributions',payouts:'Payouts',receivables:'Receivables',payables:'Payables',bookings:'Bookings',maintenance:'Maintenance',tenancies:'Tenancies',trips:'Trips',expenses:'Expenses',payroll:'Payroll',fees:'Fees',orders:'Orders',payment_webhooks:'Payment events',production_batches:'Production batches',costing:'Costing',seasons:'Seasons',deliveries:'Deliveries',cash:'Cash operations',shifts:'Shifts',expiry:'Expiry tracking',projects:'Work projects',ledger:'Ledger',reports:'Reports'})[m]||m.replace(/_/g,' ').replace(/\\b\\w/g,function(x){return x.toUpperCase()})}
+ function renderOperations(){
+  var box=$('pxProjectOperations');if(!box)return;
+  var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,mods=t&&t.modules||[];
+  if(!p||!mods.length){box.style.display='none';return}
+  box.style.display='';$('pxOpsModule').innerHTML=mods.map(function(m){return '<option value="'+esc(m)+'">'+esc(moduleLabel(m))+'</option>'}).join('');
+  $('pxOpsDate').value=new Date().toISOString().slice(0,10);
+  $('pxOpsModule').onchange=loadOpsRecords;$('pxOpsRefresh').onclick=loadOpsRecords;
+  $('pxOpsSave').onclick=saveOpsRecord;loadOpsRecords();
+ }
+ async function loadOpsRecords(){
+  if(!selected||!$('pxOpsModule'))return;
+  var r=await window.sb.rpc('business_list_project_records',{p_workspace:ws(),p_project:selected,p_module:$('pxOpsModule').value,p_from:null,p_to:null});
+  if(r.error){$('pxOpsMsg').textContent='Could not load records: '+r.error.message;return}
+  var rows=r.data||[];$('pxOpsRows').innerHTML=rows.length?'<div class="dnote" style="margin-top:10px"><b>Recent '+esc(moduleLabel($('pxOpsModule').value))+' records</b></div>'+rows.slice(0,40).map(function(x){return '<div class="irow" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span><b>'+esc(x.record_date)+'</b> · '+esc(x.party||x.reference||x.record_type)+' <small class="muted">'+esc(x.status)+'</small></span><span>'+esc(x.amount==null?'':money(x.amount,x.currency))+(x.quantity==null?'':' · Qty '+esc(x.quantity))+'</span></div>'}).join(''):'<div class="muted dnote" style="margin-top:10px">No records for this module in this project yet.</div>';
+ }
+ async function saveOpsRecord(){
+  var module=$('pxOpsModule').value,date=$('pxOpsDate').value,amount=$('pxOpsAmount').value,qty=$('pxOpsQuantity').value,cost=$('pxOpsUnitCost').value;
+  if(!selected){$('pxOpsMsg').textContent='Select a project first.';return}
+  if(!date){$('pxOpsMsg').textContent='Choose a record date.';return}
+  if((amount!==''&&Number(amount)<0)||(qty!==''&&Number(qty)<0)||(cost!==''&&Number(cost)<0)){$('pxOpsMsg').textContent='Amounts, quantities and unit costs cannot be negative.';return}
+  var p=projects.find(function(x){return x.id===selected});
+  var b=$('pxOpsSave');b.disabled=true;$('pxOpsMsg').textContent='Saving operational record…';
+  var r=await window.sb.rpc('business_add_project_record',{p_workspace:ws(),p_project:selected,p_module:module,p_record_type:module,p_date:date,p_amount:amount===''?null:Number(amount),p_currency:p.currency,p_quantity:qty===''?null:Number(qty),p_unit_cost:cost===''?null:Number(cost),p_party:$('pxOpsParty').value,p_reference:$('pxOpsReference').value,p_status:$('pxOpsStatus').value,p_data:{details:$('pxOpsDetails').value||''}});
+  b.disabled=false;
+  if(r.error){$('pxOpsMsg').textContent='Record not saved: '+r.error.message;return}
+  $('pxOpsMsg').textContent='Operational record saved to '+p.name+'.';$('pxOpsAmount').value='';$('pxOpsQuantity').value='';$('pxOpsUnitCost').value='';$('pxOpsParty').value='';$('pxOpsReference').value='';$('pxOpsDetails').value='';
+  await loadOpsRecords();
  }
  function edit(id){
   var p=projects.find(function(x){return x.id===id});if(!p)return;
