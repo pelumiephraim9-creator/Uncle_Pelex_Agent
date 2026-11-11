@@ -899,3 +899,41 @@ revoke all on function public.business_add_transaction(uuid,uuid,text,text,numer
 grant execute on function public.business_add_transaction(uuid,uuid,text,text,numeric,date,text,text,text,date) to authenticated, service_role;
 revoke all on function public.business_update_transaction(uuid,bigint,text,text,numeric,date,text,text,text,date,uuid) from public, anon;
 grant execute on function public.business_update_transaction(uuid,bigint,text,text,numeric,date,text,text,text,date,uuid) to authenticated, service_role;
+
+
+-- Creation is insert-only. Editing an existing project must use its stable project ID.
+CREATE OR REPLACE FUNCTION public.save_setup_project(p_workspace uuid, p_name text, p_business_type text, p_currency text, p_capital_month numeric, p_capital_year numeric, p_spent numeric, p_spend_period text, p_loan numeric)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  pid uuid;
+  cur text:=upper(coalesce(nullif(trim(p_currency),''),'NGN'));
+  new_type text:=coalesce(nullif(trim(p_business_type),''),'general');
+  project_name text:=coalesce(nullif(trim(p_name),''),'My business');
+begin
+  if not public.can_edit(p_workspace) then raise exception 'You cannot create a business project in this workspace.'; end if;
+  if char_length(cur)<>3 or cur !~ '^[A-Z]{3}$' then raise exception 'Enter a valid three-letter currency code.'; end if;
+  if not exists(select 1 from public.business_types where code=new_type) then raise exception 'Choose a supported business type.'; end if;
+  if exists(select 1 from public.business_projects where workspace_id=p_workspace and name=project_name) then
+    raise exception 'A project with this name already exists. Select it under Projects to update its settings.';
+  end if;
+  insert into public.business_projects
+    (workspace_id,name,business_type,currency,startup_month,startup_year,spent,spend_period,loan)
+  values
+    (p_workspace,project_name,new_type,cur,
+     greatest(coalesce(p_capital_month,0),0),greatest(coalesce(p_capital_year,0),0),
+     greatest(coalesce(p_spent,0),0),case when p_spend_period='year' then 'year' else 'month' end,
+     greatest(coalesce(p_loan,0),0))
+  returning id into pid;
+  return pid;
+end;
+$function$
+;
+
+revoke all on function public.save_setup_project(uuid,text,text,text,numeric,numeric,numeric,text,numeric) from public, anon;
+grant execute on function public.save_setup_project(uuid,text,text,text,numeric,numeric,numeric,text,numeric) to authenticated, service_role;
+revoke all on function public.save_setup_project_v2(uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) from public, anon;
+grant execute on function public.save_setup_project_v2(uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) to authenticated, service_role;
