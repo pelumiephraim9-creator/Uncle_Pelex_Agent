@@ -5331,7 +5331,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var f=$p('upFile').files[0];if(!f){$p('upMsg').textContent='Choose a document picture first.';return}
   if(!ready()){$p('upMsg').textContent='Sign in to read documents.';return}
   $p('upMsg').textContent='Reading the document...';
-  var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var u=String(r.result||'');var ext=(f.name.split('.').pop()||'').toLowerCase();var mime={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext];if(mime&&/^data:application\\/octet-stream;/i.test(u))u=u.replace(/^data:application\\/octet-stream;/i,'data:'+mime+';');res(u)};r.onerror=function(){rej(new Error('The selected file could not be opened on this device.'))};r.readAsDataURL(f)});
+  var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var u=String(r.result||'');var ext=(f.name.split('.').pop()||'').toLowerCase();var mime={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext];if(mime&&u.toLowerCase().indexOf('data:application/octet-stream;')===0)u='data:'+mime+';'+u.slice('data:application/octet-stream;'.length);res(u)};r.onerror=function(){rej(new Error('The selected file could not be opened on this device.'))};r.readAsDataURL(f)});
   var raw;
   try{raw=await askPublicAgent('Read this document',Object.assign({},agentMeta(),{images:[dataUrl],intent:'extract',__sid:'read-'+Date.now()}))}
   catch(e){$p('upMsg').textContent=(e&&!e.backend&&e.message)?e.message:'The document reader is not reachable right now.';return}
