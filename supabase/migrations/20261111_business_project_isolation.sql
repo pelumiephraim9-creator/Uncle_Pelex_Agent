@@ -674,3 +674,14 @@ begin
 end;
 $function$
 
+
+
+-- Limit project data RPC execution to authenticated members and the trusted server role.
+revoke all on function public.business_add_project_record(uuid,uuid,text,text,date,numeric,text,numeric,numeric,text,text,text,jsonb) from public, anon;
+grant execute on function public.business_add_project_record(uuid,uuid,text,text,date,numeric,text,numeric,numeric,text,text,text,jsonb) to authenticated, service_role;
+revoke all on function public.business_project_inventory_summary(uuid,uuid) from public, anon;
+grant execute on function public.business_project_inventory_summary(uuid,uuid) to authenticated, service_role;
+revoke all on function public.business_project_module_summary(uuid,uuid,date,date) from public, anon;
+grant execute on function public.business_project_module_summary(uuid,uuid,date,date) to authenticated, service_role;
+revoke all on function public.business_list_project_records(uuid,uuid,text,date,date) from public, anon;
+grant execute on function public.business_list_project_records(uuid,uuid,text,date,date) to authenticated, service_role;
