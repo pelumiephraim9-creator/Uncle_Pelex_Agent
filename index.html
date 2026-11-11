@@ -1232,7 +1232,8 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <aside id="side" aria-label="Sidebar">
 <div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Pelex<span style="margin-left:auto;display:flex;gap:14px"><button class="iconbtn" id="instNavDesk" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button><button class="iconbtn" id="sideCollapse" aria-label="Hide sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button></span></div>
 <button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
-<button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projects</button>
+<button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Chat projects</button>
+<button class="nav" data-go="business-projects"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business projects</button>
 <button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
 <button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups<span class="nbadge" id="gBadge" hidden aria-label="Groups with new messages"></span></button>
 <button class="nav" data-go="spotlight"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg>Spotlight</button>
@@ -1540,13 +1541,13 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 
 
 <section class="view" id="v-projects" hidden><div class="wrap">
-<h1>Projects</h1><div class="muted">Each project keeps its own chats and conversation history.</div>
+<h1>Chat projects</h1><div class="muted">Each project keeps its own chats and conversation history.</div>
 <div style="margin-top:16px"><button class="btn" id="newProjectBtn">New project</button></div>
 <div class="grid" id="projectsGrid"></div>
 <p class="muted" id="projectsEmpty" style="margin-top:14px">No projects yet. Start one to keep related chats together.</p>
 </div></section>
 
-
+<section class="view" id="v-business-projects" hidden><div class="wrap"><h1>Business projects</h1><p class="muted">Each project is one independent business. Configure its business type, currency, startup settings and operational modules here. Transactions and reports stay inside that project.</p><div class="dcard" id="pxBusinessProjectsHost"><div class="muted">Sign in and create or select a business workspace to manage projects.</div></div></div></section>
 
 <section class="view" id="v-plugins" hidden><div class="wrap">
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Connectors</h1><div id="plugs">
@@ -5956,7 +5957,7 @@ function parseSheet(text){
   catch(e){$x('imMsg').textContent='Could not read the sheet. Publish it to web as CSV, then try again. ('+e.message+')'}
  }
  window.pxWatchFolder=watchFolder;window.pxScanFolder=function(){if(dirHandle)scanFolder(dirHandle)};window.pxHasFolderPicker=(typeof window.showDirectoryPicker==='function');
-var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300)};
+var _go=go;go=function(v,t){_go(v,t);if(v==='business'||v==='business-projects')setTimeout(buildSetup,300)};
  window.addEventListener('load',function(){setTimeout(function(){if($x('bWork'))buildSetup()},1200)});
  document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')setTimeout(renderAgreements,0)});
 })();
@@ -6652,9 +6653,10 @@ function pxCommandHelp(){
   if(project==='all'){$('pxMonthCards').innerHTML='';$('pxYearCards').innerHTML='';$('pxYearTable').innerHTML='';$('pxMonthNote').textContent='Select one project to see its monthly and yearly financial summaries. The transaction register above is showing all projects.';return}
   busy=true;
   try{
-   var m=month(),s=await sb.rpc('project_summary',{p_project:project,p_month:m});
+   var m=month(),s=await sb.rpc('business_project_dashboard_summary',{p_workspace:ws(),p_project:project,p_month:m});
    if(s.error)throw s.error;
-   var d=s.data||{},cur=d.currency||'NGN';
+   var bundle=s.data||{},d=bundle.financial||{},cur=bundle.currency||d.currency||'NGN';
+   var businessMetrics=bundle.business_metrics||{},opsSummary=bundle.operational_summary||[];
    var bt=await sb.from('business_types').select('modules').eq('code',d.business_type).maybeSingle();
    if(bt.error)throw bt.error;
    var modules=(bt.data&&bt.data.modules)||[],cards=[
@@ -6664,7 +6666,10 @@ function pxCommandHelp(){
    if(modules.indexOf('agreements')>=0)cards=cards.concat([
     ['Loan amount in setup',d.setup_loan],['Loan principal issued',d.month_principal_issued],['Loan principal repaid',d.month_principal_repaid],['Invoices issued',d.month_receivables_issued],['Invoice payments received',d.month_receivables_collected],['Recorded receivables outstanding',d.recorded_receivables_outstanding],['Interest income',d.month_interest_income],['Customer savings received',d.month_customer_savings_received],['Customer savings held',d.customer_savings_held]
    ]);
-   $('pxMonthCards').innerHTML=cards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
+   Object.keys(businessMetrics).forEach(function(k){if(k==='kind')return;var label=k.replace(/_/g,' ').replace(/\b\w/g,function(x){return x.toUpperCase()});cards.push([label,businessMetrics[k]])});
+   $('pxMonthCards').innerHTML=cards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
+   var opHost=$('pxOpsDashboard');if(opHost){opHost.innerHTML=opsSummary.length?'<h3>Business operations · '+esc(bundle.month)+'</h3><div class="ls-kpis">'+opsSummary.map(function(x){return '<div class="ls-kpi"><b>'+esc(x.record_count)+' records</b><span>'+esc(x.module_key.replace(/_/g,' '))+' · '+esc(x.record_type.replace(/_/g,' '))+'</span><small>'+cash(x.amount_total,cur)+(Number(x.quantity_total)?' · Qty '+esc(x.quantity_total):'')+'</small></div>'}).join('')+'</div>':'<div class="muted dnote">No operational records for this project in '+esc(bundle.month)+'.</div>';
+    if(window.pxBusinessProjects&&window.pxBusinessProjects.refreshOperations)window.pxBusinessProjects.refreshOperations();}
    $('pxMonthNote').textContent='Monthly cash movements include capital, loan principal and savings movements. Operating profit excludes them. Older receipts without an explicit accounting classification remain cash received but are excluded from operating profit until reviewed in the transaction register.';
    var y=Number(m.slice(0,4)),rows=await sb.rpc('project_months',{p_project:project});
    if(rows.error)throw rows.error;
@@ -6684,7 +6689,7 @@ function pxCommandHelp(){
   var dash=$('bDash');if(!dash||$('pxFinancialSummary'))return;
   var box=document.createElement('section');box.className='dcard';box.id='pxFinancialSummary';
   box.innerHTML='<div class="dhead"><h2>Monthly and yearly financial summary</h2><input id="pxMonthPick" type="month" value="'+new Date().toISOString().slice(0,7)+'" class="inp" style="max-width:170px"></div>'+
-   '<div class="dnote">Figures are calculated from the selected project’s Supabase ledger.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><p class="dnote" id="pxMonthNote"></p>'+
+   '<div class="dnote">Figures are calculated only from the selected business project. Operational modules use the project’s business type and selected month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><p class="dnote" id="pxMonthNote"></p>'+
    '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
   dash.insertBefore(box,dash.firstChild);
   $('pxMonthPick').onchange=load;
