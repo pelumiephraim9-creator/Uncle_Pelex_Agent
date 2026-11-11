@@ -1287,7 +1287,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <label class="ic" style="display:grid;place-items:center" aria-label="Attach an image or document">+<input id="file" type="file" accept="image/*,.pdf,.txt,.md,.csv,.tsv,.json,.xls,.xlsx,.docx" multiple hidden></label>
 <textarea id="in" rows="1" placeholder="Reply or hold to talk" aria-label="Message" aria-multiline="true"></textarea>
 <button class="ic" id="mic" aria-label="Record a voice message"><svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg><span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
-<button class="ic" id="imgBtn" type="button" aria-label="Create an image" title="Create an image" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg></button> <button class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<button class="ic" id="imgBtn" type="button" aria-label="Create an image" title="Create an image" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4"/></svg></button> <button type="button" class="ic send" id="send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 </div><button class="talk" id="talk">Talk live</button><button class="talk sec" id="muteBtn" hidden>Mute</button><button class="talk sec" id="stopSpeak">Stop reply</button></div>
 <div class="disclaimer">Pelex can make mistakes. Please check important info.</div>
 <button class="plugshortcut" data-go="plugins" aria-label="Open connectors"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Connectors</button></div>
@@ -2087,9 +2087,16 @@ async function netDown(){
   catch(e){return true}}
 // backend trouble stays silent; only a real internet problem is shown; deliberate user-facing messages still show
 async function showErr(e){
-  if(e&&e.backend){if(N8N_RETIRED)add('The assistant is not reachable right now. Please try again in a moment.','sys');return}
-  if(e&&e.name==='TypeError'){if(await netDown())add(NET_MSG,'sys');return}
-  if(e&&e.message)add(e.message,'sys')}
+  /* Never hide agent/backend errors: silent failure makes the send button look as if it rejected the draft. */
+  if(e&&e.backend){add('Pelex could not send that message: '+(e.message||'The AI service is temporarily unavailable. Please try again.'),'sys');return}
+  if(e&&e.name==='TypeError'){
+    if(await netDown())add(NET_MSG,'sys');
+    else add('The connection to Pelex was interrupted while sending. Your message is still visible above; please retry it.','sys');
+    return;
+  }
+  if(e&&e.message)add('Pelex could not send that message: '+e.message,'sys');
+  else add('Pelex could not send that message. Please try again.','sys');
+}
 async function askAgentRetry(text){
   try{return await askAgent(text)}
   catch(e){
@@ -2324,7 +2331,7 @@ async function sendTyped(){
     await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+q,'📄 '+d.name+'\n'+q);
   } else await turn(q);
 }
-$('send').onclick=sendTyped;
+$('send').onclick=function(e){if(e){e.preventDefault();e.stopPropagation()}sendTyped().catch(function(err){console.error('Pelex send handler failed',err);add('Pelex could not send that message: '+((err&&err.message)||'Please try again.'),'sys')})};
 input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendTyped()}});
 
 // ---- voice recording ----
