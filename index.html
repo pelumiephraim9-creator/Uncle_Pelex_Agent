@@ -5106,7 +5106,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  /* ---------- note archive ---------- */
  async function loadNotes(wsId){
   var box=$w('mtArchive');box.innerHTML='';
-  var r=await sb.from('meeting_notes').select('id,title,platform,created_at,outputs,downloaded_at,delete_after').eq('workspace_id',wsId).order('created_at',{ascending:false}).limit(50);
+  var projectId='';try{projectId=localStorage.getItem('px_project_'+wsId)||''}catch(e){}
+  if(!projectId||projectId==='all'){box.innerHTML='<div class="muted dnote">Select a business project to view its meeting archive.</div>';return}
+  var r=await sb.from('meeting_notes').select('id,title,platform,created_at,outputs,downloaded_at,delete_after,project_id').eq('workspace_id',wsId).eq('project_id',projectId).order('created_at',{ascending:false}).limit(50);
   if(r.error){box.innerHTML='<div class="muted dnote">The archive is not connected yet.</div>';return}
   if(!(r.data||[]).length){box.innerHTML='<div class="muted dnote">No previous meetings yet.</div>';return}
   r.data.forEach(function(n){
