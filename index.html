@@ -2274,12 +2274,25 @@ async function speak(t){
 // ---- typed / spoken turn ----
 var pendingDoc=null;
 async function turn(text,shown,img,el){
-  if(el){el.classList.remove('live');el.textContent=shown||text}else add(shown||text,'me',img);
+  var userNode;
+  if(el){el.classList.remove('live');el.textContent=shown||text;userNode=el}else userNode=add(shown||text,'me',img);
   var wait=add('Thinking...','sys');stepWait(wait);
-  var _ct=shown||text;try{await ensureChat(_ct)}catch(e){}
-  saveMsg('user',_ct);
+  var _ct=shown||text;
   try{
-    var reply=await askAgentRetry(text);wait.remove();saveMsg('assistant',reply);
+    var ready=await ensureChat(_ct);
+    if(!ready||!(await saveMsg('user',_ct))){
+      wait.remove();if(userNode&&userNode.remove)userNode.remove();
+      input.value=_ct;input.focus();
+      return '';
+    }
+  }catch(saveError){
+    wait.remove();if(userNode&&userNode.remove)userNode.remove();
+    input.value=_ct;input.focus();
+    chatFail('message could not be saved',saveError);
+    return '';
+  }
+  try{
+    var reply=await askAgentRetry(text);wait.remove();await saveMsg('assistant',reply);
     var node;
     var retryFn=function(){
       var w2=add('Thinking...','sys');stepWait(w2);
@@ -2827,18 +2840,76 @@ function chatFail(what,err){
   try{add('Your '+what+' ('+m+'). Please refresh Pelex and try again. If this continues, share this error with support.','sys')}catch(x){}
 }
 async function ensureChat(firstText){
-  if(!dbOk()||curChatId||!window.histOn())return;
+  if(!dbOk()||!window.histOn())return true;
+  if(curChatId)return true;
   var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
-  var r=await sb.from('chats').insert({title:title,project_id:curProjectId||null}).select('id').single();
-  if(r.error||!r.data){chatFail('chat could not be saved',r.error||{message:'no row returned'});return}
-  curChatId=r.data.id;mapSid(curChatId,sid);loadRecents();
+  var projectId=curProjectId||null,lastError=null;
+  function isTransient(e){
+    var m=String(e&&(e.message||e.details)||e||'');
+    return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
+  }
+  for(var attempt=0;attempt<3;attempt++){
+    try{
+      var r=await sb.from('chats').insert({title:title,project_id:projectId}).select('id').single();
+      if(r&&r.error)throw r.error;
+      if(!r||!r.data||!r.data.id)throw new Error('Chat creation returned no ID');
+      curChatId=r.data.id;mapSid(curChatId,sid);loadRecents();return true;
+    }catch(e){
+      lastError=e;
+      if(!isTransient(e))break;
+      // A timed-out response may follow a successful insert. Reuse that row
+      // before attempting another insert, avoiding duplicate empty chats.
+      try{
+        var q=sb.from('chats').select('id,created_at').eq('title',title)
+          .order('created_at',{ascending:false}).limit(20);
+        q=projectId?q.eq('project_id',projectId):q.is('project_id',null);
+        var found=await q;
+        if(!found.error&&Array.isArray(found.data)){
+          var cutoff=Date.now()-120000;
+          var match=found.data.find(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff});
+          if(match){curChatId=match.id;mapSid(curChatId,sid);loadRecents();return true}
+        }
+      }catch(verifyError){console.warn('Pelex: chat creation verification failed',verifyError)}
+      if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
+    }
+  }
+  chatFail('chat could not be saved',lastError||{message:'Unknown database error'});
+  return false;
 }
-function saveMsg(role,content){
-  if(!dbOk()||!curChatId||!content||!window.histOn())return;
-  var cid=curChatId;
-  sb.from('messages').insert({chat_id:cid,role:role,content:String(content).slice(0,20000)})
-    .then(function(mr){if(mr&&mr.error)chatFail('message could not be saved',mr.error);return sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)})
-    .catch(function(){});
+async function saveMsg(role,content){
+  if(!dbOk()||!curChatId||!content||!window.histOn())return true;
+  var cid=curChatId,body=String(content).slice(0,20000),lastError=null;
+  function isTransient(e){
+    var m=String(e&&(e.message||e.details)||e||'');
+    return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
+  }
+  for(var attempt=0;attempt<3;attempt++){
+    try{
+      var mr=await sb.from('messages').insert({chat_id:cid,role:role,content:body});
+      if(!mr||mr.error)throw (mr&&mr.error)||new Error('No database response');
+      // Keep timestamp maintenance separate: it must not invalidate a saved message.
+      sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)
+        .then(function(ur){if(ur&&ur.error)console.warn('Pelex: chat timestamp update failed',ur.error)})
+        .catch(function(ue){console.warn('Pelex: chat timestamp update failed',ue)});
+      return true;
+    }catch(e){
+      lastError=e;
+      if(!isTransient(e))break;
+      // Check whether Supabase committed the insert but the browser lost its response.
+      try{
+        var check=await sb.from('messages').select('id,created_at').eq('chat_id',cid)
+          .eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
+        if(!check.error&&Array.isArray(check.data)){
+          var cutoff=Date.now()-120000;
+          if(check.data.some(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff}))return true;
+        }
+      }catch(checkError){console.warn('Pelex: message save verification failed',checkError)}
+      if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
+    }
+  }
+  console.error('Pelex: message persistence failed after retries',lastError);
+  chatFail('message could not be saved',lastError||{message:'Unknown database error'});
+  return false;
 }
 function resetChatView(){window.__hist=[];chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
 function newChat(projectId){
