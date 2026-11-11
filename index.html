@@ -6521,7 +6521,7 @@ function pxCommandHelp(){
    '<div id="pxTrForm" class="an-card" hidden></div><div id="pxTrMsg" class="muted dnote" role="status" aria-live="polite"></div>'+
    '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th>Payment status</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="9">Loading transactions…</td></tr></tbody></table></div>';
   var dataCard=el('lsUploads').closest('.dcard');if(dataCard&&dataCard.parentNode)dataCard.parentNode.insertBefore(card,dataCard.nextSibling);else root.appendChild(card);
-  var dataHost=el('pxBusinessDataHost');if(dataHost){if(dataCard)dataHost.appendChild(dataCard);dataHost.appendChild(card);}
+  var dataHost=el('pxBusinessDataHost');if(dataHost){dataHost.insertBefore(card,dataHost.firstChild);if(dataCard)dataHost.insertBefore(dataCard,card.nextSibling);}
   el('pxTrNew').onclick=function(){form(null)};
   el('pxTrRefresh').onclick=load;
   ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch'].forEach(function(id){el(id).addEventListener(id==='pxTrSearch'?'input':'change',render)});
