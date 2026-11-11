@@ -280,7 +280,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   var type=doc.getElementById('slType').value;
   var date=doc.getElementById('slDate').value;
   if(type!=='receipt'&&type!=='expense'){msg.textContent='Please confirm whether this document records money in or money out.';return}
-  if(!date||!/^\d{4}-\\d{2}-\\d{2}$/.test(date)||isNaN(Date.parse(date+'T00:00:00'))){msg.textContent='Please enter a valid transaction date.';return}
+  if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)||isNaN(Date.parse(date+'T00:00:00'))){msg.textContent='Please enter a valid transaction date.';return}
   var party=doc.getElementById('slParty').value;
   var rows=[];
   if(lines&&lines.length){
