@@ -2136,6 +2136,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   ['expense','expense','Operating expense paid'],
   ['expense','principal_out','Loan principal issued'],
   ['receipt','receivable_in','Payment received against an existing invoice'],\n  ['receipt','principal_in','Loan principal repaid'],
+  ['receipt','receivable_in','Invoice payment received'],
   ['receipt','income','Interest or other operating income received'],
   ['other','savings_in','Customer savings received (liability)'],
   ['other','capital','Owner capital introduced'],
@@ -2176,6 +2177,61 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
  if(typeof _go==='function')window.go=function(v,t){_go(v,t);if(v==='business')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1300)});
  setInterval(function(){if(!mounted&&el('lsWrap')&&!el('bWork')?.hidden)start()},2000);
+})();
+</script>
+
+
+<script>
+/* Business financial summaries: same Supabase project ledger as the transaction register. */
+(function(){
+ function $(id){return document.getElementById(id)}
+ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(x){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[x]})}
+ function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function cash(v,c){return esc(c||'')+' '+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+ function month(){return $('pxMonthPick')&&$('pxMonthPick').value||new Date().toISOString().slice(0,7)}
+ var busy=false;
+ async function load(){
+  if(busy||!window.sb||!window.curUser||!ws())return;
+  var project=$('pxTrProject')&&$('pxTrProject').value;
+  if(!project)return;
+  busy=true;
+  try{
+   var m=month(),s=await sb.rpc('project_summary',{p_project:project,p_month:m});
+   if(s.error)throw s.error;
+   var d=s.data||{},cur=d.currency||'NGN';
+   $('pxMonthCards').innerHTML=[
+    ['Opening cash',d.opening_startup],['Cash received',d.month_in],['Cash paid',d.month_out],
+    ['Closing cash',d.month_closing],['Operating revenue',d.month_income===undefined?0:d.month_income],['Operating profit',d.month_profit]
+   ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
+   $('pxMonthNote').textContent='Monthly cash movements include capital, loan principal and savings movements. Operating profit excludes them. The project summary reports revenue and expenses from classifications stored in the ledger.';
+   var y=Number(m.slice(0,4)),rows=await sb.rpc('project_months',{p_project:project});
+   if(rows.error)throw rows.error;
+   var yearRows=(rows.data||[]).filter(function(x){return String(x.month).slice(0,4)===String(y)});
+   var total=yearRows.reduce(function(a,x){a.revenue+=Number(x.profit||0)+0; a.cashIn+=Number(x.money_in||0);a.cashOut+=Number(x.money_out||0);a.closing=Number(x.closing||0);return a},{revenue:0,cashIn:0,cashOut:0,closing:0});
+   $('pxYearCards').innerHTML=[
+    ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]
+   ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
+   $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td>'+esc(x.month)+'</td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
+   $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Monthly rows only appear where transactions exist.';
+  }catch(e){$('pxMonthNote').textContent='Financial summaries could not be loaded: '+(e.message||e);$('pxYearTable').textContent='Unable to load yearly figures.'}
+  finally{busy=false}
+ }
+ function mount(){
+  var dash=$('bDash');if(!dash||$('pxFinancialSummary'))return;
+  var box=document.createElement('section');box.className='dcard';box.id='pxFinancialSummary';
+  box.innerHTML='<div class="dhead"><h2>Monthly and yearly financial summary</h2><input id="pxMonthPick" type="month" value="'+new Date().toISOString().slice(0,7)+'" class="inp" style="max-width:170px"></div>'+
+   '<div class="dnote">Figures are calculated from the selected project’s Supabase ledger.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><p class="dnote" id="pxMonthNote"></p>'+
+   '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
+  dash.insertBefore(box,dash.firstChild);
+  $('pxMonthPick').onchange=load;
+  var prev=window.__pxRegisterReady;
+  window.__pxRegisterReady=load;
+  setTimeout(load,300);
+ }
+ var oldGo=window.go;
+ if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business')setTimeout(mount,300)};
+ window.addEventListener('load',function(){setTimeout(mount,1800)});
+ setInterval(function(){if($('bDash')&&!$('bDash').hidden){mount();if($('pxFinancialSummary')&&$('pxMonthCards').textContent==='')load()}},5000);
 })();
 </script>
 
