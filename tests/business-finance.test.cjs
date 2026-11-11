@@ -29,8 +29,8 @@ test('register supports chronological records, search, year and month filters', 
   for (const id of ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch','pxTrRows']) {
     assert.ok(html.includes('id="'+id+'"'), 'missing register control '+id);
   }
-  assert.match(registerScript, /entry_date DESC|entry_date DESC/i);
   assert.match(registerScript, /newest first/);
+  assert.match(registerScript, /ORDER BY le.entry_date DESC,le.id DESC/);
 });
 
 test('principal, receivable collection, savings and capital stay distinct from operating profit', () => {
