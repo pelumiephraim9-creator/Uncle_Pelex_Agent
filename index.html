@@ -4931,6 +4931,21 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $w('wsCode').value='';setWs(r.data);say('You joined the workspace.');loadWs();
  };
  $w('wsReport').onclick=function(){say('Report view links come in phase 3. Share only the Report window during a meeting.')};
+ function refreshBusinessWorkspace(){
+  if(!ready())return Promise.resolve();
+  return loadWs().then(function(){
+   if(window.pxBusinessProjects&&window.pxBusinessProjects.reload)return window.pxBusinessProjects.reload();
+  }).catch(function(e){$w('wsNote').textContent='Workspace could not be loaded: '+errText(e)});
+ }
+ var _businessWorkspaceGo=go;
+ go=function(v,t){_businessWorkspaceGo(v,t);if(v==='business')setTimeout(refreshBusinessWorkspace,0)};
+ var _businessWorkspaceUserChange=window.onUserChange;
+ window.onUserChange=function(user){
+  if(typeof _businessWorkspaceUserChange==='function')_businessWorkspaceUserChange(user);
+  if(user)setTimeout(refreshBusinessWorkspace,100);
+  else{setWs(null);myRole='viewer';$w('wsNote').textContent='Sign in to create or load a workspace.';$w('wsMembers').innerHTML=''}
+ };
+
 
  /* ---------- uploads: CSV + Excel parsing and confirmed ledger import ---------- */
  var TYPES=[['invoice',/invoice|bill to|amount due|due date|invoice no/i],['receipt',/receipt|paid|payment reference/i],['sales',/sale|sku|qty|quantity|unit price|product/i],['expense',/expense|vendor|supplier|purchase|debit/i]];
