@@ -1243,9 +1243,9 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="agentsgrp" id="agentsGrp"><button type="button" class="nav agentsbtn" id="agentsBtn" aria-expanded="false" aria-controls="agentsPanel"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="10" rx="3"/><path d="M12 8V5M9 13h.01M15 13h.01M3 13v2M21 13v2"/></svg>Agents<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="agentspanel" id="agentsPanel"><button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
 <button class="nav" data-go="gmail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Gmail Bot</button>
 <button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Agent</button>
-<div class="biztools-label">BUSINESS WORKSPACE</div>
-<button class="nav biztool" data-go="business-projects"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Project Management</button>
-<button class="nav biztool" data-go="business-data"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 10h16M10 5v14M15 5v14"/></svg>Data Entry</button>
+
+
+
 </div></div>
 <button class="nav" data-go="support" id="navSupport" hidden><svg viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 13h3v5H4zM17 13h3v5h-3zM17 18c0 2-2 3-5 3"/></svg>Support<span class="nbadge" id="supBadge" hidden></span></button>
 <div id="recPinned"></div>
@@ -1552,9 +1552,6 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="grid" id="projectsGrid"></div>
 <p class="muted" id="projectsEmpty" style="margin-top:14px">No projects yet. Start one to keep related chats together.</p>
 </div></section>
-
-<section class="view" id="v-business-projects" hidden><div class="wrap"><h1>Projects</h1><p class="muted">Each project is one independent business. Configure its business type, currency, startup settings and operational modules here. Transactions and reports stay inside that project.</p><div class="dcard" id="pxBusinessProjectsHost"><div class="muted">Sign in and create or select a business workspace to manage projects.</div></div></div></section>
-<section class="view" id="v-business-data" hidden><div class="wrap"><h1>Data Entry</h1><p class="muted">Record and review monthly transactions for one selected business project. Choose the project, year and month before adding or reviewing entries.</p><div id="pxBusinessDataHost" class="ls-wrap"><div class="muted">Sign in and open the Business Agent to load your transaction register.</div></div></div></section>
 
 <section class="view" id="v-plugins" hidden><div class="wrap">
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Connectors</h1><div id="plugs">
@@ -3773,8 +3770,16 @@ document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e
     if(b)b.setAttribute('data-sugg','Teach me something new and useful about '+pr.interests[0]+(pr.category?' for a '+pr.category.toLowerCase():''));
   };
   if(sb){
-    sb.auth.getSession().then(function(r){var u=r.data&&r.data.session?r.data.session.user:null;if(u){curUser=curUser||u;window.maybeOnboard(u);window.applyProfileChips()}});
-    sb.auth.onAuthStateChange(function(ev,session){if(session&&session.user){window.maybeOnboard(session.user);window.applyProfileChips()}});
+    sb.auth.getSession().then(function(r){
+      var u=r.data&&r.data.session?r.data.session.user:null;
+      applyUser(u);
+      if(u){window.maybeOnboard(u);window.applyProfileChips()}
+    }).catch(function(){applyUser(null)});
+    sb.auth.onAuthStateChange(function(ev,session){
+      var u=session&&session.user?session.user:null;
+      applyUser(u);
+      if(u){window.maybeOnboard(u);window.applyProfileChips()}
+    });
   }
 })();
 </script>
@@ -5676,7 +5681,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function $x(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
  function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
- function ready(){return !!(window.sb&&window.curUser&&ws())}
+ function ready(){return !!(window.sb&&window.curUser)}
  function errT(e){return String((e&&(e.message||e.details))||'Something went wrong.').replace(/^.*?: /,'')}
  function money(n,c){return (c||'NGN')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
  var SETTINGS=null, TYPES=[];
@@ -5688,7 +5693,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var host=$x('bWork');if(!host||$x('setupCard'))return;
   var wrap=document.createElement('div');wrap.id='finWrap';wrap.style.display='flex';wrap.style.flexDirection='column';wrap.style.gap='14px';
   wrap.innerHTML=
-   card('setupCard','Your business setup','<p class="muted dnote">Choose your type. Pelex then shows the tools for it. You enter your own rates and terms; Pelex only does the calculations.</p><div id="stBody"><div class="muted dnote">Sign in and create a workspace to set this up.</div></div><div class="muted dnote" id="stMsg"></div>')+
+   card('setupCard','Your business setup','<p class="muted dnote">Choose your type. Pelex then shows the tools for it. You enter your own rates and terms; Pelex only does the calculations.</p><div id="stBody"><div class="muted dnote">Loading your signed-in business workspace…</div></div><div class="muted dnote" id="stMsg"></div>')+
    card('agreeCard','Loan agreements','<div id="agBody"><div class="muted dnote">Set your terms above first, then create an agreement here.</div></div>')+
    card('monitorCard','Monitor sales from a till or computer','<p class=\"muted dnote\">Install Pelex on the device that handles your sales, then open the monitor screen. It shows today\'s sales and keeps reading your export folder while it stays open.</p><div class=\"prow\" style=\"margin-top:8px\"><button class=\"btn\" id=\"mnOpen\" type=\"button\">Open monitor screen</button><button class=\"btn alt\" id=\"mnCopy\" type=\"button\">Copy monitor link</button><button class=\"btn alt\" id=\"mnPop\" type=\"button\">Pop out monitor window</button></div><div class=\"muted dnote\" id=\"mnMsg\"></div><details class=\"ls-more\"><summary>How to install on each device</summary><div class=\"dnote\" style=\"line-height:1.7\"><b>Windows or Mac computer, or a till with Chrome or Edge:</b> open the monitor link, then click the install icon at the right of the address bar and choose Install.<br><b>Android POS terminal or tablet (Chrome):</b> open the monitor link, tap the menu (three dots), then Install app or Add to Home screen.<br><b>iPhone or iPad (Safari):</b> open the monitor link, tap Share, then Add to Home Screen.<br><b>Folder watching:</b> works in Chrome or Edge on a computer. Choose the folder your POS exports to, once per session.</div></details>')+
    card('importCard','Import your data','<p class="muted dnote">Keep your worksheet as usual. Pelex reads it and adds each row to your ledger.</p><div id="imBody"></div><div class="muted dnote" id="imMsg"></div>');
@@ -6519,7 +6524,6 @@ function pxCommandHelp(){
    '<div id="pxTrForm" class="an-card" hidden></div><div id="pxTrMsg" class="muted dnote" role="status" aria-live="polite"></div>'+
    '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th>Payment status</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="9">Loading transactions…</td></tr></tbody></table></div>';
   var dataCard=el('lsUploads').closest('.dcard');if(dataCard&&dataCard.parentNode)dataCard.parentNode.insertBefore(card,dataCard.nextSibling);else root.appendChild(card);
-  var dataHost=el('pxBusinessDataHost');if(dataHost){dataHost.insertBefore(card,dataHost.firstChild);if(dataCard)dataHost.insertBefore(dataCard,card.nextSibling);}
   el('pxTrNew').onclick=function(){form(null)};
   el('pxTrRefresh').onclick=load;
   ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch'].forEach(function(id){el(id).addEventListener(id==='pxTrSearch'?'input':'change',render)});
