@@ -95,7 +95,7 @@ test('business dashboard defaults to a real project and keeps currencies separat
   const html = fs.readFileSync('index.html', 'utf8');
   assert.match(html, /if\(!stored\|\|stored==='all'\)stored=projects\[0\]\.id/);
   assert.match(html, /currency cannot be changed after transactions have been recorded/i);
-  assert.match(html, /unclassified receipts without an explicit accounting classification/i);
+  assert.match(html, /receipts without an explicit accounting classification/i);
 });
 
 test('document reader accepts common office and business document formats and keeps reading separate from import', () => {
