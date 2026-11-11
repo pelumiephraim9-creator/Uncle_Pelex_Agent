@@ -6636,7 +6636,7 @@ function pxCommandHelp(){
   load();
  }
  var _go=window.go;
- if(typeof _go==='function')window.go=function(v,t){_go(v,t);if(v==='business')setTimeout(start,250)};
+ if(typeof _go==='function')window.go=function(v,t){_go(v,t);if(v==='business'||v==='business-data')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1300)});
  setInterval(function(){if(!mounted&&el('lsWrap')&&!el('bWork')?.hidden)start()},2000);
 })();
