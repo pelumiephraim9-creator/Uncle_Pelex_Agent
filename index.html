@@ -2301,7 +2301,13 @@ async function turn(text,shown,img,el){
   var userHistorySave=queueHistorySave('user',_ct,_ct);
   try{
     var reply=await askAgentRetry(text);wait.remove();
-    queueHistorySave('assistant',reply,_ct);
+    /* Do not show a completed reply until both sides of this turn have
+       finished their ordered persistence attempt. This makes a visible reply
+       a reliable signal that refresh history has been written (when signed in). */
+    var historySaved=await queueHistorySave('assistant',reply,_ct);
+    if(!historySaved&&dbOk()&&window.histOn()){
+      add('Your reply is ready, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    }
     var node;
     var retryFn=function(){
       var w2=add('Thinking...','sys');stepWait(w2);
@@ -2497,7 +2503,10 @@ async function sendImage(){
     /* Mark the attachment as sent immediately after backend success, before rendering the reply. */
     clearAttach();
     waitNode.remove();
-    queueHistorySave('assistant',result,q);
+    var imageHistorySaved=await queueHistorySave('assistant',result,q);
+    if(!imageHistorySaved&&dbOk()&&window.histOn()){
+      add('Your image was processed, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    }
     try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
     try{window.notifyReply&&window.notifyReply(result)}catch(e){}
   }catch(err){
