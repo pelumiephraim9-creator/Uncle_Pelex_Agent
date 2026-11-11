@@ -6370,8 +6370,9 @@ function pxCommandHelp(){
   projects=r.data||[];
   var picker=el('pxTrProject');if(!picker)return;
   if(!projects.length){picker.innerHTML='<option value="">No project set up yet</option>';activeProject='';return}
-  var stored='';try{stored=localStorage.getItem('px_project_'+ws())||''}catch(e){}if(!stored||stored==='all')stored=projects[0].id;
+  var stored='',saved='';try{saved=localStorage.getItem('px_project_'+ws())||'';stored=saved}catch(e){}if(!stored)stored=projects[0].id;
   if(stored!=='all'&&!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
+  try{if(stored!==saved)localStorage.setItem('px_project_'+ws(),stored)}catch(e){}
   activeProject=stored;
   picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · including unassigned</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
   currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';
