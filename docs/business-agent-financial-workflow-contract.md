@@ -62,3 +62,31 @@ Show separate figures for opening cash, owner contributions, operating revenue, 
 3. Frontend tests for validation, confirmation, responsive layout and error visibility.
 4. End-to-end tests covering setup, data entry, monthly analysis, yearly project view and optional loan flows.
 5. Verify deployed frontend, backend and database migration separately; a commit is not proof of deployment.
+
+
+## Approved multi-project architecture (2026-11-11)
+
+This section supersedes any older wording that treats one workspace as one business setup.
+
+- A workspace is the owner's account boundary. It may contain multiple independent business projects.
+- A business project is the unit of business setup, configuration, currency, reporting cycle, ledger, operational records, agreements, uploads, dashboard and reporting.
+- The selected row in `business_types` determines the project's enabled modules and setup fields. The frontend must load this catalogue dynamically; it must not hardcode only lending and retail.
+- The project stores its own `business_type`, `currency`, `reporting_cycle` and `profile`. Workspace settings are account/workspace compatibility defaults only and must not drive project-level calculations.
+- Data Entry is a transaction workflow. Each new transaction requires a project ID. A month/year is a reporting filter within the selected project, never a business project.
+- Project-level operational data is stored in `business_project_records`, scoped by both `workspace_id` and `project_id`, and writes are allowed only for modules enabled by that project's business type.
+- Uploads, loan agreements, POS devices, pairing codes and all generated ledger entries must retain the same project ID end to end.
+- Project IDs and workspace IDs are validated together by composite foreign keys. New ledger entries, uploads, agreements, devices and pairing codes cannot be saved without a project.
+- Legacy workspace-wide summaries must fail safely when more than one project makes the intended business ambiguous. Portfolio views may list projects, but must not combine incompatible financial measures or currencies.
+- Lending-specific agreements, repayments, principal, interest and savings remain tied to the lending project. Supermarket, retail, hospitality, education, logistics, property, production and other modules must use the modules enabled for their selected business type.
+- Deleting or renaming a project must never silently reassign its transactions or operational records to another project.
+
+## New isolation release gates
+
+1. Create two projects of different types under one workspace and confirm both configurations remain distinct after refresh and sign-in.
+2. Save transactions and uploads to each project; verify project A never returns project B's rows, summaries or files.
+3. Attempt to submit a transaction, upload confirmation, agreement, device or pairing code with a missing or foreign project ID; the database must reject it.
+4. Verify a module write succeeds only when its module is enabled for the selected business type.
+5. Verify month/year summaries and all report queries include the selected project ID.
+6. Verify lending repayment and savings-release ledger entries use the agreement's project ID.
+7. Verify the 17 business-type catalogue rows remain available and are loaded dynamically.
+8. Run frontend JavaScript tests, database isolation tests, and end-to-end tests before declaring the Business Agent release complete.
