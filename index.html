@@ -4908,7 +4908,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  $w('wsCreate').onclick=async function(){
   if(!ready()){say('Sign in to create a workspace.',true);return}
-  var name=prompt('Name of your business (2 to 80 characters)');if(!name)return;
+  var name=prompt('Name for your workspace or team (2 to 80 characters). You will create individual businesses in the setup card below.');if(!name)return;
   var r=await sb.rpc('create_workspace',{p_name:name.trim(),p_currency:null});
   if(r.error){say(errText(r.error),true);return}
   setWs(r.data);say('Workspace created.');loadWs();
