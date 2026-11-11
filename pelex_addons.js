@@ -540,7 +540,7 @@ var editingKnowledgeId=null;
    #v-business .dcard,#v-pitch .dcard,#v-gmail .dcard{min-width:0;overflow-wrap:anywhere}
  }
  @media (min-width:1400px){#v-business .dash,#v-pitch .dash,#v-gmail .dash{gap:22px}#v-spotlight .spot-list,#v-pitch .spot-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
- @media (max-width:899px){#v-business .dash,#v-pitch .dash,#v-gmail .dash{display:flex;flex-direction:column}#v-spotlight .spot-list,#v-pitch .spot-list{display:flex;flex-direction:column}}
+ @media (max-width:899px){#v-business .dash,#v-pitch .dash,#v-gmail .dash{display:flex;flex-direction:column}#v-business .dash[hidden],#v-pitch .dash[hidden],#v-gmail .dash[hidden]{display:none!important}#v-spotlight .spot-list,#v-pitch .spot-list{display:flex;flex-direction:column}}
  `;
  document.head.appendChild(style);
 })();
