@@ -6675,6 +6675,7 @@ function pxCommandHelp(){
    Object.keys(businessMetrics).forEach(function(k){if(k==='kind'||businessMetrics[k]==null)return;var label=k.replace(/_/g,' ').replace(/\b\w/g,function(x){return x.toUpperCase()});cards.push([label,businessMetrics[k]])});
    $('pxMonthCards').innerHTML=cards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
    var opHost=$('pxOpsDashboard');if(opHost){opHost.innerHTML=opsSummary.length?'<h3>Business operations · '+esc(bundle.month)+'</h3><div class="ls-kpis">'+opsSummary.map(function(x){return '<div class="ls-kpi"><b>'+esc(x.record_count)+' records</b><span>'+esc(x.module_key.replace(/_/g,' '))+' · '+esc(x.record_type.replace(/_/g,' '))+'</span><small>'+cash(x.amount_total,cur)+(Number(x.quantity_total)?' · Qty '+esc(x.quantity_total):'')+'</small></div>'}).join('')+'</div>':'<div class="muted dnote">No operational records for this project in '+esc(bundle.month)+'.</div>';
+    if($('pxOpsMonth'))$('pxOpsMonth').value=bundle.month;
     if(window.pxBusinessProjects&&window.pxBusinessProjects.refreshOperations)window.pxBusinessProjects.refreshOperations();}
    $('pxMonthNote').textContent='Monthly cash movements include capital, loan principal and savings movements. Operating profit excludes them. Older receipts without an explicit accounting classification remain cash received but are excluded from operating profit until reviewed in the transaction register.';
    var y=Number(m.slice(0,4)),rows=await sb.rpc('project_months',{p_project:project});
