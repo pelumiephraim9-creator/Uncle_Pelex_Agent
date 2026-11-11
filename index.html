@@ -6512,6 +6512,8 @@ function pxCommandHelp(){
   el('pxTrNew').onclick=function(){form(null)};
   el('pxTrRefresh').onclick=load;
   ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch'].forEach(function(id){el(id).addEventListener(id==='pxTrSearch'?'input':'change',render)});
+  function syncProjectMonth(){var y=el('pxTrYear').value,m=el('pxTrMonth').value;if(!y||!m)return;var v=y+'-'+m;if(el('pxMonthPick'))el('pxMonthPick').value=v;if(el('pxOpsMonth'))el('pxOpsMonth').value=v;if(window.__pxDashboardLoad)window.__pxDashboardLoad();if(window.pxBusinessProjects&&window.pxBusinessProjects.refreshOperations)window.pxBusinessProjects.refreshOperations()}
+  el('pxTrYear').addEventListener('change',syncProjectMonth);el('pxTrMonth').addEventListener('change',syncProjectMonth);
   mounted=true;return true;
  }
  async function loadProjects(){
@@ -6687,7 +6689,8 @@ function pxCommandHelp(){
    '<div class="dnote">Figures are calculated only from the selected business project. Operational modules use the project’s business type and selected month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><p class="dnote" id="pxMonthNote"></p>'+
    '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
   dash.insertBefore(box,dash.firstChild);
-  $('pxMonthPick').onchange=load;
+  $('pxMonthPick').onchange=function(){var v=this.value,parts=/^(\\d{4})-(0[1-9]|1[0-2])$/.exec(v);if(parts){if($('pxOpsMonth'))$('pxOpsMonth').value=v;if($('pxTrYear'))$('pxTrYear').value=parts[1];if($('pxTrMonth'))$('pxTrMonth').value=parts[2];if($('pxTrYear'))$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));if($('pxTrMonth'))$('pxTrMonth').dispatchEvent(new Event('change',{bubbles:true}));}load()};
+  window.__pxDashboardLoad=load;
   document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')load()});
   var prev=window.__pxRegisterReady;
   window.__pxRegisterReady=load;
