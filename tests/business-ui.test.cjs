@@ -63,7 +63,7 @@ test('business CSV import preserves explicit accounting kind and category column
 
 test('business financial dashboard calls the live monthly and yearly Supabase reports', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /project_summary/);
+  assert.match(html, /business_project_dashboard_summary/);
   assert.match(html, /project_months/);
   assert.match(html, /month_income/);
   assert.match(html, /month_profit/);
