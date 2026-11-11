@@ -4958,7 +4958,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsAsk').value='';
   var a=document.createElement('div');a.className='m a';a.textContent='Thinking...';log.appendChild(a);log.scrollTop=log.scrollHeight;
   try{
-    var out=await askPublicAgent(q,Object.assign({},agentMeta(),{agent:'business',intent:'analyse',ledger:window.__lsSummary||{},__sid:'biz-'+wsId()}));
+    var selectedProject=(document.getElementById('pxTrProject')||{}).value||'';var out=await askPublicAgent(q,Object.assign({},agentMeta(),{agent:'business',intent:'analyse',workspaceId:wsId(),projectId:selectedProject&&selectedProject!=='all'?selectedProject:null,ledger:window.__lsSummary||{},__sid:'biz-'+wsId()}));
     a.innerHTML='';a.appendChild(window.mdRender(String(out)));
   }catch(err){a.textContent=(err&&!err.backend&&err.message)?err.message:'The assistant could not answer right now. Please try again.'}
   log.scrollTop=log.scrollHeight;
