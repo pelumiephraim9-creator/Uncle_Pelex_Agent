@@ -85,10 +85,7 @@ begin
 end;
 $$;
 
-drop trigger if exists zz_ledger_require_project on public.ledger_entries;
-create trigger zz_ledger_require_project
-before insert or update of project_id, workspace_id on public.ledger_entries
-for each row execute function public.require_ledger_project();
+-- Project/currency validation is handled by trg_ledger_project_currency below.
 
 create or replace function public.business_add_transaction(
   p_workspace uuid, p_project uuid, p_entry_type text, p_kind text,
@@ -892,6 +889,35 @@ begin
   return new;
 end;
 $function$;
+
+
+CREATE OR REPLACE FUNCTION public.enforce_business_project_currency()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE project_currency text;
+BEGIN
+  IF NEW.project_id IS NULL THEN RETURN NEW; END IF;
+  SELECT upper(bp.currency) INTO project_currency
+  FROM public.business_projects bp
+  WHERE bp.id=NEW.project_id AND bp.workspace_id=NEW.workspace_id;
+  IF project_currency IS NULL THEN
+    RAISE EXCEPTION 'The selected project does not belong to this workspace.';
+  END IF;
+  IF upper(coalesce(NEW.currency,''))<>project_currency THEN
+    RAISE EXCEPTION 'This project reports in %; transaction currency must match. Create a separate project for another currency.',project_currency;
+  END IF;
+  RETURN NEW;
+END
+$function$
+;
+drop trigger if exists trg_ledger_project_currency on public.ledger_entries;
+create trigger trg_ledger_project_currency
+before insert or update of project_id,workspace_id,currency on public.ledger_entries
+for each row execute function public.enforce_business_project_currency();
+
 
 revoke all on function public.confirm_upload(uuid,text,jsonb) from public, anon;
 grant execute on function public.confirm_upload(uuid,text,jsonb) to authenticated, service_role;
