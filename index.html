@@ -5080,6 +5080,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var projectList=projectsRes.data||[];
   if(!projectId&&projectList.length===1)projectId=projectList[0].id;
   if(!projectId&&projectList.length>1){upSay('Choose one project in the Transaction register before importing. The file has not been saved.',true);return}
+  if(!projectId){upSay('Create or select a business project before importing. The file has not been saved.',true);return}
   if(projectId&&!projectList.some(function(p){return p.id===projectId})){upSay('The selected project does not belong to this workspace. Refresh and choose it again.',true);return}
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var path=ws+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
@@ -5493,6 +5494,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var rc=uniq.length===1?uniq[0]:(chosen||(uniq.length?null:null));
   if(!rc){var w=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();rc=(w.data&&w.data.reporting_currency)||null}
   if(!rc){$p('upMsg').textContent='Set the currency for these rows first.';return}
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws)||null}catch(e){}if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var path=ws+'/'+id+'/'+pendingDoc.file.name.replace(/[^A-Za-z0-9._-]/g,'_');
   $p('upMsg').textContent='Saving...';
@@ -5502,7 +5504,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(await window.pxDuplicate(fh)){$p('upMsg').textContent='This file is already recorded. Nothing was added again.';return}
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:(localStorage.getItem('px_project_'+ws)||null),file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:pendingDoc.type,confidence:'Reviewed',currency:rc});
   if(ins.error){$p('upMsg').textContent='File stored, but its record was not saved: '+ins.error.message;return}
-  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws)||null}catch(e){}if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}\n  var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws)||null}catch(e){}if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
+  var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
   var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
   if(cf.error){$p('upMsg').textContent='Saved the file, but the rows were not added: '+cf.error.message;return}
   $p('upMsg').textContent='Saved. '+cf.data+' rows added to the ledger'+(t.bad?' ('+t.bad+' rows skipped: unclear date or amount)':'')+'.';
@@ -5748,7 +5751,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 
  async function renderAgreements(){
   var box=$x('agBody');if(!box||!ready())return;
-  var r=await sb.from('agreements').select('id,party,principal,deposit,deposit_treatment,rate,rate_basis,method,cycle,term_cycles,start_date,status').eq('workspace_id',ws()).order('created_at',{ascending:false}).limit(100);
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all'){box.innerHTML='<div class="muted dnote">Select a lending project to view its agreements.</div>';return}
+  var r=await sb.from('agreements').select('id,party,principal,deposit,deposit_treatment,rate,rate_basis,method,cycle,term_cycles,start_date,status').eq('workspace_id',ws()).eq('project_id',projectId).order('created_at',{ascending:false}).limit(100);
   var list=r.data||[];
   box.innerHTML='<div class="prow" style="margin-bottom:10px"><button class="btn" id="agNew" type="button">New agreement</button></div><div id="agForm" hidden></div><div id="agList" class="ilist">'+(list.length?'':'<div class="muted dnote">No agreements yet.</div>')+'</div><div id="agDetail"></div>';
   $x('agNew').onclick=agreementForm;
@@ -5782,7 +5786,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(!(p>0)){$x('agMsg').textContent='Enter the amount borrowed.';return}
   if(isNaN(rate)||rate<0){$x('agMsg').textContent='Enter a rate of 0 or more.';return}
   if(!(term>0)){$x('agMsg').textContent='Enter a term of at least 1 cycle.';return}
-  var r=await sb.rpc('create_agreement',{p_workspace:ws(),p_party:v('agParty').trim(),p_principal:p,p_deposit:dep,p_deposit_treatment:v('agTreat'),p_rate:rate,p_rate_basis:v('agBasis'),p_method:v('agMethod'),p_cycle:v('agCycle'),p_term:term,p_start:v('agStart'),p_savings_model:(SETTINGS.profile&&SETTINGS.profile.savings_model)||'upfront_credited',p_savings_per_instalment:Number((SETTINGS.profile&&SETTINGS.profile.savings_per_instalment)||0)});
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all'){$x('agMsg').textContent='Select the lending project before creating an agreement.';return}
+  var project=await sb.from('business_projects').select('profile,currency').eq('id',projectId).eq('workspace_id',ws()).single();if(project.error){$x('agMsg').textContent='Could not load project settings: '+errT(project.error);return}
+  var r=await sb.rpc('create_agreement_for_project',{p_workspace:ws(),p_project:projectId,p_party:v('agParty').trim(),p_principal:p,p_deposit:dep,p_deposit_treatment:v('agTreat'),p_rate:rate,p_rate_basis:v('agBasis'),p_method:v('agMethod'),p_cycle:v('agCycle'),p_term:term,p_start:v('agStart'),p_savings_model:(project.data.profile&&project.data.profile.savings_model)||'upfront_credited',p_savings_per_instalment:Number((project.data.profile&&project.data.profile.savings_per_instalment)||0)});
   if(r.error){$x('agMsg').textContent='Not created: '+errT(r.error);return}
   $x('agForm').hidden=true;renderAgreements();
  }
@@ -5791,9 +5797,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var d=$x('agDetail'),t=0;
   while(d&&d.innerHTML.indexOf('Loading schedule')>=0&&t<50){await new Promise(function(r){setTimeout(r,100)});t++}
   if(!d)return;
-  var g=await sb.from('agreements').select('status,deposit,savings_model,party').eq('id',a.id).maybeSingle();
+  var g=await sb.from('agreements').select('status,deposit,savings_model,party,project_id').eq('id',a.id).maybeSingle();
   var ag=g.data;if(!ag||ag.savings_model!=='savings_box_completes'||!(Number(ag.deposit)>0))return;
-  var rel=await sb.from('ledger_entries').select('amount,entry_date').eq('workspace_id',ws()).eq('party','Savings released to complete loan: '+ag.party).maybeSingle();
+  var rel=await sb.from('ledger_entries').select('amount,entry_date').eq('project_id',ag.project_id).eq('party','Savings released to complete loan: '+ag.party).maybeSingle();
   var amt=money(ag.deposit,SETTINGS.currency);var html;
   if(rel.data){html='<div class="an-card" style="margin-top:10px"><b>Savings box</b><div class="dnote">'+amt+' was released on '+esc(rel.data.entry_date)+' to complete this loan.</div></div>'}
   else if(ag.status==='closed'){html='<div class="an-card" style="margin-top:10px"><b>Savings box</b><div class="dnote">'+amt+' is held for this loan. The loan is fully repaid.</div><div class="prow" style="margin-top:8px"><button class="btn" id="relSav" type="button">Release '+esc(amt)+' now</button></div><div class="dnote" id="relMsg"></div></div>'}
@@ -6521,7 +6527,7 @@ function pxCommandHelp(){
   if(busy)return;busy=true;message('Loading the live register…');
   try{
    await loadProjects();
-   if(!activeProject){rows=[];render();message('Create a project in business setup before recording transactions.',true);return}
+   if(!activeProject){rows=[];render();message('Create a project in Projects before recording transactions.',true);return}
    rows=[];var offset=0,batchSize=1000,more=true;
    while(more&&offset<50000){
     var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject==='all'?null:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000}).range(offset,offset+batchSize-1);
