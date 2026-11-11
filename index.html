@@ -6588,7 +6588,7 @@ function pxCommandHelp(){
   box.hidden=false;
   var formProject=x?(x.project_id||''):(activeProject==='all'?'':activeProject);
   box.innerHTML='<b>'+(x?'Edit transaction':'Add a transaction')+'</b>'+
-   '<label class="dnote">Project<select class="inp" id="pxFProject">'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===formProject?' selected':'')+'>'+esc(p.name)+'</option>'}).join('')+'<option value=""'+(!formProject?' selected':'')+'>Unassigned</option></select></label>'+
+   '<label class="dnote">Project<select class="inp" id="pxFProject">'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===formProject?' selected':'')+'>'+esc(p.name)+'</option>'}).join('')+'</select></label>'+
    '<div class="two"><label class="dnote">Transaction date<input class="inp" id="pxFDate" type="date" value="'+esc(x?x.entry_date:isoNow())+'"></label>'+
    '<label class="dnote">Transaction type<select class="inp" id="pxFType">'+(idx<0?'<option value="" selected disabled>Choose classification for this older entry</option>':'')+CLASSES.map(function(v,i){return '<option value="'+i+'"'+(i===idx?' selected':'')+'>'+esc(v[2])+'</option>'}).join('')+'</select></label></div>'+
    '<div class="two"><label class="dnote">Amount<input class="inp" id="pxFAmount" type="number" min="0.01" step="0.01" value="'+esc(x?x.amount:'')+'" placeholder="0.00"></label>'+
@@ -6602,7 +6602,8 @@ function pxCommandHelp(){
   el('pxFType').onchange=function(){var c=CLASSES[Number(this.value)];box.querySelector('p').textContent='Classification: '+c[2]+'. Principal, savings and capital are not counted as operating profit.'};
   el('pxFSave').onclick=async function(){
    var selectedClass=el('pxFType').value;if(selectedClass===''){message('Choose the accounting classification before saving this older entry.',true);return}var c=CLASSES[Number(selectedClass)],amount=Number(el('pxFAmount').value),date=el('pxFDate').value,cur=el('pxFCurrency').value.trim().toUpperCase();
-   if(!el('pxFProject').value){message('Choose the business project for this transaction.',true);return}\n   if(!(amount>0)||!date||!/^[A-Z]{3}$/.test(cur)){message('Enter a valid date, amount greater than zero and three-letter currency.',true);return}
+   if(!el('pxFProject').value){message('Choose the business project for this transaction.',true);return}
+   if(!(amount>0)||!date||!/^[A-Z]{3}$/.test(cur)){message('Enter a valid date, amount greater than zero and three-letter currency.',true);return}
    var args={p_workspace:ws(),p_project:el('pxFProject').value||null,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
    var btn=el('pxFSave');btn.disabled=true;message('Saving transaction…');
    var r=x?await window.sb.rpc('business_update_transaction',Object.assign({p_entry_id:x.id},args)):await window.sb.rpc('business_add_transaction',args);
