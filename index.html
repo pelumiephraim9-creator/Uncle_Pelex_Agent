@@ -5087,7 +5087,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(chosen&&String(chosen).toUpperCase()!==cur){upSay('The selected currency does not match this project. Use '+cur+' or create a separate project for another currency.',true);return}
   if((parsed.currencies||[]).some(function(c){return String(c).toUpperCase()!==cur})){upSay('This file contains a currency different from the selected project ('+cur+'). Convert the file or import it into a separate project. No data was saved.',true);return}
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
-  var path=ws+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
+  var path=ws+'/'+projectId+'/'+id+'/'+f.name.replace(/[^A-Za-z0-9._-]/g,'_');
   upSay('Checking for duplicates…');
   var fh=await window.pxFileHash(f);
   var duplicate=false;try{duplicate=await window.pxDuplicate(fh,projectId)}catch(e){upSay('Could not verify this file against the selected project: '+errText(e),true);return}
