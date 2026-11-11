@@ -207,6 +207,6 @@
  var oldGo=window.go;
  if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business'||v==='business-projects')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1500)});
- setInterval(function(){if(!mounted&&$('lsWrap')&&!$('bWork')?.hidden)start()},2000);
+ setInterval(function(){if(!mounted&&($('pxBusinessProjectsHost')||$('pxBusinessDataHost')||$('lsWrap')))start()},2000);
  window.pxBusinessProjects={reload:start,select:select,refreshOperations:loadOpsRecords};
 })();
