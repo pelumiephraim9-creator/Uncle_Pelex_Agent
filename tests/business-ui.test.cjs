@@ -39,7 +39,7 @@ test('the add-on JavaScript parses', () => {
 test('ambiguous slip templates require explicit money direction', () => {
   const templates = source.slice(0, source.indexOf('function pxNum'));
   for (const id of ['tax_invoice','commercial_invoice','proforma','simplified_invoice','till_receipt','supplier_invoice','credit_note','bank_transfer','delivery_note','general_document']) {
-    const row = templates.split('\\n').find(line => line.includes("id:'" + id + "'"));
+    const row = templates.split('\n').find(line => line.includes("id:'" + id + "'"));
     assert.ok(row, 'template exists: ' + id);
     assert.match(row, /direction:'unknown'/, id + ' must not guess cash direction');
   }
