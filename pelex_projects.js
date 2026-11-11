@@ -203,27 +203,27 @@
  }
  var loading=false,lastLoadedWorkspace='';
  async function start(){
-  /* Mount the setup card whenever Business Agent is available. Do not hide it
-     behind authentication or workspace checks; explain the next required step. */
-  if(!ensure())return;
-  var user=window.curUser;
-  if(!user&&window.sb&&window.sb.auth&&window.sb.auth.getSession){
-   try{
-    var sessionResult=await window.sb.auth.getSession();
-    user=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.user;
-    if(user){window.curUser=user;if(typeof window.applyUser==='function')window.applyUser(user)}
-   }catch(authError){}
-  }
-  if(!window.sb||!user){
-   msg('Sign in to create and manage your business projects.');
-   return;
-  }
-  if(loading)return;
+  /* Mount and populate the business catalogue independently of the user's
+     workspace. business_types is intentionally public-read, so the selector
+     must never be blank merely because the user has not joined a workspace. */
+  if(!ensure()||loading)return;
+  if(!window.sb){msg('Business setup cannot connect to the database. Refresh and try again.',true);return}
   loading=true;
   try{
-   /* Load the catalogue before checking workspace state. The type selector must
-      be usable as soon as the setup card appears, even for a new account. */
    if(!types.length)await loadTypes();
+   var user=window.curUser;
+   if(!user&&window.sb.auth&&window.sb.auth.getSession){
+    try{
+     var sessionResult=await window.sb.auth.getSession();
+     user=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.user;
+     if(user){window.curUser=user;if(typeof window.applyUser==='function')window.applyUser(user)}
+    }catch(authError){}
+   }
+   if(!user){
+    projects=[];selected='';renderList();renderOperations();
+    msg('Choose a business type now. Sign in to save your setup and create a business workspace.');
+    return;
+   }
    var workspace=ws();
    if(!workspace){
     projects=[];selected='';renderList();renderOperations();
