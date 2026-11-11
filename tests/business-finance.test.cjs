@@ -47,3 +47,22 @@ test('register exposes payment status and requires a valid project for every new
   assert.match(registerScript, /pxFProject/);
   assert.match(registerScript, /activeProject==='all'/);
 });
+
+test('dashboard reporting variables and inventory summary are unambiguous in PostgreSQL', () => {
+  const dashboard = fs.readFileSync('supabase/migrations/20261111_business_project_dashboard_summary.sql', 'utf8');
+  const reporting = fs.readFileSync('supabase/migrations/20261111_business_project_reporting.sql', 'utf8');
+  assert.match(dashboard, /v_start_date/);
+  assert.match(dashboard, /v_end_date/);
+  assert.doesNotMatch(dashboard, /\bstart_date\b/);
+  assert.doesNotMatch(dashboard, /\bend_date\b/);
+  assert.match(reporting, /select g\.item,g\.qin,g\.qout,g\.qadj/);
+  assert.match(reporting, /from grouped as g order by g\.item/);
+});
+
+test('business access hardening leaves the type catalogue read-only and protects private workspace data', () => {
+  const security = fs.readFileSync('supabase/migrations/20261111_business_agent_access_hardening.sql', 'utf8');
+  assert.match(security, /revoke all on table public\.workspaces[\s\S]*from public, anon/);
+  assert.match(security, /grant select on table public\.business_types to anon, authenticated/);
+  assert.match(security, /revoke all on function public\.create_workspace\(text,text\) from public, anon/);
+  assert.match(security, /grant execute on function public\.create_workspace\(text,text\) to authenticated/);
+});
