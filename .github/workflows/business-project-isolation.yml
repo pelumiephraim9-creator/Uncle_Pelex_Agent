@@ -1,0 +1,32 @@
+name: Business Agent project isolation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'pelex_projects.js'
+      - 'supabase/migrations/20261111_business_project_*.sql'
+      - 'tests/business-project-isolation.test.cjs'
+      - 'tests/business-finance.test.cjs'
+      - 'tests/business-ui.test.cjs'
+      - '.github/workflows/business-project-isolation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'pelex_projects.js'
+      - 'supabase/migrations/20261111_business_project_*.sql'
+      - 'tests/business-project-isolation.test.cjs'
+      - 'tests/business-finance.test.cjs'
+      - 'tests/business-ui.test.cjs'
+      - '.github/workflows/business-project-isolation.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run Business Agent isolation and regression tests
+        run: node --test tests/business-project-isolation.test.cjs tests/business-finance.test.cjs tests/business-ui.test.cjs
