@@ -4830,7 +4830,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:det.conf,currency:cur});
   if(ins.error){upSay('File stored, but its record was not saved: '+errText(ins.error),true);return}
   if(isCsv){
-    var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:parsed.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws)||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
+    var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:parsed.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws)||null;if(pid==='all')pid=null}catch(e){}return Object.assign({},x,{project_id:pid})})});
     if(rc.error){upSay('Saved the file, but the rows were not added: '+errText(rc.error),true);return}
     upSay('Saved. '+rc.data+' rows added to the ledger'+(parsed.skipped?' ('+parsed.skipped+' rows skipped because the date or amount was unclear)':'')+'.')
   } else upSay('Saved for review. Non-CSV files are read in the next step, and nothing enters the ledger until you confirm.');
@@ -5238,7 +5238,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:pendingDoc.type,confidence:'Reviewed',currency:rc});
   if(ins.error){$p('upMsg').textContent='File stored, but its record was not saved: '+ins.error.message;return}
   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due}});
-  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+wsId())||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
+  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+wsId())||null;if(pid==='all')pid=null}catch(e){}return Object.assign({},x,{project_id:pid})})});
   if(cf.error){$p('upMsg').textContent='Saved the file, but the rows were not added: '+cf.error.message;return}
   $p('upMsg').textContent='Saved. '+cf.data+' rows added to the ledger'+(t.bad?' ('+t.bad+' rows skipped: unclear date or amount)':'')+'.';
   $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
@@ -5627,7 +5627,7 @@ function parseSheet(text){
   if(await window.pxDuplicate(fh))return {ok:false,msg:name+': this file is already recorded.'};
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
-  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws())||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
+  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws())||null;if(pid==='all')pid=null}catch(e){}return Object.assign({},x,{project_id:pid})})});
   if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
   return {ok:true,msg:name+': '+rc.data+' rows added'+(p.skipped?' ('+p.skipped+' skipped: unclear date or amount)':'')};
  }
@@ -6303,7 +6303,9 @@ function pxCommandHelp(){
   var box=el('pxTrForm'),kind=x?x.kind:'income',et=x?x.entry_type:'sale';
   var idx=CLASSES.findIndex(function(v){return v[0]===et&&v[1]===kind});if(idx<0)idx=0;
   box.hidden=false;
+  var formProject=x?(x.project_id||''):(activeProject==='all'?'':activeProject);
   box.innerHTML='<b>'+(x?'Edit transaction':'Add a transaction')+'</b>'+
+   '<label class="dnote">Project<select class="inp" id="pxFProject">'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===formProject?' selected':'')+'>'+esc(p.name)+'</option>'}).join('')+'<option value=""'+(!formProject?' selected':'')+'>Unassigned</option></select></label>'+
    '<div class="two"><label class="dnote">Transaction date<input class="inp" id="pxFDate" type="date" value="'+esc(x?x.entry_date:isoNow())+'"></label>'+
    '<label class="dnote">Transaction type<select class="inp" id="pxFType">'+CLASSES.map(function(v,i){return '<option value="'+i+'"'+(i===idx?' selected':'')+'>'+esc(v[2])+'</option>'}).join('')+'</select></label></div>'+
    '<div class="two"><label class="dnote">Amount<input class="inp" id="pxFAmount" type="number" min="0.01" step="0.01" value="'+esc(x?x.amount:'')+'" placeholder="0.00"></label>'+
@@ -6318,7 +6320,7 @@ function pxCommandHelp(){
   el('pxFSave').onclick=async function(){
    var c=CLASSES[Number(el('pxFType').value)],amount=Number(el('pxFAmount').value),date=el('pxFDate').value,cur=el('pxFCurrency').value.trim().toUpperCase();
    if(!(amount>0)||!date||!/^[A-Z]{3}$/.test(cur)){message('Enter a valid date, amount greater than zero and three-letter currency.',true);return}
-   var args={p_workspace:ws(),p_project:x?(x.project_id||null):activeProject,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
+   var args={p_workspace:ws(),p_project:el('pxFProject').value||null,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
    var btn=el('pxFSave');btn.disabled=true;message('Saving transaction…');
    var r=x?await window.sb.rpc('business_update_transaction',Object.assign({p_entry_id:x.id},args)):await window.sb.rpc('business_add_transaction',args);
    if(r.error){message('Not saved: '+r.error.message,true);btn.disabled=false;return}
