@@ -58,8 +58,8 @@ begin
   where r.workspace_id=p_workspace and r.project_id=p_project and r.module_key='inventory'
   group by 1
  )
- select item,qin,qout,qadj,qin-qout+qadj,avgcost,greatest(0,qin-qout+qadj)*avgcost
- from grouped order by item;
+ select g.item,g.qin,g.qout,g.qadj,g.qin-g.qout+g.qadj,g.avgcost,greatest(0,g.qin-g.qout+g.qadj)*g.avgcost
+ from grouped as g order by g.item;
 end;
 $$;
 
