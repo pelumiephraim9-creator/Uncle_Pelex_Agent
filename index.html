@@ -5229,7 +5229,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsAsk').value='';
   var a=document.createElement('div');a.className='m a';a.textContent='Thinking...';log.appendChild(a);log.scrollTop=log.scrollHeight;
   try{
-    var selectedProject=(document.getElementById('pxTrProject')||{}).value||'';var out=await askPublicAgent(q,Object.assign({},agentMeta(),{agent:'business',intent:'analyse',workspaceId:wsId(),projectId:selectedProject&&selectedProject!=='all'?selectedProject:null,ledger:window.__lsSummary||{},__sid:'biz-'+wsId()}));
+    var selectedProject=(document.getElementById('pxTrProject')||{}).value||'';var out=await askPublicAgent(q,Object.assign({},agentMeta(),{agent:'business',intent:'analyse',workspaceId:wsId(),projectId:selectedProject&&selectedProject!=='all'?selectedProject:null,periodMonth:($l('pxMonthPick')&&$l('pxMonthPick').value)||new Date().toISOString().slice(0,7),ledger:window.__lsSummary||{},__sid:'biz-'+wsId()}));
     a.innerHTML='';a.appendChild(window.mdRender(String(out)));
   }catch(err){a.textContent=(err&&!err.backend&&err.message)?err.message:'The assistant could not answer right now. Please try again.'}
   log.scrollTop=log.scrollHeight;
@@ -6672,7 +6672,7 @@ function pxCommandHelp(){
    if(modules.indexOf('agreements')>=0)cards=cards.concat([
     ['Loan amount in setup',d.setup_loan],['Loan principal issued',d.month_principal_issued],['Loan principal repaid',d.month_principal_repaid],['Invoices issued',d.month_receivables_issued],['Invoice payments received',d.month_receivables_collected],['Recorded receivables outstanding',d.recorded_receivables_outstanding],['Interest income',d.month_interest_income],['Customer savings received',d.month_customer_savings_received],['Customer savings held',d.customer_savings_held]
    ]);
-   Object.keys(businessMetrics).forEach(function(k){if(k==='kind')return;var label=k.replace(/_/g,' ').replace(/\b\w/g,function(x){return x.toUpperCase()});cards.push([label,businessMetrics[k]])});
+   Object.keys(businessMetrics).forEach(function(k){if(k==='kind'||businessMetrics[k]==null)return;var label=k.replace(/_/g,' ').replace(/\b\w/g,function(x){return x.toUpperCase()});cards.push([label,businessMetrics[k]])});
    $('pxMonthCards').innerHTML=cards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
    var opHost=$('pxOpsDashboard');if(opHost){opHost.innerHTML=opsSummary.length?'<h3>Business operations · '+esc(bundle.month)+'</h3><div class="ls-kpis">'+opsSummary.map(function(x){return '<div class="ls-kpi"><b>'+esc(x.record_count)+' records</b><span>'+esc(x.module_key.replace(/_/g,' '))+' · '+esc(x.record_type.replace(/_/g,' '))+'</span><small>'+cash(x.amount_total,cur)+(Number(x.quantity_total)?' · Qty '+esc(x.quantity_total):'')+'</small></div>'}).join('')+'</div>':'<div class="muted dnote">No operational records for this project in '+esc(bundle.month)+'.</div>';
     if(window.pxBusinessProjects&&window.pxBusinessProjects.refreshOperations)window.pxBusinessProjects.refreshOperations();}
