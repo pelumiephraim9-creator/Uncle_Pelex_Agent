@@ -2055,7 +2055,131 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
     down.onclick=function(){down.setAttribute('aria-pressed','true');up.setAttribute('aria-pressed','false');fb.textContent='Thanks, noted.'};
     if(t.length>180){
       var esc=function(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
-      var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap}</style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p></body></html>'};
+      var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap}</style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p>
+<script>
+/* PELEX BUSINESS TRANSACTION REGISTER — connected to the canonical Supabase ledger RPCs. */
+(function(){
+ 'use strict';
+ var mounted=false,projects=[],activeProject='',rows=[],currency='NGN',busy=false;
+ function el(id){return document.getElementById(id)}
+ function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
+ function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+ function money(v,c){return (c||currency)+' '+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+ function isoNow(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+ function status(t){return t==='invoice'?'Invoice / receivable':t==='expense'?'Expense':t==='sale'?'Sale':t==='receipt'?'Receipt':t==='payment'?'Payment':'Other'}
+ function classification(k){return ({income:'Operating income',expense:'Operating expense',principal_out:'Loan principal issued',principal_in:'Loan principal repaid',savings_in:'Customer savings held',capital:'Owner capital introduced',transfer:'Cash transfer'})[k]||'Unclassified'}
+ function message(s,bad){var n=el('pxTrMsg');if(n){n.textContent=s||'';n.style.color=bad?'#b3261e':''}}
+ function build(){
+  var root=el('lsWrap');if(!root||!el('lsUploads')||el('pxTransactionRegister'))return false;
+  var card=document.createElement('section');card.className='dcard';card.id='pxTransactionRegister';
+  card.innerHTML='<div class="dhead"><h2>Transaction register</h2><span class="ttag">Live ledger · newest first</span></div>'+
+   '<p class="dnote">Record and review every transaction. Operating profit is kept separate from loan principal, savings and owner capital.</p>'+
+   '<div class="prow" style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">'+
+   '<label class="dnote" style="flex:1;min-width:160px">Project<select id="pxTrProject" class="inp"></select></label>'+
+   '<label class="dnote" style="flex:1;min-width:120px">Year<select id="pxTrYear" class="inp"><option value="">All years</option></select></label>'+
+   '<label class="dnote" style="flex:1;min-width:120px">Month<select id="pxTrMonth" class="inp"><option value="">All months</option>'+Array.from({length:12},function(_,i){return '<option value="'+String(i+1).padStart(2,'0')+'">'+new Date(2000,i,1).toLocaleString(undefined,{month:'long'})+'</option>'}).join('')+'</select></label>'+
+   '<label class="dnote" style="flex:2;min-width:180px">Search<input id="pxTrSearch" class="inp" type="search" placeholder="Party, category or description"></label></div>'+
+   '<div class="prow" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn" id="pxTrNew" type="button">Add transaction</button><button class="btn alt" id="pxTrRefresh" type="button">Refresh register</button><span class="muted dnote" id="pxTrCount"></span></div>'+
+   '<div id="pxTrForm" class="an-card" hidden></div><div id="pxTrMsg" class="muted dnote" role="status" aria-live="polite"></div>'+
+   '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="7">Loading transactions…</td></tr></tbody></table></div>';
+  var dataCard=el('lsUploads').closest('.dcard');if(dataCard&&dataCard.parentNode)dataCard.parentNode.insertBefore(card,dataCard.nextSibling);else root.appendChild(card);
+  el('pxTrNew').onclick=function(){form(null)};
+  el('pxTrRefresh').onclick=load;
+  ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch'].forEach(function(id){el(id).addEventListener(id==='pxTrSearch'?'input':'change',render)});
+  mounted=true;return true;
+ }
+ async function loadProjects(){
+  var r=await window.sb.from('business_projects').select('id,name,currency').eq('workspace_id',ws()).order('created_at',{ascending:true});
+  if(r.error)throw r.error;
+  projects=r.data||[];
+  var picker=el('pxTrProject');if(!picker)return;
+  if(!projects.length){picker.innerHTML='<option value="">No project set up yet</option>';activeProject='';return}
+  var stored='';try{stored=localStorage.getItem('px_project_'+ws())||''}catch(e){}
+  if(!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
+  activeProject=stored;
+  picker.innerHTML=projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
+  currency=(projects.filter(function(p){return p.id===activeProject})[0]||{}).currency||'NGN';
+  picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||{}).currency||'NGN';load()};
+ }
+ async function load(){
+  if(!mounted||!(window.sb&&window.curUser&&ws()))return;
+  if(busy)return;busy=true;message('Loading the live register…');
+  try{
+   await loadProjects();
+   if(!activeProject){rows=[];render();message('Create a project in business setup before recording transactions.',true);return}
+   var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000});
+   if(r.error)throw r.error;
+   rows=r.data||[];
+   var years=Array.from(new Set(rows.map(function(x){return String(x.entry_date||'').slice(0,4)}).filter(Boolean))).sort().reverse();
+   var y=el('pxTrYear'),old=y.value;
+   y.innerHTML='<option value="">All years</option>'+years.map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>'}).join('');
+   if(years.indexOf(old)>=0)y.value=old;
+   render();message(rows.length+' transactions loaded from Supabase.');
+  }catch(e){message('Could not load transactions: '+(e.message||e),true);el('pxTrRows').innerHTML='<tr><td colspan="7">The register could not be loaded. Check your workspace access and try refresh.</td></tr>'}
+  finally{busy=false}
+ }
+ function filtered(){
+  var y=el('pxTrYear').value,m=el('pxTrMonth').value,q=el('pxTrSearch').value.trim().toLowerCase();
+  return rows.filter(function(x){var d=String(x.entry_date||'');return (!y||d.slice(0,4)===y)&&(!m||d.slice(5,7)===m)&&(!q||[x.party,x.category,x.entry_type,x.kind].join(' ').toLowerCase().indexOf(q)>=0)});
+ }
+ function render(){
+  if(!mounted)return;
+  var list=filtered(),body=el('pxTrRows');
+  el('pxTrCount').textContent=list.length+' shown · '+rows.length+' total';
+  if(!list.length){body.innerHTML='<tr><td colspan="7">No transactions match these filters.</td></tr>';return}
+  body.innerHTML=list.map(function(x){return '<tr><td>'+esc(x.entry_date)+'</td><td>'+esc(status(x.entry_type))+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.category||'—')+'</td><td>'+esc(money(x.amount,x.currency))+'</td><td>'+esc(classification(x.kind))+'</td><td><button type="button" class="btn alt" data-px-edit="'+esc(x.id)+'" style="padding:5px 10px">Edit</button></td></tr>'}).join('');
+  body.querySelectorAll('[data-px-edit]').forEach(function(b){b.onclick=function(){var x=rows.find(function(z){return String(z.id)===b.getAttribute('data-px-edit')});if(x)form(x)}});
+ }
+ var CLASSES=[
+  ['sale','income','Sale / service received'],
+  ['invoice','income','Invoice issued (revenue, not cash yet)'],
+  ['expense','expense','Operating expense paid'],
+  ['expense','principal_out','Loan principal issued'],
+  ['receipt','principal_in','Loan principal repaid'],
+  ['receipt','income','Interest or other operating income received'],
+  ['other','savings_in','Customer savings received (liability)'],
+  ['other','capital','Owner capital introduced'],
+  ['other','transfer','Cash transfer out']
+ ];
+ function form(x){
+  var box=el('pxTrForm'),kind=x?x.kind:'income',et=x?x.entry_type:'sale';
+  var idx=CLASSES.findIndex(function(v){return v[0]===et&&v[1]===kind});if(idx<0)idx=0;
+  box.hidden=false;
+  box.innerHTML='<b>'+(x?'Edit transaction':'Add a transaction')+'</b>'+
+   '<div class="two"><label class="dnote">Transaction date<input class="inp" id="pxFDate" type="date" value="'+esc(x?x.entry_date:isoNow())+'"></label>'+
+   '<label class="dnote">Transaction type<select class="inp" id="pxFType">'+CLASSES.map(function(v,i){return '<option value="'+i+'"'+(i===idx?' selected':'')+'>'+esc(v[2])+'</option>'}).join('')+'</select></label></div>'+
+   '<div class="two"><label class="dnote">Amount<input class="inp" id="pxFAmount" type="number" min="0.01" step="0.01" value="'+esc(x?x.amount:'')+'" placeholder="0.00"></label>'+
+   '<label class="dnote">Currency<input class="inp" id="pxFCurrency" maxlength="3" value="'+esc(x?x.currency:currency)+'"></label></div>'+
+   '<div class="two"><label class="dnote">Party / description<input class="inp" id="pxFParty" maxlength="160" value="'+esc(x?x.party:'')+'" placeholder="Customer, supplier or description"></label>'+
+   '<label class="dnote">Category<input class="inp" id="pxFCategory" maxlength="80" value="'+esc(x?x.category:'')+'" placeholder="e.g. Sales, rent, transport"></label></div>'+
+   '<label class="dnote">Due date (optional)<input class="inp" id="pxFDue" type="date" value="'+esc(x&&x.due_date?x.due_date:'')+'"></label>'+
+   '<div class="prow" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" id="pxFSave">'+(x?'Save changes':'Save transaction')+'</button><button type="button" class="btn alt" id="pxFCancel">Cancel</button></div>'+
+   '<p class="muted dnote">Classification: '+esc(CLASSES[idx][2])+'. Principal, savings and capital are not counted as operating profit.</p>';
+  el('pxFCancel').onclick=function(){box.hidden=true};
+  el('pxFType').onchange=function(){var c=CLASSES[Number(this.value)];box.querySelector('p').textContent='Classification: '+c[2]+'. Principal, savings and capital are not counted as operating profit.'};
+  el('pxFSave').onclick=async function(){
+   var c=CLASSES[Number(el('pxFType').value)],amount=Number(el('pxFAmount').value),date=el('pxFDate').value,cur=el('pxFCurrency').value.trim().toUpperCase();
+   if(!(amount>0)||!date||!/^[A-Z]{3}$/.test(cur)){message('Enter a valid date, amount greater than zero and three-letter currency.',true);return}
+   var args={p_workspace:ws(),p_project:activeProject,p_entry_type:c[0],p_kind:c[1],p_amount:amount,p_date:date,p_party:el('pxFParty').value,p_currency:cur,p_category:el('pxFCategory').value,p_due_date:el('pxFDue').value||null};
+   var btn=el('pxFSave');btn.disabled=true;message('Saving transaction…');
+   var r=x?await window.sb.rpc('business_update_transaction',Object.assign({p_entry_id:x.id},args)):await window.sb.rpc('business_add_transaction',args);
+   if(r.error){message('Not saved: '+r.error.message,true);btn.disabled=false;return}
+   box.hidden=true;await load();if(window.__lsLoad)window.__lsLoad();
+  };
+ }
+ function start(){
+  if(!window.sb||!window.curUser||!ws())return;
+  if(!build()){setTimeout(start,500);return}
+  load();
+ }
+ var _go=window.go;
+ if(typeof _go==='function')window.go=function(v,t){_go(v,t);if(v==='business')setTimeout(start,250)};
+ window.addEventListener('load',function(){setTimeout(start,1300)});
+ setInterval(function(){if(!mounted&&el('lsWrap')&&!el('bWork')?.hidden)start()},2000);
+})();
+</script>
+
+</body></html>'};
       var pdf=document.createElement('button');pdf.type='button';pdf.className='dl';pdf.textContent='PDF';pdf.setAttribute('aria-label','Save as PDF');
       pdf.onclick=function(){var w=window.open('','_blank');if(!w){add('Your browser blocked the PDF window. Allow pop-ups for this site and try again.','sys');return}w.document.write(docHtml());w.document.close();w.focus();setTimeout(function(){try{w.print()}catch(e){}},400)};
       var wd=document.createElement('button');wd.type='button';wd.className='dl';wd.textContent='Word';wd.setAttribute('aria-label','Save as Word document');
