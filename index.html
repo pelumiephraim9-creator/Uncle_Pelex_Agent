@@ -5209,9 +5209,11 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  async function load(){
   var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
-  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id').eq('workspace_id',w).order('entry_date',{ascending:true}).limit(5000);
-  var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at').eq('workspace_id',w).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
-  if(e.error||u.error){$l('lsCount').textContent='Ledger is not connected yet. Run phase2_workspace.sql and phase3_ledger.sql in Supabase.';return}
+  var project='';try{project=localStorage.getItem('px_project_'+w)||''}catch(e){}
+  if(!project||project==='all'){T=[];U=[];render();$l('lsCount').textContent='Select one business project to view its analysis and uploads. Portfolio totals are not merged.';return}
+  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id').eq('workspace_id',w).eq('project_id',project).order('entry_date',{ascending:true}).limit(5000);
+  var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at,project_id').eq('workspace_id',w).eq('project_id',project).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
+  if(e.error||u.error){$l('lsCount').textContent='Project analysis could not be loaded: '+((e.error||u.error).message||'Please refresh.');return}
   T=e.data||[];U=u.data||[];render();
  }
  /* chat with the agent about this ledger */
