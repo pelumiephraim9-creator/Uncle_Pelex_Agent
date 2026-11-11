@@ -39,3 +39,11 @@ test('principal, receivable collection, savings and capital stay distinct from o
   assert.match(html, /Payment received against an existing invoice/);
   assert.match(html, /Owner capital introduced/);
 });
+
+test('register exposes payment status and lets users reassign unlinked rows', () => {
+  assert.match(registerScript, /function paymentStatus/);
+  assert.match(registerScript, /Part-paid/);
+  assert.match(registerScript, /Unassigned/);
+  assert.match(registerScript, /pxFProject/);
+  assert.match(registerScript, /activeProject==='all'/);
+});
