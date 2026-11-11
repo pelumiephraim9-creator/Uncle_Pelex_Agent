@@ -21,16 +21,17 @@
    '<div id="pxProjectList" class="ilist"></div>'+
    '<div class="an-card" style="margin-top:12px"><b id="pxProjectFormTitle">Create a business project</b>'+
    '<div class="two"><label class="dnote">Business / project name<input id="pxProjectName" class="inp" maxlength="100" placeholder="e.g. Pelex Supermarket"></label>'+
-   '<label class="dnote">Business type<select id="pxProjectType" class="inp"></select></label></div>'+
+   '<label class="dnote">Business type<select id="pxProjectType" class="inp"><option value="">Loading business types…</option></select></label></div>'+
    '<div class="two"><label class="dnote">Reporting currency<input id="pxProjectCurrency" class="inp" maxlength="3" value="NGN" placeholder="NGN"></label>'+
    '<label class="dnote">Reporting cycle<select id="pxProjectCycle" class="inp"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option></select></label></div>'+
-   '<div id="pxProjectFields"></div>'+
+   '<div id="pxProjectFields"></div><button class="btn alt" id="pxTypeRetry" type="button" style="margin-top:8px" hidden>Retry loading business types</button>'+
    '<div class="prow" style="margin-top:12px"><button class="btn" id="pxProjectSave" type="button">Save project setup</button><button class="btn alt" id="pxProjectReset" type="button">Clear form</button></div>'+
    '<p class="muted dnote" id="pxProjectMsg" role="status" aria-live="polite"></p></div>'+
    '<div class="an-card" id="pxProjectOperations" style="margin-top:12px;display:none"><b>Business operations · selected project only</b><p class="dnote">Record operational activity using only the modules enabled for this business type. These records remain separate from every other project.</p><label class="dnote">Reporting month<input class="inp" type="month" id="pxOpsMonth"></label><label class="dnote">Enabled module<select class="inp" id="pxOpsModule"></select></label><label class="dnote">Record type<select class="inp" id="pxOpsRecordType"></select></label><div class="two"><label class="dnote">Record date<input class="inp" type="date" id="pxOpsDate"></label><label class="dnote">Amount (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsAmount"></label></div><div class="two"><label class="dnote">Quantity (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsQuantity"></label><label class="dnote">Unit cost (optional)<input class="inp" type="number" min="0" step="any" id="pxOpsUnitCost"></label></div><div class="two"><label class="dnote">Customer / supplier / item<input class="inp" id="pxOpsParty" maxlength="160"></label><label class="dnote">Reference / item code<input class="inp" id="pxOpsReference" maxlength="120"></label></div><div class="two"><label class="dnote">Status<input class="inp" id="pxOpsStatus" maxlength="40" value="recorded"></label><label class="dnote">Details<input class="inp" id="pxOpsDetails" maxlength="500" placeholder="Optional operational details"></label></div><div class="prow" style="margin-top:10px"><button class="btn" id="pxOpsSave" type="button">Save operational record</button><button class="btn alt" id="pxOpsRefresh" type="button">Refresh records</button></div><p class="muted dnote" id="pxOpsMsg" role="status" aria-live="polite"></p><div id="pxOpsRows"></div></div>';
   var workspaceCard=Array.prototype.slice.call(host.children).find(function(node){return !!(node.querySelector&&node.querySelector('#wsBody'))});
   if(workspaceCard)host.insertBefore(card,workspaceCard.nextSibling);else host.insertBefore(card,host.firstChild);
   $('pxProjectType').onchange=renderFields;
+  $('pxTypeRetry').onclick=function(){types=[];start()};
   $('pxProjectReset').onclick=reset;
   $('pxProjectSave').onclick=save;
   mounted=true;return true;
@@ -62,8 +63,10 @@
  async function loadTypes(){
   var r=await window.sb.from('business_types').select('code,name,group_name,description,default_cycle,modules,fields').order('sort_order');
   if(r.error)throw r.error;types=r.data||[];
+  if(!types.length)throw new Error('The business type catalogue returned no rows. Check the business_types table and its public-read policy.');
   var groups={};types.forEach(function(t){(groups[t.group_name||'Other']=groups[t.group_name||'Other']||[]).push(t)});
   $('pxProjectType').innerHTML=Object.keys(groups).map(function(g){return '<optgroup label="'+esc(g)+'">'+groups[g].map(function(t){return '<option value="'+esc(t.code)+'">'+esc(t.name)+'</option>'}).join('')+'</optgroup>'}).join('');
+  $('pxTypeRetry').hidden=true;
   reset();
  }
  async function loadProjects(){
@@ -239,7 +242,8 @@
    }
    msg('');
   }catch(e){
-   msg('Business setup could not load: '+(e.message||e),true);
+   if(!types.length){$('pxProjectType').innerHTML='<option value="">Business types could not load</option>';$('pxTypeRetry').hidden=false;}
+   msg('Business setup could not load: '+(e.message||e)+'. Use Retry loading business types after checking your connection.',true);
   }finally{loading=false}
  }
  var oldGo=window.go;
@@ -256,6 +260,7 @@
  var oldUserChange=window.onUserChange;
  window.onUserChange=function(user){
   if(typeof oldUserChange==='function')oldUserChange(user);
+  if(!user){projects=[];selected='';lastLoadedWorkspace='';renderList();renderOperations();}
   setTimeout(start,100);
  };
  window.addEventListener('load',function(){setTimeout(start,500)});
