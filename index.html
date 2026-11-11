@@ -4974,14 +4974,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function parseEntries(text){
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0,currencies:[]};
   var hdr=splitCsv(lines[0]).map(function(x){return x.toLowerCase()});
-  var cd=findCol(hdr,/date/),ca=findCol(hdr,/amount|total|value|sum|price/),cc=findCol(hdr,/currency|curr/),cp=findCol(hdr,/customer|client|vendor|party|name|item|description/),ct=findCol(hdr,/type|category/),cdue=findCol(hdr,/due/);
+  var cd=findCol(hdr,/date/),ca=findCol(hdr,/amount|total|value|sum|price/),cc=findCol(hdr,/currency|curr/),cp=findCol(hdr,/customer|client|vendor|party|name|item|description/),ct=findCol(hdr,/type|entry type|transaction type/),ck=findCol(hdr,/kind|classification/),cCat=findCol(hdr,/category/),cdue=findCol(hdr,/due/);
   var rows=[],skipped=0,curs={};
   for(var i=1;i<lines.length;i++){
     var c=splitCsv(lines[i]);
     var date=cd>=0?toDate(c[cd]):null, amt=ca>=0?parseFloat(String(c[ca]).replace(/[^0-9.\-]/g,'')):NaN;
     if(!date||isNaN(amt)){skipped++;continue}
     var cur=cc>=0&&c[cc]?c[cc].toUpperCase().slice(0,3):null; if(cur) curs[cur]=1;
-    var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';var dd=cdue>=0?toDate(c[cdue]):null;rows.push({date:date,type:tv,amount:amt,currency:cur,party:cp>=0?c[cp]:null,due:dd});
+    var tv=ct>=0&&c[ct]?c[ct].toLowerCase():'other';if(['invoice','receipt','sale','expense','payment','other'].indexOf(tv)<0)tv='other';var kk=ck>=0&&c[ck]?c[ck].toLowerCase():null;if(kk&&['income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in'].indexOf(kk)<0)kk=null;var dd=cdue>=0?toDate(c[cdue]):null;rows.push({date:date,type:tv,kind:kk,category:cCat>=0?c[cCat]:null,amount:amt,currency:cur,party:cp>=0?c[cp]:null,due:dd});
   }
   return {rows:rows,skipped:skipped,currencies:Object.keys(curs)};
  }
