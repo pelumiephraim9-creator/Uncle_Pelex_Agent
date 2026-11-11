@@ -477,7 +477,7 @@ declare
   base_summary jsonb; operational_summary jsonb; operational_records jsonb;
   inventory_summary jsonb := '[]'::jsonb; agreement_summary jsonb := '{}'::jsonb;
   business_metrics jsonb := '{}'::jsonb; modules text[];
-  sales_amount numeric := 0; cogs_amount numeric := 0; stock_purchase_amount numeric := 0;
+  sales_amount numeric := 0; cogs_amount numeric := 0; stock_purchase_amount numeric := 0; cogs_rows bigint := 0;
 begin
   if not public.is_member(p_workspace) then raise exception 'You are not a member of this business.'; end if;
   select bp.* into pr from public.business_projects bp
@@ -527,7 +527,7 @@ begin
   select coalesce(sum(amount),0) into sales_amount from public.business_project_records
   where workspace_id=p_workspace and project_id=p_project and module_key in ('sales','pos_sales')
     and record_type in ('sale','pos_sale') and record_date>=start_date and record_date<end_date;
-  select coalesce(sum(coalesce(quantity,0)*coalesce(unit_cost,0)),0) into cogs_amount from public.business_project_records
+  select coalesce(sum(coalesce(quantity,0)*coalesce(unit_cost,0)),0),count(*) filter(where unit_cost is not null and quantity is not null) into cogs_amount,cogs_rows from public.business_project_records
   where workspace_id=p_workspace and project_id=p_project and module_key in ('sales','pos_sales')
     and record_type in ('sale','pos_sale') and record_date>=start_date and record_date<end_date;
   select coalesce(sum(amount),0) into stock_purchase_amount from public.ledger_entries
@@ -546,17 +546,86 @@ begin
       'scheduled_outstanding',coalesce((agreement_summary->>'outstanding_schedule')::numeric,0),
       'overdue_scheduled_amount',coalesce((agreement_summary->>'overdue_schedule')::numeric,0));
     when 'supermarket' then business_metrics:=jsonb_build_object(
-      'kind','retail','pos_sales',sales_amount,'pos_cost_of_goods_recorded',cogs_amount,
-      'gross_profit_on_recorded_pos_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount,
+      'kind','retail','pos_sales',sales_amount,'pos_cost_of_goods_recorded',case when cogs_rows>0 then cogs_amount else null end,
+      'gross_profit_on_recorded_pos_cost',case when cogs_rows>0 then sales_amount-cogs_amount else null end,'stock_purchases',stock_purchase_amount,
       'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0),
       'stock_on_hand_quantity',coalesce((select sum(quantity_on_hand) from public.business_project_inventory_summary(p_workspace,p_project)),0));
     when 'retail_store' then business_metrics:=jsonb_build_object(
-      'kind','retail','sales_recorded',sales_amount,'cost_of_goods_recorded',cogs_amount,
-      'gross_profit_on_recorded_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount,
+      'kind','retail','sales_recorded',sales_amount,'cost_of_goods_recorded',case when cogs_rows>0 then cogs_amount else null end,
+      'gross_profit_on_recorded_cost',case when cogs_rows>0 then sales_amount-cogs_amount else null end,'stock_purchases',stock_purchase_amount,
       'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
     when 'restaurant' then business_metrics:=jsonb_build_object(
-      'kind','hospitality','food_sales',sales_amount,'recorded_food_cost',cogs_amount,
-      'gross_profit_on_recorded_food_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount);
+      'kind','hospitality','food_sales',sales_amount,'recorded_food_cost',case when cogs_rows>0 then cogs_amount else null end,
+      'gross_profit_on_recorded_food_cost',case when cogs_rows>0 then sales_amount-cogs_amount else null end,'stock_purchases',stock_purchase_amount);
+    when 'savings_cooperative' then business_metrics:=jsonb_build_object(
+      'kind','cooperative',
+      'contributions_received',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='contributions' and record_type='contribution' and record_date>=start_date and record_date<end_date),
+      'member_payouts',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='payouts' and record_type in ('payout','distribution') and record_date>=start_date and record_date<end_date),
+      'collections_received',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='collections' and record_type='collection_received' and record_date>=start_date and record_date<end_date),
+      'contributors_recorded',(select count(distinct party) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='contributions' and record_type='contribution' and record_date>=start_date and record_date<end_date));
+    when 'wholesale' then business_metrics:=jsonb_build_object(
+      'kind','wholesale','ledger_operating_revenue',coalesce((base_summary->>'month_income')::numeric,0),
+      'stock_purchases',stock_purchase_amount,
+      'delivery_count',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='deliveries' and record_type='delivery' and record_date>=start_date and record_date<end_date),
+      'delivery_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='deliveries' and record_type='delivery_cost' and record_date>=start_date and record_date<end_date),
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'manufacturing' then business_metrics:=jsonb_build_object(
+      'kind','manufacturing',
+      'production_batches',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='production_batches' and record_type='production_batch' and record_date>=start_date and record_date<end_date),
+      'raw_material_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and ((module_key='production_batches' and record_type='raw_material') or (module_key='costing' and record_type='production_cost')) and record_date>=start_date and record_date<end_date),
+      'finished_goods_quantity',(select coalesce(sum(quantity),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='production_batches' and record_type='finished_goods' and record_date>=start_date and record_date<end_date),
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'pharmacy' then business_metrics:=jsonb_build_object(
+      'kind','pharmacy','pos_sales',sales_amount,
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0),
+      'expiry_records',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='expiry' and record_date>=start_date and record_date<end_date),
+      'near_expiry_items',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='expiry' and record_type='near_expiry_stock' and record_date>=start_date and record_date<end_date));
+    when 'hospitality' then business_metrics:=jsonb_build_object(
+      'kind','hospitality',
+      'bookings',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='bookings' and record_type='booking' and record_date>=start_date and record_date<end_date),
+      'booking_payments',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='bookings' and record_type='booking_payment' and record_date>=start_date and record_date<end_date),
+      'cancellations',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='bookings' and record_type='cancellation' and record_date>=start_date and record_date<end_date),
+      'maintenance_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='maintenance' and record_date>=start_date and record_date<end_date));
+    when 'real_estate' then business_metrics:=jsonb_build_object(
+      'kind','property',
+      'rent_due',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='rent_due' and record_date>=start_date and record_date<end_date),
+      'rent_received',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='rent_received' and record_date>=start_date and record_date<end_date),
+      'property_maintenance',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='property_maintenance' and record_date>=start_date and record_date<end_date));
+    when 'transport' then business_metrics:=jsonb_build_object(
+      'kind','transport',
+      'trips_recorded',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='trips' and record_type='trip' and record_date>=start_date and record_date<end_date),
+      'fuel_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='trips' and record_type='fuel' and record_date>=start_date and record_date<end_date),
+      'vehicle_maintenance',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='trips' and record_type='vehicle_maintenance' and record_date>=start_date and record_date<end_date));
+    when 'services_agency' then business_metrics:=jsonb_build_object(
+      'kind','professional_services',
+      'project_milestones',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='projects' and record_type='project_milestone' and record_date>=start_date and record_date<end_date),
+      'project_costs',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='projects' and record_type='project_cost' and record_date>=start_date and record_date<end_date),
+      'receivables_collected',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='receivables' and record_type='customer_payment' and record_date>=start_date and record_date<end_date),
+      'payroll_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='payroll' and record_type='payroll' and record_date>=start_date and record_date<end_date));
+    when 'education' then business_metrics:=jsonb_build_object(
+      'kind','education',
+      'fees_charged',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='fees' and record_type='fee_charged' and record_date>=start_date and record_date<end_date),
+      'fees_collected',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='fees' and record_type='fee_collected' and record_date>=start_date and record_date<end_date),
+      'payroll_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='payroll' and record_type='payroll' and record_date>=start_date and record_date<end_date));
+    when 'ecommerce' then business_metrics:=jsonb_build_object(
+      'kind','ecommerce',
+      'orders_recorded',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='orders' and record_type='order' and record_date>=start_date and record_date<end_date),
+      'order_revenue',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='orders' and record_type='order' and record_date>=start_date and record_date<end_date),
+      'refunds',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='orders' and record_type='order_refund' and record_date>=start_date and record_date<end_date),
+      'fulfilments',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='orders' and record_type='order_fulfilment' and record_date>=start_date and record_date<end_date),
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'agriculture' then business_metrics:=jsonb_build_object(
+      'kind','agriculture',
+      'seasons_recorded',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='seasons' and record_type='season' and record_date>=start_date and record_date<end_date),
+      'harvest_quantity',(select coalesce(sum(quantity),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='seasons' and record_type='harvest' and record_date>=start_date and record_date<end_date),
+      'harvest_value',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='seasons' and record_type='harvest' and record_date>=start_date and record_date<end_date),
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'construction' then business_metrics:=jsonb_build_object(
+      'kind','construction',
+      'project_milestones',(select count(*) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='projects' and record_type='project_milestone' and record_date>=start_date and record_date<end_date),
+      'project_costs',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='projects' and record_type='project_cost' and record_date>=start_date and record_date<end_date),
+      'receivables_collected',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='receivables' and record_type='customer_payment' and record_date>=start_date and record_date<end_date),
+      'supplier_purchases',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='payables' and record_type='purchase' and record_date>=start_date and record_date<end_date));
     else business_metrics:=jsonb_build_object(
       'kind',pr.business_type,
       'operational_amount',coalesce((select sum(amount) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and record_date>=start_date and record_date<end_date),0),
@@ -569,7 +638,7 @@ begin
     'inventory',inventory_summary,'agreements',agreement_summary,'business_metrics',business_metrics);
 end;
 $function$
-
+;
 
 revoke all on function public.business_project_dashboard_summary(uuid,uuid,text) from public, anon;
 grant execute on function public.business_project_dashboard_summary(uuid,uuid,text) to authenticated, service_role;
