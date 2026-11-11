@@ -51,3 +51,20 @@ test('slip capture validates direction, date and positive amounts before saving'
   assert.match(source, /Please enter a valid transaction date/);
   assert.match(source, /Every saved line needs an amount above zero/);
 });
+
+
+test('business CSV import preserves explicit accounting kind and category columns', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /findCol\(hdr,\/kind\|classification\//);
+  assert.match(html, /findCol\(hdr,\/category\//);
+  assert.match(html, /receivable_in/);
+  assert.match(html, /kind:kk,category:cCat>=0\?c\[cCat\]:null/);
+});
+
+test('business financial dashboard calls the live monthly and yearly Supabase reports', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /project_summary/);
+  assert.match(html, /project_months/);
+  assert.match(html, /month_income/);
+  assert.match(html, /month_profit/);
+});
