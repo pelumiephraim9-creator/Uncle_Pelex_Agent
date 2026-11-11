@@ -6530,10 +6530,10 @@ function pxCommandHelp(){
   var picker=el('pxTrProject');if(!picker)return;
   if(!projects.length){picker.innerHTML='<option value="">No project set up yet</option>';activeProject='';return}
   var stored='',saved='';try{saved=localStorage.getItem('px_project_'+ws())||'';stored=saved}catch(e){}if(!stored)stored=projects[0].id;
-  if(stored!=='all'&&!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
+  if(!projects.some(function(p){return p.id===stored}))stored=projects[0].id;
   try{if(stored!==saved)localStorage.setItem('px_project_'+ws(),stored)}catch(e){}
   activeProject=stored;
-  picker.innerHTML='<option value="all"'+(stored==='all'?' selected':'')+'>All projects · portfolio view</option>'+projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
+  picker.innerHTML=projects.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===stored?' selected':'')+'>'+esc(p.name)+' · '+esc(p.currency)+'</option>'}).join('');
   currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';
   picker.onchange=function(){activeProject=picker.value;try{localStorage.setItem('px_project_'+ws(),activeProject)}catch(e){};currency=(projects.filter(function(p){return p.id===activeProject})[0]||projects[0]||{}).currency||'NGN';load();if(window.__lsLoad)window.__lsLoad();if(window.__pxRegisterReady)window.__pxRegisterReady()};
  }
@@ -6545,7 +6545,7 @@ function pxCommandHelp(){
    if(!activeProject){rows=[];render();message('Create a project in Projects before recording transactions.',true);return}
    rows=[];var offset=0,batchSize=1000,more=true;
    while(more&&offset<50000){
-    var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject==='all'?null:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000}).range(offset,offset+batchSize-1);
+    var r=await window.sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:activeProject,p_from:null,p_to:null,p_search:null,p_limit:1000}).range(offset,offset+batchSize-1);
     if(r.error)throw r.error;
     var batch=r.data||[];rows=rows.concat(batch);offset+=batch.length;more=batch.length===batchSize;
    }
