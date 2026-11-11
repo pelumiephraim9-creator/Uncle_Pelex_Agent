@@ -199,14 +199,37 @@
   }catch(e){msg('Project was not saved: '+(e.message||e),true)}
   finally{b.disabled=false}
  }
+ var loading=false,lastLoadedWorkspace='';
  async function start(){
-  if(!window.sb||!window.curUser||!ws())return;
+  /* Mount the setup card whenever Business Agent is available. Do not hide it
+     behind authentication or workspace checks; explain the next required step. */
   if(!ensure())return;
-  try{if(!types.length)await loadTypes();await loadProjects()}catch(e){msg('Could not load project setup: '+(e.message||e),true)}
+  var user=window.curUser;
+  if(!window.sb||!user){
+   msg('Sign in to create and manage your business projects.');
+   return;
+  }
+  var workspace=ws();
+  if(!workspace){
+   projects=[];selected='';renderList();renderOperations();
+   msg('Create or join a workspace in the Workspace card above. Your business setup will unlock here automatically.');
+   return;
+  }
+  if(loading)return;
+  loading=true;
+  try{
+   if(!types.length)await loadTypes();
+   if(lastLoadedWorkspace!==workspace||!projects.length){
+    await loadProjects();lastLoadedWorkspace=workspace;
+   }
+   msg('');
+  }catch(e){
+   msg('Business setup could not load: '+(e.message||e),true);
+  }finally{loading=false}
  }
  var oldGo=window.go;
  if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business'||v==='business-projects')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1500)});
- setInterval(function(){if(!mounted&&$('bWork'))start()},2000);
+ setInterval(function(){if($('bWork'))start()},2000);
  window.pxBusinessProjects={reload:start,select:select,refreshOperations:loadOpsRecords};
 })();
