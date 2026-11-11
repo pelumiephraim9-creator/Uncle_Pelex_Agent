@@ -1977,7 +1977,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 var WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c2ec155c-7985-4c79-90a3-73c7ae499854/chat';
 var PERSONAL_WEBHOOK_URL = 'https://pelexn8n.onrender.com/webhook/c9b40769-e309-45e7-951f-ab531c535635/chat';
 var BUSINESS_WEBHOOK_URL = 'PASTE_BUSINESS_CHAT_URL_HERE';
-var NETLIFY_FN_BASE='https://unclepelex.netlify.app'; /* set to the Netlify site address (for example https://your-site.netlify.app) once pelex.tech moves to Cloudflare Pages */
+var NETLIFY_FN_BASE=''; /* Use same-origin Netlify Functions so pelex.tech/www do not hit cross-origin CORS failures. */
 AGENT_URL = 'https://pelex-edge-shield.pelumiephraim9.workers.dev'; // the Cloudflare shield address (or the Render address). While it says PASTE_, public chat keeps using n8n
 var N8N_RETIRED = true; // n8n is switched off: every chat goes to the code backend, and a backend problem is shown instead of hidden
 // ======================
@@ -2201,13 +2201,24 @@ function unlockAudio(){
 // ---- microphone: one stream, reused; released when the call ends or after 20s idle ----
 async function openMic(){
   clearTimeout(idleT);
+  if(!window.isSecureContext){throw new Error('Microphone access requires the secure HTTPS Pelex website. Open Pelex in Safari or Chrome using https://pelex.tech.')}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){throw new Error('This browser does not expose microphone access. Update Safari/iOS and allow microphone access for Pelex.')}
   if(!stream||stream.getTracks().every(function(t){return t.readyState==='ended'})){
-    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});an=null}
-  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
-  if(actx.state==='suspended'){try{await actx.resume()}catch(e){}}
-  if(!an){var s=actx.createMediaStreamSource(stream);an=actx.createAnalyser();an.fftSize=1024;s.connect(an);abuf=new Uint8Array(an.fftSize)}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+    catch(firstError){stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+    an=null;abuf=null;
+  }
+  /* Audio analysis is optional: it must never prevent the microphone recording itself. */
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){
+      if(!actx||actx.state==='closed')actx=new AC();
+      if(actx.state==='suspended'){try{await actx.resume()}catch(e){}}
+      if(!an){var source=actx.createMediaStreamSource(stream);an=actx.createAnalyser();an.fftSize=1024;source.connect(an);abuf=new Uint8Array(an.fftSize)}
+    }
+  }catch(audioError){an=null;abuf=null}
   return stream}
-function level(){an.getByteTimeDomainData(abuf);var s=0;for(var i=0;i<abuf.length;i++){var v=(abuf[i]-128)/128;s+=v*v}return Math.sqrt(s/abuf.length)}
+function level(){if(!an||!abuf)return 0;try{an.getByteTimeDomainData(abuf);var s=0;for(var i=0;i<abuf.length;i++){var v=(abuf[i]-128)/128;s+=v*v}return Math.sqrt(s/abuf.length)}catch(e){return 0}}
 function closeMic(){clearTimeout(idleT);if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}an=null;if(actx){try{actx.close()}catch(e){}actx=null}}
 function releaseSoon(){clearTimeout(idleT);idleT=setTimeout(closeMic,20000)}
 
@@ -2327,29 +2338,49 @@ function setLive(on){live=on;silent=0;$('muteBtn').hidden=!on;if(!on){muted=fals
     $('mic').classList.remove('recording');busy=false;closeMic()}}
 function listen(){return listenRec()}
 async function listenRec(){
-  if(busy||muted) return;
+  if(busy||muted)return;
   stopSpeaking();
-  try{await openMic()}
-  catch(e){add('Microphone access was blocked. Allow the microphone in your browser settings and try again.','sys');setLive(false);return}
-  var mime=(window.MediaRecorder&&MediaRecorder.isTypeSupported('audio/webm'))?'audio/webm':'audio/mp4';
-  var chunks=[];rec=new MediaRecorder(stream,{mimeType:mime});
-  rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
-  rec.onstop=async function(){
+  try{
+    await openMic();
+    if(!window.MediaRecorder)throw new Error('Audio recording is not supported by this browser. Update iOS/Safari or open Pelex in the latest Safari browser.');
+    /* Choose a format the current phone actually supports. Safari/iOS commonly records MP4, while Chromium commonly records WebM. */
+    var candidates=['audio/webm;codecs=opus','audio/webm','audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/aac','audio/ogg;codecs=opus'];
+    var chosen='';
+    if(typeof MediaRecorder.isTypeSupported==='function'){
+      for(var ci=0;ci<candidates.length;ci++){try{if(MediaRecorder.isTypeSupported(candidates[ci])){chosen=candidates[ci];break}}catch(e){}}
+    }
+    rec=chosen?new MediaRecorder(stream,{mimeType:chosen}):new MediaRecorder(stream);
+  }catch(e){
+    add((e&&e.message)||'Pelex could not start the microphone. Check browser permissions and try again.','sys');
+    setLive(false);return;
+  }
+  var chunks=[],recording=rec;
+  var mime=recording.mimeType||chosen||'audio/mp4';
+  var startedAt=Date.now(),last=startedAt,samples=[],calibrated=false,thr=0.02,loud=0;
+  heard=ptt;
+  recording.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data)};
+  recording.onerror=function(e){clearInterval(timer);$('mic').classList.remove('recording');busy=false;add('The phone could not record this audio. Please try the microphone again.','sys');if(live)setLive(false);else releaseSoon()};
+  recording.onstop=async function(){
     clearInterval(timer);$('mic').classList.remove('recording');
-    if(ptt&&Date.now()-t0<400){ptt=false;releaseSoon();return}
+    if(ptt&&Date.now()-startedAt<400){ptt=false;releaseSoon();return}
     if(!heard){if(live){silent++;if(vpref('handsfree',true))listen();else releaseSoon()}else releaseSoon();return}
     silent=0;ptt=false;
-    await handleAudio(new Blob(chunks,{type:mime}),mime)};
-  heard=ptt;var t0=Date.now(),last=t0,samples=[],calibrated=false,thr=0.02,loud=0;
-  rec.start();$('mic').classList.add('recording');
-  if(ptt&&!pttHeld){rec.stop();return}
+    var actualMime=recording.mimeType||mime;
+    var blob=new Blob(chunks,{type:actualMime});
+    if(!blob.size){add('No audio was captured. Please try again and speak after tapping the microphone.','sys');releaseSoon();return}
+    await handleAudio(blob,actualMime);
+  };
+  try{recording.start(250)}catch(startError){try{recording.start()}catch(finalError){add('The phone refused to start audio recording. Please reload Pelex and try again.','sys');setLive(false);return}}
+  $('mic').classList.add('recording');
+  if(ptt&&!pttHeld){recording.stop();return}
   timer=setInterval(function(){
-    if(!an)return;
+    if(record!==recording||recording.state!=='recording')return;
     var now=Date.now(),l=level();
-    if(now-t0<400){samples.push(l);return}
-    if(!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.12,Math.max(0.025,m*3+0.012));calibrated=true}
-    if(l>thr){loud++;if(loud>=3)heard=true;if(heard)last=now}else{loud=0}
-    if((!ptt&&((heard&&now-last>1500)||(!heard&&now-t0>12000)))||now-t0>60000){if(rec.state==='recording')rec.stop()}
+    if(an&&now-startedAt<400){samples.push(l);return}
+    if(an&&!calibrated){var m=samples.length?samples.reduce(function(a,b){return a+b},0)/samples.length:0.005;thr=Math.min(0.12,Math.max(0.025,m*3+0.012));calibrated=true}
+    if(an){if(l>thr){loud++;if(loud>=3)heard=true;if(heard)last=now}else{loud=0}}
+    /* Without an AudioContext analyser, keep recording until the user stops or the safety limit is reached. */
+    if((an&&!ptt&&((heard&&now-last>1500)||(!heard&&now-startedAt>12000)))||now-startedAt>60000){if(recording.state==='recording')recording.stop()}
   },100)}
 async function handleAudio(blob,mime){
   busy=true;
