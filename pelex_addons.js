@@ -23,7 +23,7 @@ var PX_DOC_TEMPLATES = [
   words:[/credit\s+note/i,/\brefund\b/i,/\breturn(ed)?\s+goods\b/i], total:/(total|credit\s*amount|refund\s*amount)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
  {id:'bank_transfer', name:'Bank transfer receipt', direction:'unknown', category:'Sales and income',
   words:[/transfer/i,/beneficiary|sender|narration/i,/transaction\s*(ref|reference|id)/i,/\bdebit\b|\bcredit\b/i], total:/(amount|transfer\s*amount|total)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
- {id:'delivery_note', name:'Delivery note or waybill', direction:'none', category:'Goods bought', draft:true,
+ {id:'delivery_note', name:'Delivery note or waybill', direction:'unknown', category:'Goods bought', draft:true,
   words:[/delivery\s+note/i,/waybill/i,/dispatch/i,/received\s+by/i], total:/(total|quantity\s*total)\s*[:\-]?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i},
  {id:'general_document', name:'General document (check the total)', direction:'unknown', category:'Other',
   words:[], total:/(total|amount|grand\s*total)\s*[:\-]?\s*(?:NGN|N|\u20a6|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i}
@@ -252,7 +252,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
     if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){var r=await readPdf(file);text=r.text;note=r.note}
     else{note='Pictures are read by you: check the amount before saving.'}
   }catch(e){note='Could not read the file here. Type the amount.'}
-  var d=window.pxReadDocument?window.pxReadDocument(text):{total:0,lines:[],template:'general_document',templateName:'General document',direction:'out',category:'Other',number:null,date:null};
+  var d=window.pxReadDocument?window.pxReadDocument(text):{total:0,lines:[],template:'general_document',templateName:'General document',direction:'unknown',category:'Other',number:null,date:null};
   form(doc,{amount:d.total||'',date:d.date||todayISO(),party:(d.number?d.number+' ':'')+file.name.replace(/\.[^.]+$/,'').slice(0,50),file:file.name,doc:d},note);
  }
  function form(doc,v,note){
@@ -279,6 +279,8 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   var msg=doc.getElementById('slipMsg');
   var type=doc.getElementById('slType').value;
   var date=doc.getElementById('slDate').value;
+  if(type!=='receipt'&&type!=='expense'){msg.textContent='Please confirm whether this document records money in or money out.';return}
+  if(!date||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||isNaN(Date.parse(date+'T00:00:00'))){msg.textContent='Please enter a valid transaction date.';return}
   var party=doc.getElementById('slParty').value;
   var rows=[];
   if(lines&&lines.length){
