@@ -5905,7 +5905,7 @@ function parseSheet(text){
   if(await window.pxDuplicate(fh))return {ok:false,msg:name+': this file is already recorded.'};
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,project_id:(localStorage.getItem('px_project_'+ws())||null),file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
-  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all')return {ok:false,msg:name+': choose a specific business project first.'};
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null;if(!projectId&&location.search)projectId=new URLSearchParams(location.search).get('project')}catch(e){}if(!projectId||projectId==='all')return {ok:false,msg:name+': choose a specific business project first.'};
   var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){return Object.assign({},x,{project_id:projectId})})});
   if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
   return {ok:true,msg:name+': '+rc.data+' rows added'+(p.skipped?' ('+p.skipped+' skipped: unclear date or amount)':'')};
@@ -5961,7 +5961,7 @@ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300
  function $m(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
  function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
- function monitorUrl(){return location.origin+location.pathname+'?monitor=1'}
+ function monitorUrl(){var p='';try{p=localStorage.getItem('px_project_'+wsId())||''}catch(e){}return location.origin+location.pathname+'?monitor=1'+(p?'&project='+encodeURIComponent(p):'')}
  function today(){return new Date().toLocaleDateString('sv-SE')}
  var timer=null;
  function ensureOverlay(){
@@ -5984,9 +5984,12 @@ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300
   var st=$m('mnStatus');
   if(!(window.sb&&window.curUser)){$m('mnTotal').textContent='\u2014';$m('mnStatus').textContent='Sign in to see today\u2019s sales.';return}
   var w=wsId();if(!w){$m('mnStatus').textContent='Create or join a business workspace first.';return}
-  var s=await window.sb.from('workspace_settings').select('currency').eq('workspace_id',w).maybeSingle();
-  var cur=(s.data&&s.data.currency)||'NGN';
-  var r=await window.sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',w).eq('entry_date',today());
+  var project='';try{project=new URLSearchParams(location.search).get('project')||localStorage.getItem('px_project_'+w)||''}catch(e){}
+  if(!project||project==='all'){$m('mnStatus').textContent='Select a specific business project before opening the sales monitor.';return}
+  var s=await window.sb.from('business_projects').select('currency').eq('workspace_id',w).eq('id',project).maybeSingle();
+  if(s.error||!s.data){$m('mnStatus').textContent='The selected business project could not be verified.';return}
+  var cur=s.data.currency||'NGN';
+  var r=await window.sb.from('ledger_entries').select('amount,entry_type,currency').eq('workspace_id',w).eq('project_id',project).eq('entry_date',today());
   if(r.error){$m('mnStatus').textContent='Could not load today\u2019s sales: '+r.error.message;return}
   var rows=(r.data||[]).filter(function(x){return ['sale','receipt','invoice','payment'].indexOf(x.entry_type)>=0&&x.currency===cur});
   var total=rows.reduce(function(t,x){return t+Number(x.amount)},0);
@@ -6033,11 +6036,12 @@ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300
  function ownerPanel(){
   var msg=$d('mnMsg');if(!msg||$d('dvOwner'))return;
   var box=document.createElement('div');box.id='dvOwner';box.style.marginTop='12px';
-  box.innerHTML='<div class="prow"><button class="btn" id="dvAdd" type="button">Add a device</button></div><div id="dvCode" class="muted dnote"></div><div class="ilist" id="dvList" style="margin-top:8px"></div>';
+  box.innerHTML='<label class="dnote">Business project<select class="inp" id="dvProject"></select></label><div class="prow"><button class="btn" id="dvAdd" type="button">Add a device</button></div><div id="dvCode" class="muted dnote"></div><div class="ilist" id="dvList" style="margin-top:8px"></div>';
+  (async function(){var pr=await sb.from('business_projects').select('id,name').eq('workspace_id',wsId()).order('created_at',{ascending:true});if(pr.error){$d('dvCode').textContent=errT(pr.error);return}var saved='';try{saved=new URLSearchParams(location.search).get('project')||localStorage.getItem('px_project_'+wsId())||''}catch(e){}$d('dvProject').innerHTML=(pr.data||[]).map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===saved?' selected':'')+'>'+esc(p.name)+'</option>'}).join('');$d('dvProject').onchange=loadDevices;loadDevices()})();
   msg.parentNode.insertBefore(box,msg.nextSibling);
   $d('dvAdd').onclick=async function(){
    if(!(window.sb&&window.curUser&&wsId())){$d('dvCode').textContent='Sign in and choose a workspace first.';return}
-   var r=await sb.rpc('create_pairing_code',{p_workspace:wsId()});
+   var project=$d('dvProject')&&$d('dvProject').value;if(!project){$d('dvCode').textContent='Create or select a business project first.';return}var r=await sb.rpc('create_pairing_code',{p_workspace:wsId(),p_project:project});
    if(r.error){$d('dvCode').textContent=errT(r.error);return}
    $d('dvCode').innerHTML='Pairing code: <b style="font-size:20px;letter-spacing:.12em">'+esc(r.data)+'</b><br>Enter it on the device within 10 minutes. It works once.';
    loadDevices();
@@ -6046,7 +6050,7 @@ var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(buildSetup,300
  }
  async function loadDevices(){
   var list=$d('dvList');if(!list||!(window.sb&&window.curUser&&wsId()))return;
-  var r=await sb.from('devices').select('id,name,last_seen,revoked').eq('workspace_id',wsId()).order('created_at',{ascending:false});
+  var project=$d('dvProject')&&$d('dvProject').value;if(!project){list.innerHTML='<div class="muted dnote">Create a project before connecting devices.</div>';return}var r=await sb.from('devices').select('id,name,last_seen,revoked').eq('workspace_id',wsId()).eq('project_id',project).order('created_at',{ascending:false});
   if(r.error){list.innerHTML='<div class="muted dnote">Devices are not connected yet.</div>';return}
   list.innerHTML=(r.data&&r.data.length)?'':'<div class="muted dnote">No devices yet.</div>';
   (r.data||[]).forEach(function(v){
