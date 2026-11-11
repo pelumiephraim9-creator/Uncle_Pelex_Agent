@@ -5869,15 +5869,21 @@ var TEMPLATES={
    {re:/savings/,type:'other',tag:'Savings: '}]},
  trade:{name:'Retail and supermarket sales',date:/date/,party:/item|product|description|customer/,cols:[
    {re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ retail_store:{name:'Retail store sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ supermarket:{name:'Supermarket POS sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ wholesale:{name:'Wholesale sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ ecommerce:{name:'Online store sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ restaurant:{name:'Restaurant sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
+ pharmacy:{name:'Pharmacy sales',date:/date/,party:/item|product|description|customer/,cols:[{re:/^(line total|amount|total|sales)$/,type:'sale',tag:''}]},
  transport:{name:'Transport income and costs',date:/date/,party:/trip|route|vehicle|description/,cols:[
    {re:/income|fare|revenue|earn/,type:'receipt',tag:''},
    {re:/fuel|maintenance|repair|toll|expense/,type:'expense',tag:''}]}
 };
-function parseSheet(text){
+function parseSheet(text,projectConfig){
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(lines.length<2)return {rows:[],skipped:0};
   var h=splitCsv(lines[0]).map(function(x){return x.toLowerCase().trim()});
-  var defCur=(SETTINGS&&SETTINGS.currency)||'NGN';
-  var code=(SETTINGS&&SETTINGS.business_type)||'';
+  var defCur=(projectConfig&&projectConfig.currency)||(SETTINGS&&SETTINGS.currency)||'NGN';
+  var code=(projectConfig&&projectConfig.business_type)||(SETTINGS&&SETTINGS.business_type)||'';
   var tpl=TEMPLATES[code];
   var cd=findCol(h,/date/);
   if(tpl){
@@ -5910,8 +5916,12 @@ function parseSheet(text){
   return {rows:rows2,skipped:skipped2};
 }
  async function saveRows(name,text,size){
-  var p=parseSheet(text);if(!p.rows.length)return {ok:false,msg:name+': no readable rows.'};
   var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null;if(!projectId&&location.search)projectId=new URLSearchParams(location.search).get('project')}catch(e){}if(!projectId||projectId==='all')return {ok:false,msg:name+': choose a specific business project first.'};
+  var project=await sb.from('business_projects').select('business_type,currency').eq('id',projectId).eq('workspace_id',ws()).single();
+  if(project.error||!project.data)return {ok:false,msg:name+': the selected business project could not be verified.'};
+  var p=parseSheet(text,project.data);if(!p.rows.length)return {ok:false,msg:name+': '+(p.error||'no readable rows.')};
+  var projectCurrency=String(project.data.currency||'').toUpperCase();
+  if(p.rows.some(function(row){return String(row.currency||projectCurrency).toUpperCase()!==projectCurrency}))return {ok:false,msg:name+': file currency does not match the selected project currency ('+projectCurrency+').'};
   var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
   var cur=p.rows[0].currency;
   var fh=await window.pxFileHash(text);
