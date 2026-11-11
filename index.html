@@ -6643,18 +6643,25 @@ function pxCommandHelp(){
    var m=month(),s=await sb.rpc('project_summary',{p_project:project,p_month:m});
    if(s.error)throw s.error;
    var d=s.data||{},cur=d.currency||'NGN';
-   $('pxMonthCards').innerHTML=[
-    ['Opening cash',d.opening_startup],['Setup capital · this month',d.startup_month],['Setup capital · this year',d.startup_year],['Setup spending ('+(d.setup_spend_period||'period')+')',d.setup_spent],['Loan amount in setup',d.setup_loan],['Cash received',d.month_in],['Cash paid',d.month_out],
-    ['Closing cash',d.month_closing],['Operating revenue',d.month_income===undefined?0:d.month_income],['Operating expenses',d.month_expenses===undefined?0:d.month_expenses],['Operating profit',d.month_profit],['Loan principal issued',d.month_principal_issued],['Loan principal repaid',d.month_principal_repaid],['Invoices issued',d.month_receivables_issued],['Invoice payments received',d.month_receivables_collected],['Recorded receivables outstanding',d.recorded_receivables_outstanding],['Interest income',d.month_interest_income],['Customer savings received',d.month_customer_savings_received],['Customer savings held',d.customer_savings_held]
-   ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
+   var bt=await sb.from('business_types').select('modules').eq('code',d.business_type).maybeSingle();
+   if(bt.error)throw bt.error;
+   var modules=(bt.data&&bt.data.modules)||[],cards=[
+    ['Opening cash',d.opening_startup],['Setup capital · this month',d.startup_month],['Setup capital · this year',d.startup_year],['Setup spending ('+(d.setup_spend_period||'period')+')',d.setup_spent],['Cash received',d.month_in],['Cash paid',d.month_out],
+    ['Closing cash',d.month_closing],['Operating revenue',d.month_income===undefined?0:d.month_income],['Operating expenses',d.month_expenses===undefined?0:d.month_expenses],['Operating profit',d.month_profit]
+   ];
+   if(modules.indexOf('agreements')>=0)cards=cards.concat([
+    ['Loan amount in setup',d.setup_loan],['Loan principal issued',d.month_principal_issued],['Loan principal repaid',d.month_principal_repaid],['Invoices issued',d.month_receivables_issued],['Invoice payments received',d.month_receivables_collected],['Recorded receivables outstanding',d.recorded_receivables_outstanding],['Interest income',d.month_interest_income],['Customer savings received',d.month_customer_savings_received],['Customer savings held',d.customer_savings_held]
+   ]);
+   $('pxMonthCards').innerHTML=cards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
    $('pxMonthNote').textContent='Monthly cash movements include capital, loan principal and savings movements. Operating profit excludes them. Older receipts without an explicit accounting classification remain cash received but are excluded from operating profit until reviewed in the transaction register.';
    var y=Number(m.slice(0,4)),rows=await sb.rpc('project_months',{p_project:project});
    if(rows.error)throw rows.error;
    var yearRows=(rows.data||[]).filter(function(x){return String(x.month).slice(0,4)===String(y)});
    var total=yearRows.reduce(function(a,x){a.revenue+=Number(x.profit||0)+0; a.cashIn+=Number(x.money_in||0);a.cashOut+=Number(x.money_out||0);a.closing=Number(x.closing||0);return a},{revenue:0,cashIn:0,cashOut:0,closing:0});
    $('pxYearCards').innerHTML=[
-    ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing],['Recorded receivables outstanding',d.recorded_receivables_outstanding]
-   ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
+    ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]
+   ];
+   if(modules.indexOf('agreements')>=0)$('pxYearCards').innerHTML=$('pxYearCards').innerHTML+'<div class="ls-kpi"><b>'+cash(d.recorded_receivables_outstanding,cur)+'</b><span>Recorded receivables outstanding</span></div>';
    $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td><button type="button" class="btn alt" data-px-month-open="'+esc(x.month)+'" style="padding:4px 8px">'+esc(x.month)+'</button></td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
    $('pxYearTable').querySelectorAll('[data-px-month-open]').forEach(function(b){b.onclick=function(){var v=b.getAttribute('data-px-month-open');$('pxMonthPick').value=v;$('pxTrYear').value=v.slice(0,4);$('pxTrMonth').value=v.slice(5,7);$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));$('pxMonthPick').dispatchEvent(new Event('change',{bubbles:true}));var reg=$('pxTrRows');if(reg){var panel=reg.closest('.dcard')||reg;panel.scrollIntoView({behavior:'smooth',block:'start'});}};});
    $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Select a month to open its detailed transactions in the register.';
