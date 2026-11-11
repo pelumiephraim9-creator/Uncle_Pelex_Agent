@@ -2195,6 +2195,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   if(busy||!window.sb||!window.curUser||!ws())return;
   var project=$('pxTrProject')&&$('pxTrProject').value;
   if(!project)return;
+  if(project==='all'){$('pxMonthCards').innerHTML='';$('pxYearCards').innerHTML='';$('pxYearTable').innerHTML='';$('pxMonthNote').textContent='Select one project to see its monthly and yearly financial summaries. The transaction register above is showing all projects.';return}
   busy=true;
   try{
    var m=month(),s=await sb.rpc('project_summary',{p_project:project,p_month:m});
