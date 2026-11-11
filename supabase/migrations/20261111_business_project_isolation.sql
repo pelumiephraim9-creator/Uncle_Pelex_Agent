@@ -685,3 +685,149 @@ revoke all on function public.business_project_module_summary(uuid,uuid,date,dat
 grant execute on function public.business_project_module_summary(uuid,uuid,date,date) to authenticated, service_role;
 revoke all on function public.business_list_project_records(uuid,uuid,text,date,date) from public, anon;
 grant execute on function public.business_list_project_records(uuid,uuid,text,date,date) to authenticated, service_role;
+
+
+-- Project currency is enforced by upload confirmation, transaction RPCs and ledger trigger.
+CREATE OR REPLACE FUNCTION public.confirm_upload(p_upload uuid, p_currency text, p_entries jsonb)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  ws uuid; upload_project uuid; project_currency text;
+  n integer:=0; e jsonb; et text; k text; cur text; pid uuid; amt numeric; dt date;
+begin
+  select workspace_id,project_id into ws,upload_project
+  from public.uploads where id=p_upload and status='pending_review' for update;
+  select upper(currency) into project_currency from public.business_projects
+  where id=upload_project and workspace_id=ws;
+  if ws is null or upload_project is null or not public.can_edit(ws) then
+    raise exception 'Upload not found, project not selected, already confirmed, or access denied.';
+  end if;
+  cur:=upper(coalesce(nullif(trim(p_currency),''),''));
+  if char_length(cur)<>3 or cur !~ '^[A-Z]{3}$' then
+    raise exception 'Choose a valid three-letter currency code.';
+  end if;
+  if project_currency is null or cur<>project_currency then
+    raise exception 'Imported transactions must use this project reporting currency (%).',project_currency;
+  end if;
+  if p_entries is null or jsonb_typeof(p_entries)<>'array' or jsonb_array_length(p_entries)=0 then
+    raise exception 'There are no transaction rows to confirm.';
+  end if;
+  for e in select * from jsonb_array_elements(p_entries) loop
+    et:=lower(coalesce(e->>'type','other'));
+    if et not in ('invoice','receipt','sale','expense','payment','other') then
+      raise exception 'Invalid transaction type in uploaded rows.';
+    end if;
+    amt:=nullif(e->>'amount','')::numeric;
+    dt:=nullif(e->>'date','')::date;
+    if amt is null or amt<=0 or dt is null then
+      raise exception 'Every uploaded row needs a valid date and amount greater than zero.';
+    end if;
+    k:=coalesce(nullif(e->>'kind',''),public.ledger_kind(et,null));
+    if k not in ('income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in') then
+      raise exception 'Invalid accounting classification in uploaded rows.';
+    end if;
+    pid:=nullif(e->>'project_id','')::uuid;
+    if pid is distinct from upload_project then
+      raise exception 'Every row in this file must belong to the project selected when the file was uploaded.';
+    end if;
+    cur:=upper(coalesce(nullif(e->>'currency',''),upper(p_currency)));
+    if cur<>project_currency then
+      raise exception 'Every uploaded row must use the selected project currency (%).',project_currency;
+    end if;
+    insert into public.ledger_entries(workspace_id,project_id,upload_id,entry_date,entry_type,amount,currency,party,due_date,kind,category,created_by)
+    values(ws,upload_project,p_upload,dt,et,amt,cur,e->>'party',nullif(e->>'due','')::date,k,nullif(e->>'category',''),auth.uid());
+    n:=n+1;
+  end loop;
+  update public.uploads set status='confirmed',currency=project_currency where id=p_upload;
+  return n;
+end;
+$function$
+;
+CREATE OR REPLACE FUNCTION public.business_add_transaction(p_workspace uuid, p_project uuid, p_entry_type text, p_kind text, p_amount numeric, p_date date, p_party text, p_currency text, p_category text DEFAULT NULL::text, p_due_date date DEFAULT NULL::date)
+ RETURNS bigint
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare eid bigint; cur text; project_cur text; et text; k text;
+begin
+  if not public.can_edit(p_workspace) then raise exception 'You cannot add transactions to this business.'; end if;
+  if p_project is null or not exists(select 1 from public.business_projects where id=p_project and workspace_id=p_workspace) then
+    raise exception 'Choose a valid project for this transaction.';
+  end if;
+  select upper(currency) into project_cur from public.business_projects where id=p_project and workspace_id=p_workspace;
+  et:=lower(coalesce(p_entry_type,'')); k:=lower(coalesce(p_kind,''));
+  if et not in ('invoice','receipt','sale','expense','payment','other') then raise exception 'Choose a valid transaction type.'; end if;
+  if k not in ('income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in') then raise exception 'Choose a valid accounting classification.'; end if;
+  if p_amount is null or p_amount<=0 or p_date is null then raise exception 'Enter a valid date and an amount greater than zero.'; end if;
+  cur:=upper(coalesce(nullif(trim(p_currency),''),'NGN'));
+  if char_length(cur)<>3 or cur !~ '^[A-Z]{3}$' then raise exception 'Enter a valid three-letter currency code.'; end if;
+  if cur<>project_cur then raise exception 'Use this project reporting currency (%).',project_cur; end if;
+  insert into public.ledger_entries(workspace_id,project_id,entry_date,entry_type,amount,currency,party,kind,category,due_date,created_by)
+  values(p_workspace,p_project,p_date,et,p_amount,cur,left(coalesce(nullif(trim(p_party),''),'Manual transaction'),160),k,nullif(trim(coalesce(p_category,'')),''),p_due_date,auth.uid())
+  returning id into eid;
+  return eid;
+end;
+$function$
+;
+CREATE OR REPLACE FUNCTION public.business_update_transaction(p_workspace uuid, p_entry_id bigint, p_entry_type text, p_kind text, p_amount numeric, p_date date, p_party text, p_currency text, p_category text DEFAULT NULL::text, p_due_date date DEFAULT NULL::date, p_project uuid DEFAULT NULL::uuid)
+ RETURNS bigint
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare eid bigint; cur text; project_cur text; et text; k text;
+begin
+  if not public.can_edit(p_workspace) then raise exception 'You cannot edit transactions in this business.'; end if;
+  if p_project is null or not exists(select 1 from public.business_projects where id=p_project and workspace_id=p_workspace) then
+    raise exception 'Choose a valid project for this transaction.';
+  end if;
+  select upper(currency) into project_cur from public.business_projects where id=p_project and workspace_id=p_workspace;
+  et:=lower(coalesce(p_entry_type,'')); k:=lower(coalesce(p_kind,''));
+  if et not in ('invoice','receipt','sale','expense','payment','other') then raise exception 'Choose a valid transaction type.'; end if;
+  if k not in ('income','expense','principal_in','principal_out','savings_in','transfer','capital','receivable_in') then raise exception 'Choose a valid accounting classification.'; end if;
+  if p_amount is null or p_amount<=0 or p_date is null then raise exception 'Enter a valid date and an amount greater than zero.'; end if;
+  cur:=upper(coalesce(nullif(trim(p_currency),''),'NGN'));
+  if char_length(cur)<>3 or cur !~ '^[A-Z]{3}$' then raise exception 'Enter a valid three-letter currency code.'; end if;
+  if cur<>project_cur then raise exception 'Use this project reporting currency (%).',project_cur; end if;
+  update public.ledger_entries set project_id=p_project,entry_type=et,kind=k,amount=p_amount,
+    entry_date=p_date,party=left(coalesce(nullif(trim(p_party),''),'Manual transaction'),160),
+    currency=cur,category=nullif(trim(coalesce(p_category,'')),''),due_date=p_due_date
+  where id=p_entry_id and workspace_id=p_workspace returning id into eid;
+  if eid is null then raise exception 'Transaction not found in this business.'; end if;
+  return eid;
+end;
+$function$
+;
+CREATE OR REPLACE FUNCTION public.require_ledger_project()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+declare project_currency text;
+begin
+  if new.project_id is null then raise exception 'Select the business project for this transaction before saving.'; end if;
+  select upper(currency) into project_currency from public.business_projects
+  where id=new.project_id and workspace_id=new.workspace_id;
+  if project_currency is null then raise exception 'The selected project does not belong to this workspace.'; end if;
+  if upper(coalesce(new.currency,''))<>project_currency then
+    raise exception 'Transaction currency must match the selected project reporting currency (%).',project_currency;
+  end if;
+  return new;
+end;
+$function$
+;
+drop trigger if exists zz_ledger_require_project on public.ledger_entries;
+create trigger zz_ledger_require_project
+before insert or update of project_id,workspace_id,currency on public.ledger_entries
+for each row execute function public.require_ledger_project();
+
+revoke all on function public.confirm_upload(uuid,text,jsonb) from public, anon;
+grant execute on function public.confirm_upload(uuid,text,jsonb) to authenticated, service_role;
+revoke all on function public.business_add_transaction(uuid,uuid,text,text,numeric,date,text,text,text,date) from public, anon;
+grant execute on function public.business_add_transaction(uuid,uuid,text,text,numeric,date,text,text,text,date) to authenticated, service_role;
+revoke all on function public.business_update_transaction(uuid,bigint,text,text,numeric,date,text,text,text,date,uuid) from public, anon;
+grant execute on function public.business_update_transaction(uuid,bigint,text,text,numeric,date,text,text,text,date,uuid) to authenticated, service_role;
