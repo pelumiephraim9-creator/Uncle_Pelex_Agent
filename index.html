@@ -2450,13 +2450,21 @@ async function sendImage(){
   if(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0){
     q='Apply the '+cmdName+' command to this image, producing the picture the command asks for.'+(cmdM[2]?' Details: '+cmdM[2].trim():'');
   }
-  input.value='';clearAttach();
   datas.forEach(function(d){thumb(d).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})})});
   var intent=(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)||/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
-  add(q,'me',datas);var w=add('Looking at the image...','sys');
-  try{await ensureChat(q)}catch(e){}
-  saveMsg('user',(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+typed);
-  stepWait(w);
+  var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
+  var userNode=add(q,'me',datas),w=add('Looking at the image...','sys');
+  try{
+    var ready=await ensureChat(q);
+    if(!ready||!(await saveMsg('user',imageLabel))){
+      w.remove();if(userNode&&userNode.remove)userNode.remove();
+      input.value=typed;return;
+    }
+  }catch(saveError){
+    w.remove();if(userNode&&userNode.remove)userNode.remove();
+    input.value=typed;chatFail('image message could not be saved',saveError);return;
+  }
+  input.value='';clearAttach();stepWait(w);
   try{
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,500)})):datas;
     var r;
@@ -2464,7 +2472,7 @@ async function sendImage(){
       try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}))}}
       catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
     }else{r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
-    w.remove();add(r.text);saveMsg('assistant',r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}
+    w.remove();await saveMsg('assistant',r.text);add(r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}
   }
   catch(err){w.remove();await showErr(err)}
 }
