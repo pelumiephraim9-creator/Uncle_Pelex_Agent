@@ -5740,7 +5740,11 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
 
  async function saveSetup(){
-  var n=$x('stMsg');if(n)n.textContent='Business setup is now managed under Projects. Select a project there to create or update its settings.';
+  var target=document.getElementById('pxProjectManager');
+  if(!target&&window.pxBusinessProjects)await window.pxBusinessProjects.reload();
+  target=document.getElementById('pxProjectManager');
+  if(target){target.scrollIntoView({behavior:'smooth',block:'start'});var name=document.getElementById('pxProjectName');if(name)name.focus()}
+  var n=$x('stMsg');if(n)n.textContent='Use the business setup card inside Business Agent to create or update an independent business.';
  }
 
  async function renderAgreements(){
