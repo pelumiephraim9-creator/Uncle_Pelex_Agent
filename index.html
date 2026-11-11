@@ -4911,7 +4911,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var name=prompt('Name for your workspace or team (2 to 80 characters). You will create individual businesses in the setup card below.');if(!name)return;
   var r=await sb.rpc('create_workspace',{p_name:name.trim(),p_currency:null});
   if(r.error){say(errText(r.error),true);return}
-  setWs(r.data);say('Workspace created.');loadWs();
+  setWs(r.data);say('Workspace created.');refreshBusinessWorkspace();
  };
  $w('wsInvite').onclick=async function(){
   if(!ready()||!ws){say('Create a workspace first.',true);return}
@@ -4928,7 +4928,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(!ready()){say('Sign in first, then join.',true);return}
   var r=await sb.rpc('join_workspace',{p_code:v});
   if(r.error){say(errText(r.error),true);return}
-  $w('wsCode').value='';setWs(r.data);say('You joined the workspace.');loadWs();
+  $w('wsCode').value='';setWs(r.data);say('You joined the workspace.');refreshBusinessWorkspace();
  };
  $w('wsReport').onclick=function(){say('Report view links come in phase 3. Share only the Report window during a meeting.')};
  function refreshBusinessWorkspace(){
