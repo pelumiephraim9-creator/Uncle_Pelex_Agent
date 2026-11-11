@@ -964,3 +964,34 @@ revoke all on function public.check_duplicate_project_upload(uuid,uuid,text) fro
 grant execute on function public.check_duplicate_project_upload(uuid,uuid,text) to authenticated, service_role;
 revoke all on function public.check_duplicate_upload(uuid,text) from public, anon, authenticated;
 grant execute on function public.check_duplicate_upload(uuid,text) to service_role;
+
+
+-- Store workspace uploads under workspace/project/upload/file and require matching project metadata on read.
+drop policy if exists wu_read on storage.objects;
+create policy wu_read on storage.objects
+for select to authenticated
+using (
+  bucket_id='workspace-uploads'
+  and case when (storage.foldername(name))[1] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.is_member(((storage.foldername(name))[1])::uuid) else false end
+  and exists (
+    select 1 from public.uploads u
+    where u.workspace_id::text=(storage.foldername(name))[1]
+      and u.project_id::text=(storage.foldername(name))[2]
+      and u.file_path=storage.objects.name
+      and u.deleted_at is null
+  )
+);
+drop policy if exists wu_write on storage.objects;
+create policy wu_write on storage.objects
+for insert to authenticated
+with check (
+  bucket_id='workspace-uploads'
+  and case when (storage.foldername(name))[1] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    then public.can_edit(((storage.foldername(name))[1])::uuid) else false end
+  and exists (
+    select 1 from public.business_projects bp
+    where bp.workspace_id::text=(storage.foldername(name))[1]
+      and bp.id::text=(storage.foldername(name))[2]
+  )
+);
