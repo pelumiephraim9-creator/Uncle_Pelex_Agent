@@ -1,0 +1,30 @@
+name: Business UI regression tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'pelex_addons.js'
+      - 'tests/business-ui.test.cjs'
+      - '.github/workflows/business-ui-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'pelex_addons.js'
+      - 'tests/business-ui.test.cjs'
+      - '.github/workflows/business-ui-tests.yml'
+
+jobs:
+  business-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run Business UI regression tests
+        run: node --test tests/business-ui.test.cjs
