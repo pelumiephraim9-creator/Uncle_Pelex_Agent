@@ -4823,7 +4823,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  function parseMatrix(matrix){
   if(!Array.isArray(matrix)||matrix.length<2)return {rows:[],skipped:0,currencies:[],headers:[]};
-  var headers=(matrix[0]||[]).map(normHead);
+  var headerIndex=0,headers=[];
+  for(var hi=0;hi<Math.min(matrix.length,10);hi++){
+   var candidate=(matrix[hi]||[]).map(normHead);
+   var hasDate=findCol(candidate,/\b(date|transaction date|sale date|invoice date|order date|entry date|created at|timestamp)\b/)>=0;
+   var hasAmount=findCol(candidate,/\b(grand total|line total|total amount|amount paid|net amount|sales amount|total|amount|revenue|sales|value|sum|debit|credit|price)\b/)>=0;
+   if(hasDate&&hasAmount){headerIndex=hi;headers=candidate;break}
+  }
+  if(!headers.length)headers=(matrix[0]||[]).map(normHead);
   var cd=findCol(headers,/\b(date|transaction date|sale date|invoice date|order date|entry date|created at|timestamp)\b/);
   var ca=findCol(headers,/\b(grand total|line total|total amount|amount paid|net amount|sales amount|total|amount|revenue|sales|value|sum|debit|credit)\b/);
   if(ca<0)ca=findCol(headers,/\b(price)\b/);
@@ -4836,7 +4843,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var cQty=findCol(headers,/\b(qty|quantity|units)\b/);
   var rows=[],skipped=0,curs={};
   var headerText=headers.join(' ');
-  for(var i=1;i<matrix.length;i++){
+  for(var i=headerIndex+1;i<matrix.length;i++){
    var c=matrix[i]||[];if(!c.some(function(v){return String(v==null?'':v).trim()}))continue;
    var date=cd>=0?parseDate(c[cd]):null,amount=ca>=0?parseAmount(c[ca]):NaN;
    if(!date||!isFinite(amount)||amount===0){skipped++;continue}
