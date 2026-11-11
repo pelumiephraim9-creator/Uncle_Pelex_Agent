@@ -16,6 +16,7 @@ test('phone layouts remain single-column and hidden dashboards remain hidden', (
   assert.match(source, /@media\s*\(max-width:899px\)/);
   assert.match(source, /#v-business \.dash,#v-pitch \.dash,#v-gmail \.dash\{display:flex;flex-direction:column\}/);
   assert.match(source, /#v-business \.dash\[hidden\],#v-pitch \.dash\[hidden\],#v-gmail \.dash\[hidden\]\{display:none!important\}/);
+  assert.match(source, /@media\s*\(max-width:899px\)[\s\S]*?#v-business \.dash\[hidden\],#v-pitch \.dash\[hidden\],#v-gmail \.dash\[hidden\]\{display:none!important\}/);
 });
 
 test('desktop grid rules are scoped to card-based agent views, not the General chat view', () => {
