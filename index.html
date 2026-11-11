@@ -6694,7 +6694,7 @@ function pxCommandHelp(){
    '<div class="dnote">Figures are calculated only from the selected business project. Operational modules use the project’s business type and selected month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><p class="dnote" id="pxMonthNote"></p>'+
    '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
   dash.insertBefore(box,dash.firstChild);
-  $('pxMonthPick').onchange=function(){var v=this.value,parts=/^(\\d{4})-(0[1-9]|1[0-2])$/.exec(v);if(parts){if($('pxOpsMonth'))$('pxOpsMonth').value=v;if($('pxTrYear'))$('pxTrYear').value=parts[1];if($('pxTrMonth'))$('pxTrMonth').value=parts[2];window.__pxSyncingMonth=true;if($('pxTrYear'))$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));if($('pxTrMonth'))$('pxTrMonth').dispatchEvent(new Event('change',{bubbles:true}));window.__pxSyncingMonth=false;}load()};
+  $('pxMonthPick').onchange=function(){var v=this.value,parts=/^([0-9]{4})-(0[1-9]|1[0-2])$/.exec(v);if(parts){if($('pxOpsMonth'))$('pxOpsMonth').value=v;if($('pxTrYear'))$('pxTrYear').value=parts[1];if($('pxTrMonth'))$('pxTrMonth').value=parts[2];window.__pxSyncingMonth=true;if($('pxTrYear'))$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));if($('pxTrMonth'))$('pxTrMonth').dispatchEvent(new Event('change',{bubbles:true}));window.__pxSyncingMonth=false;}load()};
   window.__pxDashboardLoad=load;
   document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')load()});
   var prev=window.__pxRegisterReady;
