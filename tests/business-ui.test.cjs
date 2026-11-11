@@ -93,7 +93,9 @@ test('business register loads complete transaction pages and supports month dril
 
 test('business dashboard defaults to a real project and keeps currencies separated', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /if\(!stored\|\|stored==='all'\)stored=projects\[0\]\.id/);
+  assert.match(html, /if\(!stored\)stored=projects\[0\]\.id/);
+  assert.match(html, /if\(stored!==saved\)localStorage\.setItem/);
+  assert.match(html, /stored!=='all'/);
   assert.match(html, /currency cannot be changed after transactions have been recorded/i);
   assert.match(html, /receipts without an explicit accounting classification/i);
 });
