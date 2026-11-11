@@ -82,3 +82,30 @@ test('business setup prevents currency changes after ledger activity exists', ()
   assert.match(html, /Currency cannot be changed after transactions have been recorded/);
   assert.match(html, /select\('id',\{count:'exact',head:true\}\)/);
 });
+
+test('business register loads complete transaction pages and supports month drill-down', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /offset<50000/);
+  assert.match(html, /\.range\(offset,offset\+batchSize-1\)/);
+  assert.match(html, /data-px-month-open/);
+  assert.match(html, /Select a month to open its detailed transactions/);
+});
+
+test('business dashboard defaults to a real project and keeps currencies separated', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /if\(!stored\|\|stored==='all'\)stored=projects\[0\]\.id/);
+  assert.match(html, /currency cannot be changed after transactions have been recorded/i);
+  assert.match(html, /unclassified receipts without an explicit accounting classification/i);
+});
+
+test('document reader accepts common office and business document formats and keeps reading separate from import', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /\.docx/);
+  assert.match(html, /\.xlsx/);
+  assert.match(html, /\.pptx/);
+  assert.match(html, /\.odt/);
+  assert.match(html, /\.ods/);
+  assert.match(html, /Extracted document text/);
+  assert.match(html, /Confirm and import transactions/);
+  assert.match(html, /Nothing has been added to your ledger/);
+});
