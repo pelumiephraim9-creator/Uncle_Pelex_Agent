@@ -2289,21 +2289,17 @@ async function turn(text,shown,img,el){
   if(el){el.classList.remove('live');el.textContent=shown||text;userNode=el}else userNode=add(shown||text,'me',img);
   var wait=add('Thinking...','sys');stepWait(wait);
   var _ct=shown||text;
+  /* Chat history is best-effort and must never block delivery to the AI agent.
+     Supabase/network failures previously caused ordinary text messages to be rejected. */
+  (async function(){
+    try{
+      var ready=await ensureChat(_ct);
+      if(ready)await saveMsg('user',_ct);
+    }catch(saveError){console.warn('Pelex: user message history save failed; continuing chat',saveError)}
+  })();
   try{
-    var ready=await ensureChat(_ct);
-    if(!ready||!(await saveMsg('user',_ct))){
-      wait.remove();if(userNode&&userNode.remove)userNode.remove();
-      input.value=_ct;input.focus();
-      return '';
-    }
-  }catch(saveError){
-    wait.remove();if(userNode&&userNode.remove)userNode.remove();
-    input.value=_ct;input.focus();
-    chatFail('message could not be saved',saveError);
-    return '';
-  }
-  try{
-    var reply=await askAgentRetry(text);wait.remove();await saveMsg('assistant',reply);
+    var reply=await askAgentRetry(text);wait.remove();
+    (async function(){try{if(curChatId)await saveMsg('assistant',reply)}catch(saveError){console.warn('Pelex: assistant history save failed',saveError)}})();
     var node;
     var retryFn=function(){
       var w2=add('Thinking...','sys');stepWait(w2);
