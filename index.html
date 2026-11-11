@@ -6177,8 +6177,8 @@ window.pxDuplicate=async function(hash){
    if(!byDay[d])byDay[d]={date:d,count:0,income:0,expense:0,items:[],cur:x.currency};
    byDay[d].count++;
    var a=Number(x.amount)||0;
-   if(INCOME.indexOf(x.entry_type)>=0)byDay[d].income+=a;
-   else if(EXPENSE.indexOf(x.entry_type)>=0)byDay[d].expense+=a;
+   if(x.kind==='income'||x.kind==='principal_in'||x.kind==='receivable_in'||x.kind==='savings_in'||x.kind==='capital'||(!x.kind&&INCOME.indexOf(x.entry_type)>=0&&x.entry_type!=='invoice'))byDay[d].income+=a;
+   else if(x.kind==='expense'||x.kind==='principal_out'||x.kind==='transfer'||(!x.kind&&EXPENSE.indexOf(x.entry_type)>=0))byDay[d].expense+=a;
    byDay[d].items.push(x);
   });
   var days=Object.keys(byDay).sort().reverse();
