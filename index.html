@@ -6688,14 +6688,15 @@ function pxCommandHelp(){
    var bundle=s.data||{},d=bundle.financial||{},cur=bundle.currency||d.currency||'NGN';
    var businessMetrics=bundle.business_metrics||{},opsSummary=bundle.operational_summary||[];
    var monthStart=m+'-01',parts=m.split('-'),yy=Number(parts[0]),mm=Number(parts[1]);
-   var nextMonth=mm===12?String(yy+1)+'-01-01':parts[0]+'-'+String(mm+1).padStart(2,'0')+'-01';
-   var monthEnd=new Date(nextMonth+'T00:00:00');monthEnd.setDate(monthEnd.getDate()-1);
-   var monthEndText=monthEnd.toISOString().slice(0,10);
+   /* Use local calendar arithmetic, not UTC ISO conversion, to avoid a one-day
+      reporting shift in UTC+ time zones such as Africa/Lagos. */
+   var monthEndDay=new Date(yy,mm,0).getDate();
+   var monthEndText=m+'-'+String(monthEndDay).padStart(2,'0');
    /* Charts use exact project-scoped RPCs, never workspace-wide ledger reads. */
    var chartRows=await sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:project,p_from:monthStart,p_to:monthEndText,p_search:null,p_limit:1000});
    if(chartRows.error)throw chartRows.error;
    var txRows=chartRows.data||[],daily={};
-   for(var day=1;day<=monthEnd.getDate();day++){var dayKey=m+'-'+String(day).padStart(2,'0');daily[dayKey]=0}
+   for(var day=1;day<=monthEndDay;day++){var dayKey=m+'-'+String(day).padStart(2,'0');daily[dayKey]=0}
    var txMix={};txRows.forEach(function(x){var k=String(x.entry_date).slice(0,10);if(Object.prototype.hasOwnProperty.call(daily,k))daily[k]++;var typ=String(x.entry_type||x.kind||'other').replace(/_/g,' ');txMix[typ]=(txMix[typ]||0)+1});
    var dayKeys=Object.keys(daily);
    if(window.pxChart)window.pxChart($('pxVolChart'),{id:'pxProjectVolume',title:'Transaction volume',labels:dayKeys.map(function(x){return x.slice(8)}),dates:dayKeys,values:dayKeys.map(function(x){return daily[x]}),fmt:function(v){return Number(v).toLocaleString()+' transactions'}});
