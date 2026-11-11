@@ -68,3 +68,10 @@ test('business financial dashboard calls the live monthly and yearly Supabase re
   assert.match(html, /month_income/);
   assert.match(html, /month_profit/);
 });
+
+
+test('editing legacy unclassified rows requires an explicit accounting classification', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /Choose classification for this older entry/);
+  assert.match(html, /Choose the accounting classification before saving this older entry/);
+});
