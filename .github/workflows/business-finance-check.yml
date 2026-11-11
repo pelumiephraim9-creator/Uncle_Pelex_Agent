@@ -1,0 +1,23 @@
+name: Business finance frontend checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/business-finance.test.cjs'
+      - '.github/workflows/business-finance-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/business-finance.test.cjs'
+      - '.github/workflows/business-finance-check.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test tests/business-finance.test.cjs
