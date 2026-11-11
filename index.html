@@ -5080,7 +5080,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsEmpty').hidden=true;$l('lsBody').hidden=false;
   var a=asOf();
   var rows=Tc.filter(function(x){return x.entry_date<=a});
-  var inv=rows.filter(function(x){return x.entry_type==='invoice'}), rec=rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'});
+  var inv=rows.filter(function(x){return x.entry_type==='invoice'}), rec=rows.filter(function(x){return (x.entry_type==='receipt'||x.entry_type==='payment')&&(x.kind==='receivable_in'||!x.kind)});
   var invT=inv.reduce(function(s,x){return s+Number(x.amount)},0), recT=rec.reduce(function(s,x){return s+Number(x.amount)},0);
   var outT=Math.max(0,invT-recT);
   // overdue: per customer, invoices past due with less received than invoiced
