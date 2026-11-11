@@ -69,8 +69,8 @@ test('saved workspace reloads on Business view entry and after authentication ch
  assert.match(index,/function refreshBusinessWorkspace\(\)/);
  assert.match(index,/if\(v==='business'\)setTimeout\(refreshBusinessWorkspace,0\)/);
  assert.match(index,/if\(user\)setTimeout\(refreshBusinessWorkspace,100\)/);
- assert.match(index,/Workspace created\.');refreshBusinessWorkspace\(\)/);
- assert.match(index,/You joined the workspace\.');refreshBusinessWorkspace\(\)/);
+ assert.ok(index.includes("Workspace created.');refreshBusinessWorkspace()"));
+ assert.ok(index.includes("You joined the workspace.');refreshBusinessWorkspace()"));
 });
 
 test('financial dashboard always includes volume and both pie charts with explicit empty states',()=>{
