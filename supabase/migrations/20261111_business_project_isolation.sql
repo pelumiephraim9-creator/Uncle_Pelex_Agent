@@ -396,3 +396,180 @@ end;
 $$;
 
 commit;
+
+
+-- Project-specific editing and monthly dashboard summaries added 11 Nov 2026.
+create index if not exists business_project_records_project_date_idx
+  on public.business_project_records (workspace_id, project_id, record_date desc, module_key);
+
+CREATE OR REPLACE FUNCTION public.update_business_project_v2(p_workspace uuid, p_project uuid, p_name text, p_business_type text, p_currency text, p_capital_month numeric, p_capital_year numeric, p_spent numeric, p_spend_period text, p_loan numeric, p_reporting_cycle text, p_profile jsonb)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+declare
+  old_project public.business_projects%rowtype;
+  new_currency text := upper(coalesce(nullif(trim(p_currency),''),'NGN'));
+  new_type text := coalesce(nullif(trim(p_business_type),''),'general');
+  new_cycle text := coalesce(nullif(p_reporting_cycle,''),'monthly');
+begin
+  if not public.can_edit(p_workspace) then
+    raise exception 'You cannot change this business project.';
+  end if;
+  if p_project is null then raise exception 'Choose a project to update.'; end if;
+  if coalesce(trim(p_name),'') = '' then raise exception 'Enter a project name.'; end if;
+  if char_length(new_currency)<>3 or new_currency !~ '^[A-Z]{3}$' then
+    raise exception 'Enter a valid three-letter currency code.';
+  end if;
+  if not exists(select 1 from public.business_types where code=new_type) then
+    raise exception 'Choose a supported business type.';
+  end if;
+  if new_cycle not in ('daily','weekly','monthly') then
+    raise exception 'Choose a valid reporting cycle.';
+  end if;
+  if p_profile is not null and jsonb_typeof(p_profile)<>'object' then
+    raise exception 'Project configuration must be a JSON object.';
+  end if;
+
+  select * into old_project from public.business_projects
+  where id=p_project and workspace_id=p_workspace for update;
+  if not found then raise exception 'Project not found in this workspace.'; end if;
+
+  if (upper(old_project.currency)<>new_currency or old_project.business_type<>new_type) and (
+    exists(select 1 from public.ledger_entries where project_id=p_project)
+    or exists(select 1 from public.uploads where project_id=p_project)
+    or exists(select 1 from public.agreements where project_id=p_project)
+    or exists(select 1 from public.business_project_records where project_id=p_project)
+  ) then
+    raise exception 'Business type and currency are locked after this project has records. Create a separate project instead.';
+  end if;
+
+  update public.business_projects
+  set name=trim(p_name),
+      business_type=new_type,
+      currency=new_currency,
+      startup_month=greatest(coalesce(p_capital_month,0),0),
+      startup_year=greatest(coalesce(p_capital_year,0),0),
+      spent=greatest(coalesce(p_spent,0),0),
+      spend_period=case when p_spend_period='year' then 'year' else 'month' end,
+      loan=greatest(coalesce(p_loan,0),0),
+      reporting_cycle=new_cycle,
+      profile=coalesce(p_profile,'{}'::jsonb)
+  where id=p_project and workspace_id=p_workspace;
+
+  return p_project;
+end;
+$function$
+
+
+revoke all on function public.update_business_project_v2(uuid,uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) from public, anon;
+grant execute on function public.update_business_project_v2(uuid,uuid,text,text,text,numeric,numeric,numeric,text,numeric,text,jsonb) to authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.business_project_dashboard_summary(p_workspace uuid, p_project uuid, p_month text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'public'
+AS $function$
+declare
+  pr public.business_projects%rowtype;
+  m text; start_date date; end_date date;
+  base_summary jsonb; operational_summary jsonb; operational_records jsonb;
+  inventory_summary jsonb := '[]'::jsonb; agreement_summary jsonb := '{}'::jsonb;
+  business_metrics jsonb := '{}'::jsonb; modules text[];
+  sales_amount numeric := 0; cogs_amount numeric := 0; stock_purchase_amount numeric := 0;
+begin
+  if not public.is_member(p_workspace) then raise exception 'You are not a member of this business.'; end if;
+  select bp.* into pr from public.business_projects bp
+  where bp.id=p_project and bp.workspace_id=p_workspace;
+  if not found then raise exception 'Choose a valid business project.'; end if;
+  select bt.modules into modules from public.business_types bt where bt.code=pr.business_type;
+
+  m:=coalesce(nullif(p_month,''),to_char(current_date,'YYYY-MM'));
+  if m !~ '^\d{4}-(0[1-9]|1[0-2])$' then raise exception 'Choose a valid reporting month (YYYY-MM).'; end if;
+  start_date:=to_date(m||'-01','YYYY-MM-DD'); end_date:=(start_date+interval '1 month')::date;
+  base_summary:=public.project_summary(p_project,m);
+
+  select coalesce(jsonb_agg(to_jsonb(x) order by x.module_key,x.record_type),'[]'::jsonb) into operational_summary
+  from (
+    select module_key,record_type,count(*)::bigint record_count,
+      coalesce(sum(amount),0) amount_total,coalesce(sum(quantity),0) quantity_total,
+      coalesce(sum(coalesce(quantity,0)*coalesce(unit_cost,0)),0) recorded_cost
+    from public.business_project_records
+    where workspace_id=p_workspace and project_id=p_project and record_date>=start_date and record_date<end_date
+    group by module_key,record_type
+  ) x;
+
+  select coalesce(jsonb_agg(to_jsonb(x) order by x.record_date desc,x.created_at desc),'[]'::jsonb) into operational_records
+  from (
+    select id,module_key,record_type,record_date,amount,currency,quantity,unit_cost,party,reference,status,data,created_at
+    from public.business_project_records
+    where workspace_id=p_workspace and project_id=p_project and record_date>=start_date and record_date<end_date
+    order by record_date desc,created_at desc limit 100
+  ) x;
+
+  if 'inventory'=any(modules) then
+    select coalesce(jsonb_agg(to_jsonb(x) order by x.item),'[]'::jsonb) into inventory_summary
+    from public.business_project_inventory_summary(p_workspace,p_project) x;
+  end if;
+
+  if 'agreements'=any(modules) then
+    select jsonb_build_object(
+      'agreement_count',(select count(*) from public.agreements a where a.workspace_id=p_workspace and a.project_id=p_project),
+      'principal_total',(select coalesce(sum(a.principal),0) from public.agreements a where a.workspace_id=p_workspace and a.project_id=p_project),
+      'due_this_month',(select coalesce(sum(s.amount_due),0) from public.schedule_items s join public.agreements a on a.id=s.agreement_id where a.workspace_id=p_workspace and a.project_id=p_project and s.due_date>=start_date and s.due_date<end_date),
+      'paid_against_month_schedule',(select coalesce(sum(s.amount_paid),0) from public.schedule_items s join public.agreements a on a.id=s.agreement_id where a.workspace_id=p_workspace and a.project_id=p_project and s.due_date>=start_date and s.due_date<end_date),
+      'outstanding_schedule',(select coalesce(sum(greatest(0,s.amount_due-s.amount_paid)),0) from public.schedule_items s join public.agreements a on a.id=s.agreement_id where a.workspace_id=p_workspace and a.project_id=p_project),
+      'overdue_schedule',(select coalesce(sum(greatest(0,s.amount_due-s.amount_paid)),0) from public.schedule_items s join public.agreements a on a.id=s.agreement_id where a.workspace_id=p_workspace and a.project_id=p_project and s.status<>'paid' and s.due_date<current_date)
+    ) into agreement_summary;
+  end if;
+
+  select coalesce(sum(amount),0) into sales_amount from public.business_project_records
+  where workspace_id=p_workspace and project_id=p_project and module_key in ('sales','pos_sales')
+    and record_type in ('sale','pos_sale') and record_date>=start_date and record_date<end_date;
+  select coalesce(sum(coalesce(quantity,0)*coalesce(unit_cost,0)),0) into cogs_amount from public.business_project_records
+  where workspace_id=p_workspace and project_id=p_project and module_key in ('sales','pos_sales')
+    and record_type in ('sale','pos_sale') and record_date>=start_date and record_date<end_date;
+  select coalesce(sum(amount),0) into stock_purchase_amount from public.ledger_entries
+  where workspace_id=p_workspace and project_id=p_project and entry_date>=start_date and entry_date<end_date
+    and coalesce(kind,public.ledger_kind(entry_type,kind))='expense'
+    and (coalesce(category,'') ilike '%stock%' or coalesce(category,'') ilike '%inventory%' or entry_type='purchase');
+
+  case pr.business_type
+    when 'finance' then business_metrics:=jsonb_build_object(
+      'kind','lending','principal_disbursed',coalesce((base_summary->>'month_principal_issued')::numeric,0),
+      'principal_repaid',coalesce((base_summary->>'month_principal_repaid')::numeric,0),
+      'interest_income',coalesce((base_summary->>'month_interest_income')::numeric,0),
+      'receivables_outstanding',coalesce((base_summary->>'recorded_receivables_outstanding')::numeric,0),
+      'customer_savings_held',coalesce((base_summary->>'customer_savings_held')::numeric,0),
+      'agreement_count',coalesce((agreement_summary->>'agreement_count')::integer,0),
+      'scheduled_outstanding',coalesce((agreement_summary->>'outstanding_schedule')::numeric,0),
+      'overdue_scheduled_amount',coalesce((agreement_summary->>'overdue_schedule')::numeric,0));
+    when 'supermarket' then business_metrics:=jsonb_build_object(
+      'kind','retail','pos_sales',sales_amount,'pos_cost_of_goods_recorded',cogs_amount,
+      'gross_profit_on_recorded_pos_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount,
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0),
+      'stock_on_hand_quantity',coalesce((select sum(quantity_on_hand) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'retail_store' then business_metrics:=jsonb_build_object(
+      'kind','retail','sales_recorded',sales_amount,'cost_of_goods_recorded',cogs_amount,
+      'gross_profit_on_recorded_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount,
+      'stock_on_hand_value',coalesce((select sum(estimated_stock_value) from public.business_project_inventory_summary(p_workspace,p_project)),0));
+    when 'restaurant' then business_metrics:=jsonb_build_object(
+      'kind','hospitality','food_sales',sales_amount,'recorded_food_cost',cogs_amount,
+      'gross_profit_on_recorded_food_cost',sales_amount-cogs_amount,'stock_purchases',stock_purchase_amount);
+    else business_metrics:=jsonb_build_object(
+      'kind',pr.business_type,
+      'operational_amount',coalesce((select sum(amount) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and record_date>=start_date and record_date<end_date),0),
+      'operational_cost',coalesce((select sum(coalesce(quantity,0)*coalesce(unit_cost,0)) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and record_date>=start_date and record_date<end_date),0));
+  end case;
+
+  return jsonb_build_object('project_id',pr.id,'project_name',pr.name,'business_type',pr.business_type,
+    'currency',pr.currency,'reporting_cycle',pr.reporting_cycle,'month',m,'modules',to_jsonb(modules),
+    'financial',base_summary,'operational_summary',operational_summary,'operational_records',operational_records,
+    'inventory',inventory_summary,'agreements',agreement_summary,'business_metrics',business_metrics);
+end;
+$function$
+
+
+revoke all on function public.business_project_dashboard_summary(uuid,uuid,text) from public, anon;
+grant execute on function public.business_project_dashboard_summary(uuid,uuid,text) to authenticated, service_role;
