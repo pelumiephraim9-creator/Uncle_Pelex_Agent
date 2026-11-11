@@ -4866,10 +4866,18 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(/\.(xlsx|xls)$/.test(name)){
    if(!window.XLSX)throw new Error('Excel reader did not load. Refresh the page and try again.');
    var buf=await file.arrayBuffer(),book=XLSX.read(buf,{type:'array',cellDates:true});
-   var sheetName=book.SheetNames.filter(function(n){return book.Sheets[n]})[0];
-   if(!sheetName)throw new Error('This Excel workbook has no readable worksheet.');
-   var matrix=XLSX.utils.sheet_to_json(book.Sheets[sheetName],{header:1,raw:true,defval:''});
-   var parsed=parseMatrix(matrix);parsed.sheetName=sheetName;return parsed;
+   var sheetNames=(book.SheetNames||[]).filter(function(n){return book.Sheets[n]});
+   if(!sheetNames.length)throw new Error('This Excel workbook has no readable worksheet.');
+   var combined={rows:[],skipped:0,currencies:[],headers:[],sheetNames:[]},currencySet={};
+   sheetNames.forEach(function(sheetName){
+    var matrix=XLSX.utils.sheet_to_json(book.Sheets[sheetName],{header:1,raw:true,defval:''});
+    var part=parseMatrix(matrix);
+    combined.rows=combined.rows.concat(part.rows);combined.skipped+=part.skipped;
+    part.currencies.forEach(function(cur){currencySet[cur]=1});
+    if(part.rows.length||!combined.headers.length)combined.headers=part.headers;
+    combined.sheetNames.push(sheetName);
+   });
+   combined.currencies=Object.keys(currencySet);return combined;
   }
   return null;
  }
@@ -4877,7 +4885,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var cur=parsed.currencies||[],sample=parsed.rows.slice(0,6);
   $w('upReview').hidden=false;
   $w('upReview').innerHTML='<div class="irow"><b>File read successfully:</b> '+esc(file.name)+'</div><div class="irow"><b>Rows recognised:</b> '+parsed.rows.length+' · <b>Skipped:</b> '+parsed.skipped+'</div>'+
-   (parsed.sheetName?'<div class="irow"><b>Worksheet:</b> '+esc(parsed.sheetName)+'</div>':'')+
+   (parsed.sheetName?'<div class="irow"><b>Worksheets:</b> '+esc((parsed.sheetNames||[]).join(', '))+'</div>':'')+
    '<div class="irow"><b>Columns found:</b> '+esc((parsed.headers||[]).join(', '))+'</div>'+
    (sample.length?'<div style="overflow-x:auto"><table class="ls-table"><tr><th>Date</th><th>Type</th><th>Party / item</th><th>Amount</th><th>Category</th></tr>'+sample.map(function(x){return '<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.amount)+'</td><td>'+esc(x.category||'—')+'</td></tr>'}).join('')+'</table></div>':'<div class="irow">No usable transaction rows found. Check that your file has date and total/amount columns. If the file is a sales sheet, include product/item, quantity and total columns.</div>')+
    '<div class="muted dnote">Nothing is saved until you press Confirm and save.</div>';
