@@ -2135,7 +2135,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   ['invoice','income','Invoice issued (revenue, not cash yet)'],
   ['expense','expense','Operating expense paid'],
   ['expense','principal_out','Loan principal issued'],
-  ['receipt','principal_in','Loan principal repaid'],
+  ['receipt','receivable_in','Payment received against an existing invoice'],\n  ['receipt','principal_in','Loan principal repaid'],
   ['receipt','income','Interest or other operating income received'],
   ['other','savings_in','Customer savings received (liability)'],
   ['other','capital','Owner capital introduced'],
@@ -4954,7 +4954,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:det.conf,currency:cur});
   if(ins.error){upSay('File stored, but its record was not saved: '+errText(ins.error),true);return}
   if(isCsv){
-    var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:parsed.rows});
+    var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:parsed.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws)||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
     if(rc.error){upSay('Saved the file, but the rows were not added: '+errText(rc.error),true);return}
     upSay('Saved. '+rc.data+' rows added to the ledger'+(parsed.skipped?' ('+parsed.skipped+' rows skipped because the date or amount was unclear)':'')+'.')
   } else upSay('Saved for review. Non-CSV files are read in the next step, and nothing enters the ledger until you confirm.');
@@ -5070,7 +5070,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  async function load(){
   var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
-  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id').eq('workspace_id',w).order('entry_date',{ascending:true}).limit(5000);
+  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id').eq('workspace_id',w).order('entry_date',{ascending:true}).limit(5000);
   var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at').eq('workspace_id',w).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
   if(e.error||u.error){$l('lsCount').textContent='Ledger is not connected yet. Run phase2_workspace.sql and phase3_ledger.sql in Supabase.';return}
   T=e.data||[];U=u.data||[];render();
@@ -5138,8 +5138,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function ctxRange(s,e){
   var d=window.__lsData;if(!d||!d.T)return null;
   var rows=d.T.filter(function(x){return x.entry_date>=s&&x.entry_date<=e});
-  var sales=rows.filter(function(x){return x.entry_type==='invoice'||x.entry_type==='sale'});
-  return {asof:e,start:s,rep:d.rep,rows:rows,sales:sales,inv:rows.filter(function(x){return x.entry_type==='invoice'}),rec:rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'}),exp:rows.filter(function(x){return x.entry_type==='expense'})};
+  var sales=rows.filter(function(x){var k=x.kind||((x.entry_type==='expense')?'expense':'income');return k==='income'&&['invoice','sale','receipt','payment'].indexOf(x.entry_type)>=0&&x.kind!=='receivable_in'});
+  return {asof:e,start:s,rep:d.rep,rows:rows,sales:sales,inv:rows.filter(function(x){return x.entry_type==='invoice'}),rec:rows.filter(function(x){return x.entry_type==='receipt'||x.entry_type==='payment'}),exp:rows.filter(function(x){return x.kind==='expense'||(!x.kind&&x.entry_type==='expense')})};
  }
  // state context: everything up to the date
  function ctxAt(e){return ctxRange('0000-01-01',e)}
@@ -5362,7 +5362,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:pendingDoc.type,confidence:'Reviewed',currency:rc});
   if(ins.error){$p('upMsg').textContent='File stored, but its record was not saved: '+ins.error.message;return}
   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due}});
-  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
+  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+wsId())||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
   if(cf.error){$p('upMsg').textContent='Saved the file, but the rows were not added: '+cf.error.message;return}
   $p('upMsg').textContent='Saved. '+cf.data+' rows added to the ledger'+(t.bad?' ('+t.bad+' rows skipped: unclear date or amount)':'')+'.';
   $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
@@ -5751,7 +5751,7 @@ function parseSheet(text){
   if(await window.pxDuplicate(fh))return {ok:false,msg:name+': this file is already recorded.'};
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
-  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows});
+  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){var pid=null;try{pid=localStorage.getItem('px_project_'+ws())||null}catch(e){}return Object.assign({},x,{project_id:pid})})});
   if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
   return {ok:true,msg:name+': '+rc.data+' rows added'+(p.skipped?' ('+p.skipped+' skipped: unclear date or amount)':'')};
  }
