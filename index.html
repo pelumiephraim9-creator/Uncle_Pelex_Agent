@@ -5753,7 +5753,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  async function renderAgreements(){
   var box=$x('agBody');if(!box||!ready())return;
   var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all'){box.innerHTML='<div class="muted dnote">Select a lending project to view its agreements.</div>';return}
-  var r=await sb.from('agreements').select('id,party,principal,deposit,deposit_treatment,rate,rate_basis,method,cycle,term_cycles,start_date,status').eq('workspace_id',ws()).eq('project_id',projectId).order('created_at',{ascending:false}).limit(100);
+  var project=await sb.from('business_projects').select('currency,profile,reporting_cycle').eq('id',projectId).eq('workspace_id',ws()).single();if(project.error){box.innerHTML='<div class="muted dnote">Could not load this project setup: '+errT(project.error)+'</div>';return}
+  var profile=project.data.profile||{};SETTINGS=Object.assign({},SETTINGS,{currency:project.data.currency,profile:profile,default_rate:Number(profile.rate||0)/100,default_method:profile.method||'none',default_cycle:project.data.reporting_cycle||profile.cycle||'monthly',rate_basis:profile.rate_basis||'per_cycle',deposit_treatment:profile.deposit_treatment||'credited'});
+  var r=await sb.from('agreements').select('id,party,principal,deposit,deposit_treatment,rate,rate_basis,method,cycle,term_cycles,start_date,status,project_id').eq('workspace_id',ws()).eq('project_id',projectId).order('created_at',{ascending:false}).limit(100);
   var list=r.data||[];
   box.innerHTML='<div class="prow" style="margin-bottom:10px"><button class="btn" id="agNew" type="button">New agreement</button></div><div id="agForm" hidden></div><div id="agList" class="ilist">'+(list.length?'':'<div class="muted dnote">No agreements yet.</div>')+'</div><div id="agDetail"></div>';
   $x('agNew').onclick=agreementForm;
