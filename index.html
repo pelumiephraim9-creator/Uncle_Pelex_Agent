@@ -4788,11 +4788,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function csvMatrix(text){
   var rows=[],row=[],cell='',quoted=false;
   text=String(text||'').replace(/^\uFEFF/,'');
+  var first=(text.split(/\r?\n/).filter(function(x){return x.trim()})[0]||''),counts={',':0,';':0,'\t':0},q=false;
+  for(var j=0;j<first.length;j++){var ch0=first[j];if(ch0==='"'&&first[j+1]==='"'){j++;continue}if(ch0==='"'){q=!q;continue}if(!q&&Object.prototype.hasOwnProperty.call(counts,ch0))counts[ch0]++}
+  var delimiter=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]})[0];
   for(var i=0;i<text.length;i++){
    var ch=text[i],next=text[i+1];
    if(ch==='"'&&quoted&&next==='"'){cell+='"';i++}
    else if(ch==='"'){quoted=!quoted}
-   else if((ch===','||ch===';'||ch==='\t')&&!quoted){row.push(cell);cell=''}
+   else if(ch===delimiter&&!quoted){row.push(cell);cell=''}
    else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(function(v){return String(v).trim()}))rows.push(row);row=[];cell=''}
    else cell+=ch;
   }
