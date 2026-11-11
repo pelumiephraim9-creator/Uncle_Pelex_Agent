@@ -876,23 +876,19 @@ CREATE OR REPLACE FUNCTION public.require_ledger_project()
  LANGUAGE plpgsql
  SET search_path TO 'public'
 AS $function$
-declare project_currency text;
 begin
-  if new.project_id is null then raise exception 'Select the business project for this transaction before saving.'; end if;
-  select upper(currency) into project_currency from public.business_projects
-  where id=new.project_id and workspace_id=new.workspace_id;
-  if project_currency is null then raise exception 'The selected project does not belong to this workspace.'; end if;
-  if upper(coalesce(new.currency,''))<>project_currency then
-    raise exception 'Transaction currency must match the selected project reporting currency (%).',project_currency;
+  if new.project_id is null then
+    raise exception 'Select the business project for this transaction before saving.';
+  end if;
+  if not exists (
+    select 1 from public.business_projects bp
+    where bp.id=new.project_id and bp.workspace_id=new.workspace_id
+  ) then
+    raise exception 'The selected project does not belong to this workspace.';
   end if;
   return new;
 end;
-$function$
-;
-drop trigger if exists zz_ledger_require_project on public.ledger_entries;
-create trigger zz_ledger_require_project
-before insert or update of project_id,workspace_id,currency on public.ledger_entries
-for each row execute function public.require_ledger_project();
+$function$;
 
 revoke all on function public.confirm_upload(uuid,text,jsonb) from public, anon;
 grant execute on function public.confirm_upload(uuid,text,jsonb) to authenticated, service_role;
