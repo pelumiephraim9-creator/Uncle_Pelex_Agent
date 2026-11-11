@@ -175,6 +175,8 @@
  }
  async function save(){
   var name=$('pxProjectName').value.trim(),code=$('pxProjectType').value,cur=$('pxProjectCurrency').value.trim().toUpperCase(),cycle=$('pxProjectCycle').value;
+  if(!ws()){msg('Create or join a workspace in the Workspace card above before saving a business.',true);return}
+  if(!code||!types.some(function(t){return t.code===code})){msg('Choose a business type from the list before saving.',true);return}
   if(!name){msg('Enter a name for this business project.',true);return}
   if(!/^[A-Z]{3}$/.test(cur)){msg('Enter a valid three-letter currency code.',true);return}
   var profile={};$('pxProjectFields').querySelectorAll('[data-px-profile]').forEach(function(el){
@@ -216,16 +218,19 @@
    msg('Sign in to create and manage your business projects.');
    return;
   }
-  var workspace=ws();
-  if(!workspace){
-   projects=[];selected='';renderList();renderOperations();
-   msg('Create or join a workspace in the Workspace card above. Your business setup will unlock here automatically.');
-   return;
-  }
   if(loading)return;
   loading=true;
   try{
+   /* Load the catalogue before checking workspace state. The type selector must
+      be usable as soon as the setup card appears, even for a new account. */
    if(!types.length)await loadTypes();
+   var workspace=ws();
+   if(!workspace){
+    projects=[];selected='';renderList();renderOperations();
+    var saveButton=$('pxProjectSave');if(saveButton)saveButton.disabled=false;
+    msg('Business types are ready. Create or join a workspace in the Workspace card above, then save your first business here.');
+    return;
+   }
    if(lastLoadedWorkspace!==workspace||!projects.length){
     await loadProjects();lastLoadedWorkspace=workspace;
    }
