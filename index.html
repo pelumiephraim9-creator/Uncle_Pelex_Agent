@@ -2474,9 +2474,12 @@ function showAttach(kind,data,name){
   attach.hidden=false}
 function clearAttach(){attach.classList.remove('multi');pendingImgs=[];pendingDoc=null;attach.hidden=true;$('attachTh').innerHTML='';chip.style.display='none'}
 $('attachX').onclick=clearAttach;
+var imageSending=false;
 async function sendImage(){
+  if(imageSending)return;
   var datas=pendingImgs.slice(),typed=input.value.trim();
   if(!datas.length)return;
+  imageSending=true;
   var q=typed||(datas.length>1?'Describe these images and explain what matters in them.':'Describe this image and explain what matters in it.');
   var ANALYSE_CMDS=['data','analyze','analyse','csv','summarize','summary','tldr','translate','explain','define','wiki','read','review','debug','code','sql','regex','explainimage','describe','ocr','extract'];
   var cmdM=typed.match(/^\/([a-zA-Z][a-zA-Z0-9_-]{0,30})(?:\s+([\s\S]*))?$/);
@@ -2486,24 +2489,33 @@ async function sendImage(){
   }
   var intent=(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)||/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
   var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
-  var userNode=add(q,'me',datas),w=add('Looking at the image...','sys');
-  stepWait(w);
+  var userNode=add(q,'me',datas),waitNode=add('Looking at the image...','sys'),completed=false;
+  stepWait(waitNode);
+  /* Save history independently; never let it reset or block the visible conversation. */
+  (async function(){try{var ready=await ensureChat(q);if(ready)await saveMsg('user',imageLabel)}catch(e){console.warn('Pelex: image history save failed; continuing',e)}})();
+  input.value='';
   try{
-    /* Chat-history persistence is deliberately non-blocking. It must never decide whether an image is sent. */
-    (async function(){try{var ready=await ensureChat(q);if(ready)await saveMsg('user',imageLabel)}catch(e){console.warn('Pelex: image history save failed; continuing',e)}})();
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
     if(AGENT_URL.indexOf('PASTE_')===0)throw new Error('The Pelex image service is not connected. Please try again shortly.');
     var result=await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}));
-    w.remove();
+    completed=true;
+    /* Mark the attachment as sent immediately after backend success, before rendering the reply. */
+    clearAttach();
+    waitNode.remove();
     (async function(){try{if(curChatId)await saveMsg('assistant',result)}catch(e){console.warn('Pelex: image reply history save failed',e)}})();
-    add(result);input.value='';clearAttach();
+    try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
     try{window.notifyReply&&window.notifyReply(result)}catch(e){}
   }catch(err){
-    w.remove();
-    /* Keep both the selected image(s) and the typed instruction available for a retry. */
-    input.value=typed;
-    if(userNode&&userNode.remove)userNode.remove();
-    await showErr(err);
+    try{waitNode.remove()}catch(e){}
+    if(!completed){
+      /* Keep the original image bubble and attachment available for a safe retry. */
+      input.value=typed;
+      await showErr(err);
+    }else{
+      console.error('Pelex: post-send UI error',err);
+    }
+  }finally{
+    imageSending=false;
   }
 }
 $('file').onchange=async function(e){
