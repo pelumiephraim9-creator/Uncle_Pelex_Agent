@@ -1233,13 +1233,14 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="brand"><svg class="mark" viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><polygon points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5" fill="none" stroke="#0b1b4a" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="#5ec3e6"/><circle cx="20" cy="37" r="2" fill="#5ec3e6"/><circle cx="35" cy="11.5" r="2" fill="var(--btn)"/><circle cx="35" cy="28.5" r="2" fill="var(--btn)"/><circle cx="5" cy="11.5" r="2" fill="var(--btn)"/><circle cx="5" cy="28.5" r="2" fill="var(--btn)"/><rect x="11" y="11" width="18" height="18" rx="5" fill="var(--btn)"/><text x="20" y="25" text-anchor="middle" font-size="13" font-weight="800" font-family="Segoe UI,system-ui,Arial,sans-serif" fill="var(--btnink)">P</text></svg>Pelex<span style="margin-left:auto;display:flex;gap:14px"><button class="iconbtn" id="instNavDesk" aria-label="Install app" hidden><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg></button><button class="iconbtn" id="sideCollapse" aria-label="Hide sidebar"><svg viewBox="0 0 24 24"><path d="M5 6h8M9 12h11M4 18h12"/></svg></button></span></div>
 <button class="nav newchat" data-go="chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
 <button class="nav" data-go="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Chat projects</button>
-<button class="nav" data-go="business-projects"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business projects</button>
+<button class="nav" data-go="business-projects"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Projects</button>
+<button class="nav" data-go="business-data"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 10h16M10 5v14M15 5v14"/></svg>Data Entry</button>
 <button class="nav" data-go="scheduled"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Scheduled<span class="nbadge" id="schedBadge" hidden aria-label="New scheduled results"></span></button>
 <button class="nav" data-go="groups"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.6 4.5 4.3"/></svg>Groups<span class="nbadge" id="gBadge" hidden aria-label="Groups with new messages"></span></button>
 <button class="nav" data-go="spotlight"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg>Spotlight</button>
 <div class="agentsgrp" id="agentsGrp"><button type="button" class="nav agentsbtn" id="agentsBtn" aria-expanded="false" aria-controls="agentsPanel"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="10" rx="3"/><path d="M12 8V5M9 13h.01M15 13h.01M3 13v2M21 13v2"/></svg>Agents<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="agentspanel" id="agentsPanel"><button class="nav" data-go="pitch"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg>Pitch Agent</button>
 <button class="nav" data-go="gmail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Gmail Bot</button>
-<button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Bot</button>
+<button class="nav" data-go="business"><svg viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5M4 9h16v11H4zM9 20v-6h6v6"/></svg>Business Agent</button>
 </div></div>
 <button class="nav" data-go="support" id="navSupport" hidden><svg viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 13h3v5H4zM17 13h3v5h-3zM17 18c0 2-2 3-5 3"/></svg>Support<span class="nbadge" id="supBadge" hidden></span></button>
 <div id="recPinned"></div>
@@ -1378,7 +1379,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="muted">Pelex drafts email text for you to review and open in Gmail. You send it yourself. Pelex does not currently read your inbox, attachments or labels. Voice input uses your browser's speech service, which may send audio to your device maker.</div></div>
 </div></section>
 <section class="view" id="v-business" hidden><div class="wrap"><div class="abanner" data-agent="business" hidden></div><div style="margin:0 0 14px"><button class="btn alt" type="button" data-sched-agent="business">Schedule a task for this agent</button></div>
-<h1>Business Bot</h1><div class="muted">Tell Pelex about your business. Your bot answers customers in your tone and stays inside the limits you set.</div>
+<h1>Business Agent</h1><div class="muted">Manage each business independently, review performance, record transactions and get professional operational analysis.</div>
 <div class="dash" id="bWork" hidden>
  <div class="dcard"><div class="dhead"><h2>Workspace</h2><span class="ttag">Owner + up to 3</span></div>
   <p class="muted dnote">Share this business with up to three people. Members can view by default. Only the owner can give someone edit access.</p>
@@ -1547,7 +1548,8 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <p class="muted" id="projectsEmpty" style="margin-top:14px">No projects yet. Start one to keep related chats together.</p>
 </div></section>
 
-<section class="view" id="v-business-projects" hidden><div class="wrap"><h1>Business projects</h1><p class="muted">Each project is one independent business. Configure its business type, currency, startup settings and operational modules here. Transactions and reports stay inside that project.</p><div class="dcard" id="pxBusinessProjectsHost"><div class="muted">Sign in and create or select a business workspace to manage projects.</div></div></div></section>
+<section class="view" id="v-business-projects" hidden><div class="wrap"><h1>Projects</h1><p class="muted">Each project is one independent business. Configure its business type, currency, startup settings and operational modules here. Transactions and reports stay inside that project.</p><div class="dcard" id="pxBusinessProjectsHost"><div class="muted">Sign in and create or select a business workspace to manage projects.</div></div></div></section>
+<section class="view" id="v-business-data" hidden><div class="wrap"><h1>Data Entry</h1><p class="muted">Record and review monthly transactions for one selected business project. Choose the project, year and month before adding or reviewing entries.</p><div id="pxBusinessDataHost" class="ls-wrap"><div class="muted">Sign in and open the Business Agent to load your transaction register.</div></div></div></section>
 
 <section class="view" id="v-plugins" hidden><div class="wrap">
 <button class="iconbtn backToSettings" data-go="settings" aria-label="Back to Settings" title="Back to Settings" style="margin-bottom:8px"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Connectors</h1><div id="plugs">
@@ -6516,6 +6518,7 @@ function pxCommandHelp(){
    '<div id="pxTrForm" class="an-card" hidden></div><div id="pxTrMsg" class="muted dnote" role="status" aria-live="polite"></div>'+
    '<div style="overflow-x:auto"><table class="ls-table" style="min-width:760px"><thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Party / description</th><th>Category</th><th>Amount</th><th>Classification</th><th>Payment status</th><th></th></tr></thead><tbody id="pxTrRows"><tr><td colspan="9">Loading transactions…</td></tr></tbody></table></div>';
   var dataCard=el('lsUploads').closest('.dcard');if(dataCard&&dataCard.parentNode)dataCard.parentNode.insertBefore(card,dataCard.nextSibling);else root.appendChild(card);
+  var dataHost=el('pxBusinessDataHost');if(dataHost){if(dataCard)dataHost.appendChild(dataCard);dataHost.appendChild(card);}
   el('pxTrNew').onclick=function(){form(null)};
   el('pxTrRefresh').onclick=load;
   ['pxTrProject','pxTrYear','pxTrMonth','pxTrSearch'].forEach(function(id){el(id).addEventListener(id==='pxTrSearch'?'input':'change',render)});
