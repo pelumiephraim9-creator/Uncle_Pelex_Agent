@@ -5375,7 +5375,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
   $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
   b.onclick=readDoc;
-  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&/\.(pdf|docx|xlsx|xlsm|pptx|odt|ods|csv|tsv|txt|md|rtf|json|xml|html?|png|jpe?g|webp|heic|heif|tiff?)$/i.test(f.name));if(f&&!b.hidden)$p('upMsg').textContent='Tap “Read this document with Pelex” to extract the rows. Nothing is saved until you confirm.'});
+  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&/\.(pdf|doc|docx|xls|xlsx|xlsm|ppt|pptx|odt|ods|odp|csv|tsv|txt|md|rtf|json|xml|html?|png|jpe?g|webp|heic|heif|tiff?)$/i.test(f.name));if(f&&!b.hidden)$p('upMsg').textContent='Tap “Read this document with Pelex” to extract the rows. Nothing is saved until you confirm.'});
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
  setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
