@@ -1392,8 +1392,8 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
  <div class="prow" style="margin-top:8px"><select id="payProv" class="inp" style="max-width:180px"><option value="paystack">Paystack</option><option value="flutterwave">Flutterwave</option></select><button class="btn" id="payConnect" type="button">Connect</button></div>
  <div id="payOut" class="ilist"></div><div class="muted dnote" id="payMsg"></div></div>
 <div class="dcard"><h2>Upload data</h2>
-  <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. CSV, XLSX, PDF, PNG or JPG, up to 10 MB each. Pelex detects the type, and nothing is saved until you confirm it.</p>
-  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xls,.xlsx,.pdf,.png,.jpg,.jpeg,.webp" hidden><span id="upLabel">Tap to choose a file</span></label>
+  <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. PDF, Word, Excel, PowerPoint, OpenDocument, CSV, text, JSON, XML, HTML and common image files, up to 10 MB. Pelex reads documents first. Financial imports require a separate confirmation.</p>
+  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.tsv,.xls,.xlsx,.xlsm,.pdf,.doc,.docx,.odt,.rtf,.txt,.md,.json,.xml,.html,.htm,.ppt,.pptx,.odp,.ods,.png,.jpg,.jpeg,.webp,.heic,.heif,.tif,.tiff" hidden><span id="upLabel">Tap to choose a file</span></label>
   <div id="upReview" class="ilist" hidden></div>
   <div id="upCur" class="ilist" hidden></div>
   <div class="prow" id="upActs" hidden style="margin-top:10px"><button class="btn" id="upConfirm" type="button">Confirm and save</button><button class="btn alt" id="upCancel" type="button">Cancel</button></div>
@@ -5333,13 +5333,13 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $p('upMsg').textContent='Reading the document...';
   var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var u=String(r.result||'');var ext=(f.name.split('.').pop()||'').toLowerCase();var mime={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext];if(mime&&u.toLowerCase().indexOf('data:application/octet-stream;')===0)u='data:'+mime+';'+u.slice('data:application/octet-stream;'.length);res(u)};r.onerror=function(){rej(new Error('The selected file could not be opened on this device.'))};r.readAsDataURL(f)});
   var raw;
-  try{raw=await askPublicAgent('Read this document',Object.assign({},agentMeta(),{images:[dataUrl],intent:'extract',__sid:'read-'+Date.now()}))}
+  try{raw=await askPublicAgent('Read this document. File name: '+f.name,Object.assign({},agentMeta(),{images:[dataUrl],intent:'extract',__sid:'read-'+Date.now()}))}
   catch(e){$p('upMsg').textContent=(e&&!e.backend&&e.message)?e.message:'The document reader is not reachable right now.';return}
   var parsed=null;try{parsed=JSON.parse(String(raw).replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){}
   if(!parsed||!Array.isArray(parsed.rows)){$p('upMsg').textContent='The reader returned an invalid result. Please try again or use a smaller PDF/image.';return}
   if(parsed.error){$p('upMsg').textContent=parsed.error;return}
-  if(!parsed.rows.length){$p('upMsg').textContent=parsed.notes||'The file was opened, but no transaction rows were detected. Try a sharper scan or a PDF with selectable text.';return}
-  pendingDoc={file:f,type:parsed.document_type||'other',currency:parsed.currency||null,notes:parsed.notes||'',rows:parsed.rows};
+  if(!parsed.rows.length&&!parsed.text&&!parsed.summary){$p('upMsg').textContent=parsed.notes||'The file was opened, but no readable content was extracted. Try a text-based PDF or a clearer scan.';return}
+  pendingDoc={file:f,type:parsed.document_type||'other',currency:parsed.currency||null,notes:parsed.notes||'',summary:parsed.summary||'',text:parsed.text||'',rows:parsed.rows};
   var box=$p('rvBox');if(!box){box=document.createElement('div');box.id='rvBox';box.className='ilist';$p('upMsg').parentNode.insertBefore(box,$p('upMsg'))}
   box.innerHTML='<div class="irow"><b>Detected:</b> '+esc(pendingDoc.type)+(pendingDoc.currency?' \u00b7 '+esc(pendingDoc.currency):'')+'</div>'+(pendingDoc.notes?'<div class="muted dnote">'+esc(pendingDoc.notes)+'</div>':'')+'<div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div>'+
    '<div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and save</button><button class="btn alt" id="rvCancel" type="button">Discard</button></div>';
