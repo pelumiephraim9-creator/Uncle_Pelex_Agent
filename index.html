@@ -6263,6 +6263,7 @@ window.pxDuplicate=async function(hash,projectId){
   for(var i=0;i<cards.length;i++){var t=(cards[i].querySelector('h2')||{}).textContent||'';
     if(t==='Data entry'){var d=document.createElement('div');d.id='lsDeleted';cards[i].appendChild(d);refreshDeleted();return}}
  }
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')setTimeout(refreshDeleted,0)});
  var _t=setInterval(function(){placeBox();if($r('lsDeleted'))setInterval(refreshDeleted,60000)},1000);
  setTimeout(function(){clearInterval(_t)},120000);
  var _del=document.addEventListener;
@@ -6309,6 +6310,7 @@ window.pxDuplicate=async function(hash,projectId){
   var box=pipWin.document.createElement('div');box.id='pxBox';pipWin.document.body.appendChild(box);
   pipWin.addEventListener('pagehide',function(){pipWin=null;if(pipTimer)clearInterval(pipTimer);pipTimer=null});
   paint();pipTimer=setInterval(paint,60000);
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')setTimeout(paint,0)});
  }
  function showButton(tries){
   var b=$p('mnPop');
