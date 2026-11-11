@@ -588,8 +588,8 @@ begin
       'maintenance_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='maintenance' and record_date>=start_date and record_date<end_date));
     when 'real_estate' then business_metrics:=jsonb_build_object(
       'kind','property',
-      'rent_due',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='rent_due' and record_date>=start_date and record_date<end_date),
-      'rent_received',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='rent_received' and record_date>=start_date and record_date<end_date),
+      'rent_due',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key in ('tenancies','schedule') and record_type='rent_due' and record_date>=start_date and record_date<end_date),
+      'rent_received',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key in ('tenancies','schedule') and record_type='rent_received' and record_date>=start_date and record_date<end_date),
       'property_maintenance',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='tenancies' and record_type='property_maintenance' and record_date>=start_date and record_date<end_date));
     when 'transport' then business_metrics:=jsonb_build_object(
       'kind','transport',
@@ -606,6 +606,8 @@ begin
       'kind','education',
       'fees_charged',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='fees' and record_type='fee_charged' and record_date>=start_date and record_date<end_date),
       'fees_collected',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='fees' and record_type='fee_collected' and record_date>=start_date and record_date<end_date),
+      'scheduled_fee_due',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='schedule' and record_type='fee_due' and record_date>=start_date and record_date<end_date),
+      'scheduled_fee_paid',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='schedule' and record_type='fee_payment' and record_date>=start_date and record_date<end_date),
       'payroll_cost',(select coalesce(sum(amount),0) from public.business_project_records where workspace_id=p_workspace and project_id=p_project and module_key='payroll' and record_type='payroll' and record_date>=start_date and record_date<end_date));
     when 'ecommerce' then business_metrics:=jsonb_build_object(
       'kind','ecommerce',
@@ -652,10 +654,10 @@ CREATE OR REPLACE FUNCTION public.business_add_project_record(p_workspace uuid, 
  SET search_path TO 'public'
 AS $function$
 declare
-  pid uuid; cur text; mods text[]; allowed_types text[]; record_kind text;
+  pid uuid; cur text; mods text[]; allowed_types text[]; record_kind text; business_code text;
 begin
   if not public.can_edit(p_workspace) then raise exception 'You cannot edit this business project.'; end if;
-  select bp.id,bp.currency,bt.modules into pid,cur,mods
+  select bp.id,bp.currency,bt.modules,bp.business_type into pid,cur,mods,business_code
   from public.business_projects bp join public.business_types bt on bt.code=bp.business_type
   where bp.id=p_project and bp.workspace_id=p_workspace;
   if pid is null then raise exception 'Choose a valid business project.'; end if;
@@ -689,6 +691,7 @@ begin
     when 'deposits' then array['deposit_received','deposit_refunded','deposit_released']
     when 'cash' then array['cash_opening','cash_closing','cash_variance']
     when 'payment_webhooks' then array['payment_received','payment_refunded','payment_failed']
+    when 'schedule' then case business_code when 'real_estate' then array['rent_due','rent_received','rent_adjustment'] when 'education' then array['fee_due','fee_payment','fee_adjustment'] else array[]::text[] end
     else array[]::text[]
   end;
   if not (record_kind=any(allowed_types)) then
@@ -709,7 +712,7 @@ begin
   return pid;
 end;
 $function$
-
+;
 
 CREATE OR REPLACE FUNCTION public.business_project_inventory_summary(p_workspace uuid, p_project uuid)
  RETURNS TABLE(item text, quantity_in numeric, quantity_out numeric, quantity_adjusted numeric, quantity_on_hand numeric, average_unit_cost numeric, estimated_stock_value numeric)
