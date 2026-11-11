@@ -2324,12 +2324,12 @@ async function sendTyped(){
   if(!q&&!pendingDoc) return;
   var gen=q.match(/^\/general(?:\s+([\s\S]*))?$/i);
   if(gen){q=(gen[1]||'').trim();if(!q){input.value='';add('Type your message after /general, for example: /general what is a savings box loan?','sys');return}}
-  input.value='';
   if(pendingDoc){
-    var d=pendingDoc;clearAttach();
-    q=q||'Summarize this document.';
-    await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+q,'📄 '+d.name+'\n'+q);
-  } else await turn(q);
+    var d=pendingDoc, question=q||'Summarize this document.';
+    input.value='';
+    var result=await turn('Document "'+d.name+'":\n'+d.text+'\n\nQuestion: '+question,'📄 '+d.name+'\n'+question);
+    if(result){clearAttach()}else{input.value=question;showAttach('doc',null,d.name)}
+  } else {input.value='';await turn(q)}
 }
 $('send').onclick=function(e){if(e){e.preventDefault();e.stopPropagation()}sendTyped().catch(function(err){console.error('Pelex send handler failed',err);add('Pelex could not send that message: '+((err&&err.message)||'Please try again.'),'sys')})};
 input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendTyped()}});
@@ -2476,40 +2476,35 @@ function clearAttach(){attach.classList.remove('multi');pendingImgs=[];pendingDo
 $('attachX').onclick=clearAttach;
 async function sendImage(){
   var datas=pendingImgs.slice(),typed=input.value.trim();
+  if(!datas.length)return;
   var q=typed||(datas.length>1?'Describe these images and explain what matters in them.':'Describe this image and explain what matters in it.');
-  /* ANY command with a picture: the picture is edited to match the command (for example /billboard turns it into a billboard).
-     Commands that analyse a file keep the analysis path. */
   var ANALYSE_CMDS=['data','analyze','analyse','csv','summarize','summary','tldr','translate','explain','define','wiki','read','review','debug','code','sql','regex','explainimage','describe','ocr','extract'];
   var cmdM=typed.match(/^\/([a-zA-Z][a-zA-Z0-9_-]{0,30})(?:\s+([\s\S]*))?$/);
   var cmdName=cmdM?cmdM[1].toLowerCase():'';
   if(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0){
     q='Apply the '+cmdName+' command to this image, producing the picture the command asks for.'+(cmdM[2]?' Details: '+cmdM[2].trim():'');
   }
-  datas.forEach(function(d){thumb(d).then(function(t){libAdd({name:q.length>40?q.slice(0,40)+'...':q,thumb:t,at:Date.now()})})});
   var intent=(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)||/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
   var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
   var userNode=add(q,'me',datas),w=add('Looking at the image...','sys');
+  stepWait(w);
   try{
-    var ready=await ensureChat(q);
-    if(!ready||!(await saveMsg('user',imageLabel))){
-      w.remove();if(userNode&&userNode.remove)userNode.remove();
-      input.value=typed;return;
-    }
-  }catch(saveError){
-    w.remove();if(userNode&&userNode.remove)userNode.remove();
-    input.value=typed;chatFail('image message could not be saved',saveError);return;
+    /* Chat-history persistence is deliberately non-blocking. It must never decide whether an image is sent. */
+    (async function(){try{var ready=await ensureChat(q);if(ready)await saveMsg('user',imageLabel)}catch(e){console.warn('Pelex: image history save failed; continuing',e)}})();
+    var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
+    if(AGENT_URL.indexOf('PASTE_')===0)throw new Error('The Pelex image service is not connected. Please try again shortly.');
+    var result=await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}));
+    w.remove();
+    (async function(){try{if(curChatId)await saveMsg('assistant',result)}catch(e){console.warn('Pelex: image reply history save failed',e)}})();
+    add(result);input.value='';clearAttach();
+    try{window.notifyReply&&window.notifyReply(result)}catch(e){}
+  }catch(err){
+    w.remove();
+    /* Keep both the selected image(s) and the typed instruction available for a retry. */
+    input.value=typed;
+    if(userNode&&userNode.remove)userNode.remove();
+    await showErr(err);
   }
-  input.value='';clearAttach();stepWait(w);
-  try{
-    var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,500)})):datas;
-    var r;
-    if(AGENT_URL.indexOf('PASTE_')!==0){
-      try{r={text:await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}))}}
-      catch(e1){if(!(e1&&(e1.backend||e1.name==='TypeError')))throw e1;r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
-    }else{r=await post(NETLIFY_FN_BASE+'/.netlify/functions/vision',{images:sendDatas,prompt:q})}
-    w.remove();await saveMsg('assistant',r.text);add(r.text);try{window.notifyReply&&window.notifyReply(r.text)}catch(e2){}
-  }
-  catch(err){w.remove();await showErr(err)}
 }
 $('file').onchange=async function(e){
   var fs=[].slice.call((e.target&&e.target.files)||[]);try{e.target.value=''}catch(x){}if(!fs.length)return;
