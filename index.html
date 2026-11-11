@@ -6195,7 +6195,9 @@ function pxCommandHelp(){
   var btn=document.createElement('button');btn.type='button';btn.className='btn alt';btn.textContent='Open result: '+titleOf(t);
   btn.onclick=function(){window.pxOpenResult(t)};
   row.appendChild(btn);container.appendChild(row);
-  if(!seen){try{localStorage.setItem(key,'1')}catch(e){};setTimeout(function(){window.pxOpenResult(t)},300)}
+  // Keep result panels user-initiated. Rendering a newly delivered card
+  // must not open a panel or interrupt the user's current chat.
+  if(!seen){try{localStorage.setItem(key,'1')}catch(e){}}
  };
 })();
 </script>
