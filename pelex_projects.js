@@ -100,10 +100,11 @@
   msg('Selected project. Data entry and financial summaries will now use this project only.');
  }
  function moduleLabel(m){return ({pos_sales:'POS sales',sales:'Sales',inventory:'Inventory',agreements:'Loan agreements',schedule:'Repayment schedules',collections:'Collections',deposits:'Deposits',contributions:'Contributions',payouts:'Payouts',receivables:'Receivables',payables:'Payables',bookings:'Bookings',maintenance:'Maintenance',tenancies:'Tenancies',trips:'Trips',expenses:'Expenses',payroll:'Payroll',fees:'Fees',orders:'Orders',payment_webhooks:'Payment events',production_batches:'Production batches',costing:'Costing',seasons:'Seasons',deliveries:'Deliveries',cash:'Cash operations',shifts:'Shifts',expiry:'Expiry tracking',projects:'Work projects',ledger:'Ledger',reports:'Reports'})[m]||m.replace(/_/g,' ').replace(/\\b\\w/g,function(x){return x.toUpperCase()})}
- function recordTypes(module){
+ function recordTypes(module,businessType){
   return ({
    sales:['sale','refund','discount'],pos_sales:['pos_sale','pos_refund','cash_variance'],
    collections:['collection_received','collection_due','collection_overdue'],deposits:['deposit_received','deposit_refunded','deposit_released'],
+   schedule:businessType==='real_estate'?['rent_due','rent_received','rent_adjustment']:businessType==='education'?['fee_due','fee_payment','fee_adjustment']:[],
    cash:['cash_opening','cash_closing','cash_variance'],payment_webhooks:['payment_received','payment_refunded','payment_failed'],
    inventory:['stock_in','stock_out','stock_adjustment','stock_waste'],orders:['order','order_refund','order_fulfilment'],
    bookings:['booking','booking_payment','cancellation'],payroll:['payroll','payroll_tax','staff_advance'],
@@ -119,10 +120,10 @@
  function renderOperations(){
   var box=$('pxProjectOperations');if(!box)return;
   var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,mods=t&&t.modules||[];
-  var dataMods=mods.filter(function(m){return ['ledger','reports','agreements','schedule'].indexOf(m)<0});
+  var dataMods=mods.filter(function(m){return ['ledger','reports','agreements'].indexOf(m)<0&&!(m==='schedule'&&p.business_type==='finance')});
   if(!p||!dataMods.length){box.style.display='none';return}
   box.style.display='';$('pxOpsModule').innerHTML=dataMods.map(function(m){return '<option value="'+esc(m)+'">'+esc(moduleLabel(m))+'</option>'}).join('');
-  function setTypes(){var a=recordTypes($('pxOpsModule').value);$('pxOpsRecordType').innerHTML=a.map(function(x){return '<option value="'+esc(x)+'">'+esc(x.replace(/_/g,' '))+'</option>'}).join('')}
+  function setTypes(){var a=recordTypes($('pxOpsModule').value,p.business_type);$('pxOpsRecordType').innerHTML=a.map(function(x){return '<option value="'+esc(x)+'">'+esc(x.replace(/_/g,' '))+'</option>'}).join('')}
   setTypes();$('pxOpsModule').onchange=function(){setTypes();loadOpsRecords()};
   $('pxOpsMonth').value=($('pxMonthPick')&&$('pxMonthPick').value)||new Date().toISOString().slice(0,7);$('pxOpsMonth').onchange=loadOpsRecords;
   $('pxOpsDate').value=new Date().toISOString().slice(0,10);
