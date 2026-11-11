@@ -179,6 +179,7 @@
   if(!code||!types.some(function(t){return t.code===code})){msg('Choose a business type from the list before saving.',true);return}
   if(!name){msg('Enter a name for this business project.',true);return}
   if(!/^[A-Z]{3}$/.test(cur)){msg('Enter a valid three-letter currency code.',true);return}
+  var cycleField=$('pxpf_cycle');if(cycleField)cycleField.value=cycle;
   var profile={};$('pxProjectFields').querySelectorAll('[data-px-profile]').forEach(function(el){
    var key=el.getAttribute('data-px-profile'),val=el.value;
    profile[key]=el.type==='number'?(val===''?null:Number(val)):val;
@@ -190,7 +191,9 @@
    var payload={p_workspace:ws(),p_name:name,p_business_type:code,p_currency:cur,
     p_capital_month:capMonth,p_capital_year:capYear,p_spent:spent,
     p_spend_period:spendPeriod,p_loan:loan,p_reporting_cycle:cycle,p_profile:profile};
-   var r=editingId?await window.sb.rpc('update_business_project_v2',Object.assign({p_project:editingId},payload)):await window.sb.rpc('save_setup_project_v2',payload);
+   /* One validated RPC handles both creation and edits. It verifies workspace
+      membership, prevents duplicate names, and locks type/currency once records exist. */
+   var r=await window.sb.rpc('save_setup_project_v3',Object.assign({p_project_id:editingId||null},payload));
    if(r.error)throw r.error;
    selected=r.data;try{localStorage.setItem('px_project_'+ws(),selected)}catch(e){}
    msg('Project setup saved. Its data, currency, reporting and calculations are independent.');
