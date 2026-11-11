@@ -5,7 +5,7 @@
  */
 (function(){
  'use strict';
- var mounted=false,types=[],projects=[],selected='';
+ var mounted=false,types=[],projects=[],selected='',editingId=null;
  function $(id){return document.getElementById(id)}
  function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -35,6 +35,7 @@
   mounted=true;return true;
  }
  function reset(){
+  editingId=null;
   $('pxProjectFormTitle').textContent='Create a business project';
   $('pxProjectName').value='';$('pxProjectType').value=types[0]?types[0].code:'general';
   $('pxProjectCurrency').value='NGN';$('pxProjectCycle').value=(type($('pxProjectType').value)||{}).default_cycle||'monthly';
@@ -100,6 +101,8 @@
  function recordTypes(module){
   return ({
    sales:['sale','refund','discount'],pos_sales:['pos_sale','pos_refund','cash_variance'],
+   collections:['collection_received','collection_due','collection_overdue'],deposits:['deposit_received','deposit_refunded','deposit_released'],
+   cash:['cash_opening','cash_closing','cash_variance'],payment_webhooks:['payment_received','payment_refunded','payment_failed'],
    inventory:['stock_in','stock_out','stock_adjustment','stock_waste'],orders:['order','order_refund','order_fulfilment'],
    bookings:['booking','booking_payment','cancellation'],payroll:['payroll','payroll_tax','staff_advance'],
    fees:['fee_charged','fee_collected','fee_waiver'],trips:['trip','fuel','vehicle_maintenance'],
@@ -114,7 +117,7 @@
  function renderOperations(){
   var box=$('pxProjectOperations');if(!box)return;
   var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,mods=t&&t.modules||[];
-  var dataMods=mods.filter(function(m){return ['ledger','reports','agreements','schedule','collections','deposits','cash','payment_webhooks'].indexOf(m)<0});
+  var dataMods=mods.filter(function(m){return ['ledger','reports','agreements','schedule'].indexOf(m)<0});
   if(!p||!dataMods.length){box.style.display='none';return}
   box.style.display='';$('pxOpsModule').innerHTML=dataMods.map(function(m){return '<option value="'+esc(m)+'">'+esc(moduleLabel(m))+'</option>'}).join('');
   function setTypes(){var a=recordTypes($('pxOpsModule').value);$('pxOpsRecordType').innerHTML=a.map(function(x){return '<option value="'+esc(x)+'">'+esc(x.replace(/_/g,' '))+'</option>'}).join('')}
@@ -124,10 +127,12 @@
  }
  async function loadOpsRecords(){
   if(!selected||!$('pxOpsModule'))return;
-  var r=await window.sb.rpc('business_list_project_records',{p_workspace:ws(),p_project:selected,p_module:$('pxOpsModule').value,p_from:null,p_to:null});
+  var selectedMonth=($('pxMonthPick')&&$('pxMonthPick').value)||new Date().toISOString().slice(0,7),monthParts=/^(\d{4})-(0[1-9]|1[0-2])$/.exec(selectedMonth),from=monthParts?selectedMonth+'-01':null,to=null;
+  if(monthParts){var y=Number(monthParts[1]),m=Number(monthParts[2]);to=m===12?String(y+1).padStart(4,'0')+'-01-01':monthParts[1]+'-'+String(m+1).padStart(2,'0')+'-01';var d=new Date(to+'T00:00:00');d.setDate(d.getDate()-1);to=d.toISOString().slice(0,10)}
+  var r=await window.sb.rpc('business_list_project_records',{p_workspace:ws(),p_project:selected,p_module:$('pxOpsModule').value,p_from:from,p_to:to});
   if(r.error){$('pxOpsMsg').textContent='Could not load records: '+r.error.message;return}
   var rows=r.data||[];
-  var sm=await window.sb.rpc('business_project_module_summary',{p_workspace:ws(),p_project:selected,p_from:null,p_to:null});
+  var sm=await window.sb.rpc('business_project_module_summary',{p_workspace:ws(),p_project:selected,p_from:from,p_to:to});
   if(sm.error){$('pxOpsMsg').textContent='Records loaded, but module totals could not be calculated: '+sm.error.message;return}
   var module=$('pxOpsModule').value,totals=(sm.data||[]).filter(function(x){return x.module_key===module});
   var cur=(projects.find(function(p){return p.id===selected})||{}).currency;
@@ -155,7 +160,7 @@
  }
  function edit(id){
   var p=projects.find(function(x){return x.id===id});if(!p)return;
-  select(id);
+  select(id);editingId=id;
   $('pxProjectFormTitle').textContent='Update '+p.name;
   $('pxProjectName').value=p.name;$('pxProjectType').value=p.business_type;
   $('pxProjectCurrency').value=p.currency;$('pxProjectCycle').value=p.reporting_cycle||'monthly';
@@ -175,13 +180,12 @@
   });
   var capMonth=Number(profile.startup_capital_month||0),capYear=Number(profile.startup_capital_year||0);
   var spent=Number(profile.spend_amount||0),spendPeriod=profile.spend_period||'month',loan=Number(profile.loan_amount||0);
-  var b=$('pxProjectSave');b.disabled=true;msg('Saving independent project setup…');
+  var b=$('pxProjectSave');b.disabled=true;msg(editingId?'Updating selected business project…':'Saving independent project setup…');
   try{
-   var r=await window.sb.rpc('save_setup_project_v2',{
-    p_workspace:ws(),p_name:name,p_business_type:code,p_currency:cur,
+   var payload={p_workspace:ws(),p_name:name,p_business_type:code,p_currency:cur,
     p_capital_month:capMonth,p_capital_year:capYear,p_spent:spent,
-    p_spend_period:spendPeriod,p_loan:loan,p_reporting_cycle:cycle,p_profile:profile
-   });
+    p_spend_period:spendPeriod,p_loan:loan,p_reporting_cycle:cycle,p_profile:profile};
+   var r=editingId?await window.sb.rpc('update_business_project_v2',Object.assign({p_project:editingId},payload)):await window.sb.rpc('save_setup_project_v2',payload);
    if(r.error)throw r.error;
    selected=r.data;try{localStorage.setItem('px_project_'+ws(),selected)}catch(e){}
    msg('Project setup saved. Its data, currency, reporting and calculations are independent.');
@@ -198,8 +202,8 @@
   try{if(!types.length)await loadTypes();await loadProjects()}catch(e){msg('Could not load project setup: '+(e.message||e),true)}
  }
  var oldGo=window.go;
- if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business')setTimeout(start,250)};
+ if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business'||v==='business-projects')setTimeout(start,250)};
  window.addEventListener('load',function(){setTimeout(start,1500)});
  setInterval(function(){if(!mounted&&$('lsWrap')&&!$('bWork')?.hidden)start()},2000);
- window.pxBusinessProjects={reload:start,select:select};
+ window.pxBusinessProjects={reload:start,select:select,refreshOperations:loadOpsRecords};
 })();
