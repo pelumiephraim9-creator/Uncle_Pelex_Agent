@@ -2363,6 +2363,7 @@ async function listenRec(){
   recording.onstop=async function(){
     clearInterval(timer);$('mic').classList.remove('recording');
     if(ptt&&Date.now()-startedAt<400){ptt=false;releaseSoon();return}
+    if(!heard&&!an&&Date.now()-startedAt>=400)heard=true; /* No analyser on this phone: submit the captured clip instead of silently discarding it. */
     if(!heard){if(live){silent++;if(vpref('handsfree',true))listen();else releaseSoon()}else releaseSoon();return}
     silent=0;ptt=false;
     var actualMime=recording.mimeType||mime;
@@ -2395,7 +2396,7 @@ async function handleAudio(blob,mime){
       add(r.text,'me');add('Talk later! I am here whenever you need me.');busy=false;setLive(false);return}
     var reply=await turn(r.text);busy=false;
     if(reply&&live){await speak(reply)}
-  }catch(e){note.remove();await showErr(e)}
+  }catch(e){if(note&&note.remove)note.remove();add('Voice transcription failed: '+((e&&e.message)||'The speech service did not return a transcript. Please try again.'),'sys')}
   busy=false;
   if(live&&vpref('handsfree',true)) listen();else releaseSoon();
 }
