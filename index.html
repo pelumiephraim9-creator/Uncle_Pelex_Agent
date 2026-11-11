@@ -1393,7 +1393,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
  <div id="payOut" class="ilist"></div><div class="muted dnote" id="payMsg"></div></div>
 <div class="dcard"><h2>Upload data</h2>
   <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. CSV, XLSX, PDF, PNG or JPG, up to 10 MB each. Pelex detects the type, and nothing is saved until you confirm it.</p>
-  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xls,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.heic,.txt,.doc,.docx,.json,.md" hidden><span id="upLabel">Tap to choose a file</span></label>
+  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.xls,.xlsx,.pdf,.png,.jpg,.jpeg,.webp" hidden><span id="upLabel">Tap to choose a file</span></label>
   <div id="upReview" class="ilist" hidden></div>
   <div id="upCur" class="ilist" hidden></div>
   <div class="prow" id="upActs" hidden style="margin-top:10px"><button class="btn" id="upConfirm" type="button">Confirm and save</button><button class="btn alt" id="upCancel" type="button">Cancel</button></div>
@@ -4885,7 +4885,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var cur=parsed.currencies||[],sample=parsed.rows.slice(0,6);
   $w('upReview').hidden=false;
   $w('upReview').innerHTML='<div class="irow"><b>File read successfully:</b> '+esc(file.name)+'</div><div class="irow"><b>Rows recognised:</b> '+parsed.rows.length+' · <b>Skipped:</b> '+parsed.skipped+'</div>'+
-   (parsed.sheetName?'<div class="irow"><b>Worksheets:</b> '+esc((parsed.sheetNames||[]).join(', '))+'</div>':'')+
+   (parsed.sheetNames&&parsed.sheetNames.length?'<div class="irow"><b>Worksheets:</b> '+esc(parsed.sheetNames.join(', '))+'</div>':'')+
    '<div class="irow"><b>Columns found:</b> '+esc((parsed.headers||[]).join(', '))+'</div>'+
    (sample.length?'<div style="overflow-x:auto"><table class="ls-table"><tr><th>Date</th><th>Type</th><th>Party / item</th><th>Amount</th><th>Category</th></tr>'+sample.map(function(x){return '<tr><td>'+esc(x.date)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.party||'—')+'</td><td>'+esc(x.amount)+'</td><td>'+esc(x.category||'—')+'</td></tr>'}).join('')+'</table></div>':'<div class="irow">No usable transaction rows found. Check that your file has date and total/amount columns. If the file is a sales sheet, include product/item, quantity and total columns.</div>')+
    '<div class="muted dnote">Nothing is saved until you press Confirm and save.</div>';
@@ -5361,7 +5361,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
   $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
   b.onclick=readDoc;
-  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&(/^image\//.test(f.type)||/\.(png|jpe?g)$/i.test(f.name)||/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)))});
+  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&(/^image\/(png|jpeg|webp)$/.test(f.type)||/\.(png|jpe?g|webp)$/i.test(f.name)||/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)))});
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
  setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
