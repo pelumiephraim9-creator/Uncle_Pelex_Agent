@@ -1217,6 +1217,7 @@ main{min-height:0;height:100%;overflow:hidden}
 .msg.me.imgme .me-pill{display:block;background:linear-gradient(150deg,#142b52,#24457f);color:#fff;border-radius:22px;padding:14px 18px;box-shadow:0 14px 26px -18px rgba(11,27,74,.7);margin:0}
 .msg.me.imgme .msgactions{justify-content:flex-end;margin-top:8px}
 .msg.me.imgme .msgactions button{background:#203b65!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important}
+#setupCard{display:none!important}
 </style>
 </head>
 <body>
@@ -5727,37 +5728,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
 
  async function saveSetup(){
-  var t=typeOf($x('stType').value)||typeOf('general');
-  var profile={};var bad=null;
-  (t.fields||[]).forEach(function(f){
-   var el=$x('sf_'+f.key);var raw=el?el.value:'';
-   if(f.type==='number'){
-    if(raw===''){if(!f.optional)bad=bad||f.label;profile[f.key]=null;return}
-    var n=parseFloat(raw);if(isNaN(n)||n<0){bad=bad||f.label;return}
-    profile[f.key]=n;
-   }else profile[f.key]=raw;
-  });
-  if(bad){$x('stMsg').textContent='Please fill in: '+bad;return}
-  var rateNum=profile.rate==null?0:profile.rate;
-  var nextCurrency=($x('stCur').value||'NGN').trim().toUpperCase().slice(0,3);
-  if(SETTINGS.currency&&nextCurrency!==String(SETTINGS.currency).toUpperCase()){
-   var used=await sb.from('ledger_entries').select('id',{count:'exact',head:true}).eq('workspace_id',ws());
-   if(used.error){$x('stMsg').textContent='Could not verify existing transactions before changing currency: '+errT(used.error);return}
-   if(Number(used.count||0)>0){$x('stMsg').textContent='Currency cannot be changed after transactions have been recorded. Create a separate project for another currency.';return}
-  }
-  var row={workspace_id:ws(),business_type:$x('stType').value,currency:nextCurrency,
-    default_cycle:profile.cycle||SETTINGS.default_cycle||'monthly',
-    default_rate:rateNum/100,rate_basis:profile.rate_basis||'per_cycle',default_method:profile.method||'none',
-    deposit_treatment:profile.deposit_treatment||'credited',
-    startup_capital_month:profile.startup_capital_month||0,startup_capital_year:profile.startup_capital_year||0,
-    profile:profile,updated_at:new Date().toISOString()};
-  var r=await sb.from('workspace_settings').upsert(row,{onConflict:'workspace_id'});
-  $x('stMsg').textContent=r.error?('Not saved: '+errT(r.error)):'Saved. Pelex now uses these terms.';
-  if(!r.error){
-   var fig=await sb.rpc('save_setup_figures',{p_workspace:ws(),p_capital_month:(profile.startup_capital_month===undefined?null:profile.startup_capital_month),p_capital_year:(profile.startup_capital_year===undefined?null:profile.startup_capital_year),p_spent:(profile.spend_amount===undefined?null:profile.spend_amount),p_spend_period:(profile.spend_period||'month'),p_loan:(profile.loan_amount===undefined?null:profile.loan_amount)});
-   if(fig.error)$x('stMsg').textContent='Saved, but the figures did not reach the analysis: '+errT(fig.error);
-   SETTINGS=Object.assign({},SETTINGS,row);renderSetup();renderAgreements();if(window.__lsLoad)window.__lsLoad();
-  }
+  var n=$x('stMsg');if(n)n.textContent='Business setup is now managed under Projects. Select a project there to create or update its settings.';
  }
 
  async function renderAgreements(){
