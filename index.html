@@ -6254,7 +6254,7 @@ window.pxDuplicate=async function(hash){
  });
  function placeBox(){
   if($r('lsDeleted'))return;
-  var cards=document.querySelectorAll('#lsWrap .dcard');
+  var cards=document.querySelectorAll('#pxBusinessDataHost .dcard');
   for(var i=0;i<cards.length;i++){var t=(cards[i].querySelector('h2')||{}).textContent||'';
     if(t==='Data entry'){var d=document.createElement('div');d.id='lsDeleted';cards[i].appendChild(d);refreshDeleted();return}}
  }
