@@ -2114,7 +2114,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
    var y=el('pxTrYear'),old=y.value;
    y.innerHTML='<option value="">All years</option>'+years.map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>'}).join('');
    if(years.indexOf(old)>=0)y.value=old;
-   render();message(rows.length+' transactions loaded from Supabase.');
+   render();message(rows.length+' transactions loaded from Supabase.');if(window.__pxRegisterReady)window.__pxRegisterReady();
   }catch(e){message('Could not load transactions: '+(e.message||e),true);el('pxTrRows').innerHTML='<tr><td colspan="7">The register could not be loaded. Check your workspace access and try refresh.</td></tr>'}
   finally{busy=false}
  }
@@ -2201,7 +2201,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
    var d=s.data||{},cur=d.currency||'NGN';
    $('pxMonthCards').innerHTML=[
     ['Opening cash',d.opening_startup],['Cash received',d.month_in],['Cash paid',d.month_out],
-    ['Closing cash',d.month_closing],['Operating revenue',d.month_income===undefined?0:d.month_income],['Operating profit',d.month_profit]
+    ['Closing cash',d.month_closing],['Operating revenue',d.month_income===undefined?0:d.month_income],['Operating expenses',d.month_expenses===undefined?0:d.month_expenses],['Operating profit',d.month_profit]
    ].map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+x[0]+'</span></div>'}).join('');
    $('pxMonthNote').textContent='Monthly cash movements include capital, loan principal and savings movements. Operating profit excludes them. The project summary reports revenue and expenses from classifications stored in the ledger.';
    var y=Number(m.slice(0,4)),rows=await sb.rpc('project_months',{p_project:project});
@@ -2224,6 +2224,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
    '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
   dash.insertBefore(box,dash.firstChild);
   $('pxMonthPick').onchange=load;
+  document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')load()});
   var prev=window.__pxRegisterReady;
   window.__pxRegisterReady=load;
   setTimeout(load,300);
