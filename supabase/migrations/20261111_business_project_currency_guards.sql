@@ -32,7 +32,7 @@ begin
  if project_currency is null then raise exception 'The selected project does not belong to this workspace.'; end if;
  if tg_table_name='uploads' then
   if new.currency is not null and upper(new.currency)<>project_currency then
-   raise exception 'Uploaded files must use this project's reporting currency (%).',project_currency;
+   raise exception 'Uploaded files must use this project''s reporting currency (%).',project_currency;
   end if;
  end if;
  return new;
@@ -59,7 +59,7 @@ begin
  where bp.id=new.project_id and bp.workspace_id=new.workspace_id;
  if project_currency is null then raise exception 'The selected project does not belong to this workspace.'; end if;
  if upper(coalesce(new.currency,''))<>project_currency then
-  raise exception 'Operational records must use this project's reporting currency (%).',project_currency;
+  raise exception 'Operational records must use this project''s reporting currency (%).',project_currency;
  end if;
  if not (new.module_key=any(mods)) then raise exception 'The selected business type does not enable the % module.',new.module_key; end if;
  return new;
@@ -80,7 +80,7 @@ begin
  where id=new.project_id and workspace_id=new.workspace_id;
  if project_currency is null then raise exception 'The payment project does not belong to this workspace.'; end if;
  if upper(coalesce(new.currency,''))<>project_currency then
-  raise exception 'Payment records must use this project's reporting currency (%).',project_currency;
+  raise exception 'Payment records must use this project''s reporting currency (%).',project_currency;
  end if;
  return new;
 end;
