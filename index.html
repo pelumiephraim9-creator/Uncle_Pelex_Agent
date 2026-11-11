@@ -5331,12 +5331,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var f=$p('upFile').files[0];if(!f){$p('upMsg').textContent='Choose a document picture first.';return}
   if(!ready()){$p('upMsg').textContent='Sign in to read documents.';return}
   $p('upMsg').textContent='Reading the document...';
-  var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result))};r.onerror=rej;r.readAsDataURL(f)});
+  var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var u=String(r.result||'');var ext=(f.name.split('.').pop()||'').toLowerCase();var mime={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext];if(mime&&/^data:application\\/octet-stream;/i.test(u))u=u.replace(/^data:application\\/octet-stream;/i,'data:'+mime+';');res(u)};r.onerror=function(){rej(new Error('The selected file could not be opened on this device.'))};r.readAsDataURL(f)});
   var raw;
   try{raw=await askPublicAgent('Read this document',Object.assign({},agentMeta(),{images:[dataUrl],intent:'extract',__sid:'read-'+Date.now()}))}
   catch(e){$p('upMsg').textContent=(e&&!e.backend&&e.message)?e.message:'The document reader is not reachable right now.';return}
   var parsed=null;try{parsed=JSON.parse(String(raw).replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){}
-  if(!parsed||!Array.isArray(parsed.rows)){$p('upMsg').textContent='The document could not be read. Try a clearer picture.';return}
+  if(!parsed||!Array.isArray(parsed.rows)){$p('upMsg').textContent='The reader returned an invalid result. Please try again or use a smaller PDF/image.';return}
+  if(parsed.error){$p('upMsg').textContent=parsed.error;return}
+  if(!parsed.rows.length){$p('upMsg').textContent=parsed.notes||'The file was opened, but no transaction rows were detected. Try a sharper scan or a PDF with selectable text.';return}
   pendingDoc={file:f,type:parsed.document_type||'other',currency:parsed.currency||null,notes:parsed.notes||'',rows:parsed.rows};
   var box=$p('rvBox');if(!box){box=document.createElement('div');box.id='rvBox';box.className='ilist';$p('upMsg').parentNode.insertBefore(box,$p('upMsg'))}
   box.innerHTML='<div class="irow"><b>Detected:</b> '+esc(pendingDoc.type)+(pendingDoc.currency?' \u00b7 '+esc(pendingDoc.currency):'')+'</div>'+(pendingDoc.notes?'<div class="muted dnote">'+esc(pendingDoc.notes)+'</div>':'')+'<div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div>'+
@@ -5373,7 +5375,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
   $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
   b.onclick=readDoc;
-  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&(/^image\/(png|jpeg|webp)$/.test(f.type)||/\.(png|jpe?g|webp)$/i.test(f.name)||/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)));if(f&&!b.hidden)$p('upMsg').textContent='Tap “Read this document with Pelex” to extract the rows. Nothing is saved until you confirm.'});
+  fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&(/^image\/(png|jpeg|webp|heic|heif)$/.test(f.type)||/\.(png|jpe?g|webp|heic|heif)$/i.test(f.name)||/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)));if(f&&!b.hidden)$p('upMsg').textContent='Tap “Read this document with Pelex” to extract the rows. Nothing is saved until you confirm.'});
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
  setInterval(function(){if($p('alBox')&&!$p('bWork').hidden)loadAlerts()},60000);
