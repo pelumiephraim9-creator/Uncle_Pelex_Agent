@@ -77,10 +77,11 @@ test('editing legacy unclassified rows requires an explicit accounting classific
 });
 
 
-test('business setup prevents currency changes after ledger activity exists', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /Currency cannot be changed after transactions have been recorded/);
-  assert.match(html, /select\('id',\{count:'exact',head:true\}\)/);
+test('business project currency and type are locked after project activity exists', () => {
+  const migration = fs.readFileSync('supabase/migrations/20261111_business_project_configuration_guard.sql', 'utf8');
+  assert.match(migration, /Currency is locked after this project has records/);
+  assert.match(migration, /Business type is locked after this project has records/);
+  assert.match(migration, /business_project_records/);
 });
 
 test('business register loads complete transaction pages and supports month drill-down', () => {
@@ -93,10 +94,12 @@ test('business register loads complete transaction pages and supports month dril
 
 test('business dashboard defaults to a real project and keeps currencies separated', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /if\(!stored\)stored=projects\[0\]\.id/);
-  assert.match(html, /if\(stored!==saved\)localStorage\.setItem/);
-  assert.match(html, /stored!=='all'/);
-  assert.match(html, /currency cannot be changed after transactions have been recorded/i);
+  const manager = fs.readFileSync('pelex_projects.js', 'utf8');
+  assert.match(manager, /selected=projects\.some/);
+  assert.match(manager, /projects\[0\]&&projects\[0\]\.id/);
+  assert.match(manager, /px_project_/);
+  assert.match(html, /project==='all'/);
+  assert.match(html, /business_project_dashboard_summary/);
   assert.match(html, /receipts without an explicit accounting classification/i);
 });
 
