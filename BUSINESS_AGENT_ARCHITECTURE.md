@@ -48,6 +48,7 @@ The enabled modules are read from `public.business_types`; they are the source o
 - Online store / e-commerce
 - Farming and agriculture
 - Construction and building
+- Fashion and clothing retail
 
 The UI offers only modules enabled for the selected type. The database write function validates both the module and its allowed record types. Each type gets its enabled module breakdown; specialized metrics are calculated only when the required source records exist. Unknown costs must remain unknown, not silently become zero.
 
