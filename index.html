@@ -5460,7 +5460,13 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   });
   if(bad){$x('stMsg').textContent='Please fill in: '+bad;return}
   var rateNum=profile.rate==null?0:profile.rate;
-  var row={workspace_id:ws(),business_type:$x('stType').value,currency:($x('stCur').value||'NGN').toUpperCase().slice(0,3),
+  var nextCurrency=($x('stCur').value||'NGN').trim().toUpperCase().slice(0,3);
+  if(SETTINGS.currency&&nextCurrency!==String(SETTINGS.currency).toUpperCase()){
+   var used=await sb.from('ledger_entries').select('id',{count:'exact',head:true}).eq('workspace_id',ws());
+   if(used.error){$x('stMsg').textContent='Could not verify existing transactions before changing currency: '+errT(used.error);return}
+   if(Number(used.count||0)>0){$x('stMsg').textContent='Currency cannot be changed after transactions have been recorded. Create a separate project for another currency.';return}
+  }
+  var row={workspace_id:ws(),business_type:$x('stType').value,currency:nextCurrency,
     default_cycle:profile.cycle||SETTINGS.default_cycle||'monthly',
     default_rate:rateNum/100,rate_basis:profile.rate_basis||'per_cycle',default_method:profile.method||'none',
     deposit_treatment:profile.deposit_treatment||'credited',
