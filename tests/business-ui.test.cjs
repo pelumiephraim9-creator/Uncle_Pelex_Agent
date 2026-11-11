@@ -34,3 +34,21 @@ test('Business activity search and approval decision feedback are present', () =
 test('the add-on JavaScript parses', () => {
   assert.doesNotThrow(() => new vm.Script(source));
 });
+
+
+test('ambiguous invoices and transfer documents require an explicit money direction', () => {
+  const templates = source.slice(0, source.indexOf('function pxNum'));
+  for (const id of ['tax_invoice','commercial_invoice','proforma','simplified_invoice','till_receipt','supplier_invoice','credit_note','bank_transfer','delivery_note','general_document']) {
+    const row = templates.split('\\n').find(line => line.includes("id:'" + id + "'"));
+    assert.ok(row, 'template exists: ' + id);
+    assert.match(row, /direction:'unknown'/, id + ' must not be auto-classified as cash in/out');
+  }
+  assert.match(source, /Choose money in or money out/);
+});
+
+test('slip saving rejects unconfirmed direction, invalid date, and non-positive line amounts', () => {
+  assert.match(source, /type!=='receipt'&&type!=='expense'/);
+  assert.match(source, /Please confirm whether this document records money in or money out/);
+  assert.match(source, /Please enter a valid transaction date/);
+  assert.match(source, /Every saved line needs an amount above zero/);
+});
