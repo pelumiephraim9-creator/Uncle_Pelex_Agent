@@ -205,6 +205,13 @@
      behind authentication or workspace checks; explain the next required step. */
   if(!ensure())return;
   var user=window.curUser;
+  if(!user&&window.sb&&window.sb.auth&&window.sb.auth.getSession){
+   try{
+    var sessionResult=await window.sb.auth.getSession();
+    user=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.user;
+    if(user){window.curUser=user;if(typeof window.applyUser==='function')window.applyUser(user)}
+   }catch(authError){}
+  }
   if(!window.sb||!user){
    msg('Sign in to create and manage your business projects.');
    return;
@@ -228,8 +235,25 @@
   }finally{loading=false}
  }
  var oldGo=window.go;
- if(typeof oldGo==='function')window.go=function(v,t){oldGo(v,t);if(v==='business'||v==='business-projects')setTimeout(start,250)};
- window.addEventListener('load',function(){setTimeout(start,1500)});
- setInterval(function(){if($('bWork'))start()},2000);
+ if(typeof oldGo==='function')window.go=function(v,t){
+  oldGo(v,t);
+  if(v==='business'){
+   var work=$('bWork');
+   if(work){work.hidden=false;work.style.display=''}
+   setTimeout(start,80);
+  }else if(v!=='business-projects'){
+   var work=$('bWork');if(work)work.hidden=true;
+  }
+ };
+ var oldUserChange=window.onUserChange;
+ window.onUserChange=function(user){
+  if(typeof oldUserChange==='function')oldUserChange(user);
+  setTimeout(start,100);
+ };
+ window.addEventListener('load',function(){setTimeout(start,500)});
+ setInterval(function(){
+  var work=$('bWork');
+  if(work&&!work.hidden)start();
+ },1500);
  window.pxBusinessProjects={reload:start,select:select,refreshOperations:loadOpsRecords};
 })();
