@@ -92,7 +92,7 @@
   box.querySelectorAll('[data-px-select]').forEach(function(b){b.onclick=function(){select(b.getAttribute('data-px-select'))}});
   box.querySelectorAll('[data-px-edit]').forEach(function(b){b.onclick=function(){edit(b.getAttribute('data-px-edit'))}});
  }
- function syncModules(){var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,card=$('agreeCard');if(card){var enabled=!!(t&&t.modules&&t.modules.indexOf('agreements')>=0);card.hidden=!enabled;card.style.display=enabled?'':'none'}}
+ function syncModules(){var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,card=$('agreeCard');if(card){var enabled=!!(t&&t.modules&&t.modules.indexOf('agreements')>=0);card.hidden=!enabled;card.style.display=enabled?'':'none';var dataHost=$('pxBusinessDataHost');if(dataHost&&card.parentNode!==dataHost)dataHost.appendChild(card)}}
  function select(id){
   selected=id;try{localStorage.setItem('px_project_'+ws(),id)}catch(e){}
   syncModules();renderList();renderOperations();var p=$('pxTrProject');if(p){p.value=id;p.dispatchEvent(new Event('change',{bubbles:true}))}
