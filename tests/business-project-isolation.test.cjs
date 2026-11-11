@@ -56,3 +56,27 @@ test('uploads cannot import records into a different project from the source fil
  assert.match(ops,/pid is distinct from upload_project/);
  assert.match(index,/project_id:projectId/);
 });
+
+test('business type selector mounts before workspace setup and has a retry path',()=>{
+ assert.match(manager,/id="pxProjectType"/);
+ assert.match(manager,/Business types are ready\. Create or join a workspace/);
+ assert.match(manager,/pxTypeRetry/);
+ assert.match(manager,/async function loadTypes\(\)/);
+ assert.match(manager,/from\('business_types'\)/);
+});
+
+test('saved workspace reloads on Business view entry and after authentication changes',()=>{
+ assert.match(index,/function refreshBusinessWorkspace\(\)/);
+ assert.match(index,/if\(v==='business'\)setTimeout\(refreshBusinessWorkspace,0\)/);
+ assert.match(index,/if\(user\)setTimeout\(refreshBusinessWorkspace,100\)/);
+ assert.match(index,/Workspace created\.');refreshBusinessWorkspace\(\)/);
+ assert.match(index,/You joined the workspace\.');refreshBusinessWorkspace\(\)/);
+});
+
+test('financial dashboard always includes volume and both pie charts with explicit empty states',()=>{
+ for(const id of ['pxVolChart','pxTxnPie','pxOpsPie'])assert.match(index,new RegExp('id="'+id+'"'));
+ assert.match(index,/No business selected yet/);
+ assert.match(index,/window\.pxChart\(\$\('pxVolChart'\)/);
+ assert.match(index,/window\.pxPie\(\$\('pxTxnPie'\)/);
+ assert.match(index,/window\.pxPie\(\$\('pxOpsPie'\)/);
+});
