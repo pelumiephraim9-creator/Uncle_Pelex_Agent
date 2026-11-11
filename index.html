@@ -5634,7 +5634,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function ws(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
  async function show(){
   var out=$q('payOut');if(!out||!(window.sb&&window.curUser&&ws()))return;
-  var r=await sb.from('payment_connections').select('provider,webhook_token,currency,active').eq('workspace_id',ws());
+  var project='';try{project=localStorage.getItem('px_project_'+ws())||''}catch(e){}if(!project||project==='all'){out.textContent='Select a business project to manage its payment connections.';return}
+  var r=await sb.from('payment_connections').select('provider,webhook_token,currency,active').eq('workspace_id',ws()).eq('project_id',project);
   out.innerHTML='';
   (r.data||[]).forEach(function(c){var d=document.createElement('div');d.className='irow';
     var url=WEBHOOK_BASE+c.provider+'/'+c.webhook_token;
@@ -5645,12 +5646,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var msg=$q('payMsg');
   if(!(window.sb&&window.curUser)){msg.textContent='Sign in first.';return}
   if(!ws()){msg.textContent='Create or join a workspace first.';return}
-  var prov=$q('payProv').value;
-  var r=await sb.from('payment_connections').upsert({workspace_id:ws(),provider:prov,connected_by:curUser.id,currency:'NGN',active:true},{onConflict:'workspace_id'});
+  var prov=$q('payProv').value,project='';try{project=localStorage.getItem('px_project_'+ws())||''}catch(e){}if(!project||project==='all'){msg.textContent='Select a business project before connecting a payment provider.';return}
+  var pr=await sb.from('business_projects').select('currency').eq('workspace_id',ws()).eq('id',project).single();if(pr.error){msg.textContent='Could not load project currency: '+pr.error.message;return}
+  var r=await sb.from('payment_connections').upsert({workspace_id:ws(),project_id:project,provider:prov,connected_by:curUser.id,currency:pr.data.currency,active:true},{onConflict:'workspace_id,project_id,provider'});
   msg.textContent=r.error?('Could not connect: '+r.error.message):'Connected. Paste the webhook address into your '+(prov==='paystack'?'Paystack':'Flutterwave')+' dashboard, under the webhook settings.';
   show();
  }
  window.addEventListener('load',function(){var b=$q('payConnect');if(b)b.onclick=connect;setTimeout(show,800)});
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject')setTimeout(show,0)});
  var _go=go;go=function(v,t){_go(v,t);if(v==='business')setTimeout(show,300)};
 })();
 </script>
