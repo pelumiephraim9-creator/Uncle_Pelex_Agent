@@ -6659,16 +6659,49 @@ function pxCommandHelp(){
  function month(){return $('pxMonthPick')&&$('pxMonthPick').value||new Date().toISOString().slice(0,7)}
  var busy=false;
  async function load(){
-  if(busy||!window.sb||!window.curUser||!ws())return;
+  if(busy||!window.sb||!window.curUser)return;
   var project=$('pxTrProject')&&$('pxTrProject').value;
-  if(!project)return;
-  if(!project){$('pxMonthCards').innerHTML='';$('pxYearCards').innerHTML='';$('pxYearTable').innerHTML='';$('pxMonthNote').textContent='Create or select a business project to see its monthly and yearly financial summaries.';return}
+  if(!ws()){
+   if($('pxMonthNote'))$('pxMonthNote').textContent='Create or join a workspace, then create a business project to activate its dashboard.';
+   if($('pxMonthCards'))$('pxMonthCards').innerHTML='';
+   if($('pxYearCards'))$('pxYearCards').innerHTML='';
+   if($('pxYearTable'))$('pxYearTable').innerHTML='';
+   if($('pxVolChart'))$('pxVolChart').innerHTML='<div class="ls-empty">Volume chart will appear when a business is selected.</div>';
+   if($('pxTxnPie'))$('pxTxnPie').innerHTML='<div class="ls-empty">Transaction mix will appear when a business is selected.</div>';
+   if($('pxOpsPie'))$('pxOpsPie').innerHTML='<div class="ls-empty">Operational mix will appear when a business is selected.</div>';
+   return;
+  }
+  if(!project){
+   if($('pxMonthCards'))$('pxMonthCards').innerHTML='';
+   if($('pxYearCards'))$('pxYearCards').innerHTML='';
+   if($('pxYearTable'))$('pxYearTable').innerHTML='';
+   if($('pxMonthNote'))$('pxMonthNote').textContent='Create or select a business project in the setup card above. The dashboard charts and reports will appear here for that business only.';
+   if($('pxVolChart'))$('pxVolChart').innerHTML='<div class="ls-empty">No business selected yet.</div>';
+   if($('pxTxnPie'))$('pxTxnPie').innerHTML='<div class="ls-empty">No business selected yet.</div>';
+   if($('pxOpsPie'))$('pxOpsPie').innerHTML='<div class="ls-empty">No business selected yet.</div>';
+   return;
+  }
   busy=true;
   try{
    var m=month(),s=await sb.rpc('business_project_dashboard_summary',{p_workspace:ws(),p_project:project,p_month:m});
    if(s.error)throw s.error;
    var bundle=s.data||{},d=bundle.financial||{},cur=bundle.currency||d.currency||'NGN';
    var businessMetrics=bundle.business_metrics||{},opsSummary=bundle.operational_summary||[];
+   var monthStart=m+'-01',parts=m.split('-'),yy=Number(parts[0]),mm=Number(parts[1]);
+   var nextMonth=mm===12?String(yy+1)+'-01-01':parts[0]+'-'+String(mm+1).padStart(2,'0')+'-01';
+   var monthEnd=new Date(nextMonth+'T00:00:00');monthEnd.setDate(monthEnd.getDate()-1);
+   var monthEndText=monthEnd.toISOString().slice(0,10);
+   /* Charts use exact project-scoped RPCs, never workspace-wide ledger reads. */
+   var chartRows=await sb.rpc('business_list_transactions',{p_workspace:ws(),p_project:project,p_from:monthStart,p_to:monthEndText,p_search:null,p_limit:1000});
+   if(chartRows.error)throw chartRows.error;
+   var txRows=chartRows.data||[],daily={};
+   for(var day=1;day<=monthEnd.getDate();day++){var dayKey=m+'-'+String(day).padStart(2,'0');daily[dayKey]=0}
+   var txMix={};txRows.forEach(function(x){var k=String(x.entry_date).slice(0,10);if(Object.prototype.hasOwnProperty.call(daily,k))daily[k]++;var typ=String(x.entry_type||x.kind||'other').replace(/_/g,' ');txMix[typ]=(txMix[typ]||0)+1});
+   var dayKeys=Object.keys(daily);
+   if(window.pxChart)window.pxChart($('pxVolChart'),{id:'pxProjectVolume',title:'Transaction volume',labels:dayKeys.map(function(x){return x.slice(8)}),dates:dayKeys,values:dayKeys.map(function(x){return daily[x]}),fmt:function(v){return Number(v).toLocaleString()+' transactions'}});
+   if(window.pxPie)window.pxPie($('pxTxnPie'),txMix,{title:'Transaction mix'});
+   var opMix={};opsSummary.forEach(function(x){var k=String(x.module_key||'operations').replace(/_/g,' ');opMix[k]=(opMix[k]||0)+Number(x.record_count||0)});
+   if(window.pxPie)window.pxPie($('pxOpsPie'),opMix,{title:'Operational activity mix'});
    var bt=await sb.from('business_types').select('modules').eq('code',d.business_type).maybeSingle();
    if(bt.error)throw bt.error;
    var modules=(bt.data&&bt.data.modules)||[],cards=[
@@ -6703,7 +6736,7 @@ function pxCommandHelp(){
   var dash=$('bDash');if(!dash||$('pxFinancialSummary'))return;
   var box=document.createElement('section');box.className='dcard';box.id='pxFinancialSummary';
   box.innerHTML='<div class="dhead"><h2>Monthly and yearly financial summary</h2><input id="pxMonthPick" type="month" value="'+new Date().toISOString().slice(0,7)+'" class="inp" style="max-width:170px"></div>'+
-   '<div class="dnote">Figures are calculated only from the selected business project. Operational modules use the project’s business type and selected month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><p class="dnote" id="pxMonthNote"></p>'+
+   '<div class="dnote">All figures and visualisations below use only the selected business project and reporting month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><div class="two" style="margin-top:14px"><div class="an-card"><b>Transaction volume · selected month</b><div id="pxVolChart"></div></div><div class="an-card"><b>Transaction mix</b><div id="pxTxnPie"></div></div></div><div class="an-card" style="margin-top:12px"><b>Operational activity mix</b><div id="pxOpsPie"></div></div><p class="dnote" id="pxMonthNote"></p>'+
    '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
   dash.insertBefore(box,dash.firstChild);
   $('pxMonthPick').onchange=function(){var v=this.value,parts=/^([0-9]{4})-(0[1-9]|1[0-2])$/.exec(v);if(parts){if($('pxOpsMonth'))$('pxOpsMonth').value=v;if($('pxTrYear'))$('pxTrYear').value=parts[1];if($('pxTrMonth'))$('pxTrMonth').value=parts[2];window.__pxSyncingMonth=true;if($('pxTrYear'))$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));if($('pxTrMonth'))$('pxTrMonth').dispatchEvent(new Event('change',{bubbles:true}));window.__pxSyncingMonth=false;}load()};
