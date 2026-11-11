@@ -5904,7 +5904,8 @@ function parseSheet(text){
   if(await window.pxDuplicate(fh))return {ok:false,msg:name+': this file is already recorded.'};
   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,project_id:(localStorage.getItem('px_project_'+ws())||null),file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
-  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all')return {ok:false,msg:name+': choose a specific business project first.'};\n  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){return Object.assign({},x,{project_id:projectId})})});
+  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws())||null}catch(e){}if(!projectId||projectId==='all')return {ok:false,msg:name+': choose a specific business project first.'};
+  var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){return Object.assign({},x,{project_id:projectId})})});
   if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
   return {ok:true,msg:name+': '+rc.data+' rows added'+(p.skipped?' ('+p.skipped+' skipped: unclear date or amount)':'')};
  }
