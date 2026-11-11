@@ -2298,15 +2298,10 @@ async function turn(text,shown,img,el){
   var _ct=shown||text;
   /* Chat history is best-effort and must never block delivery to the AI agent.
      Supabase/network failures previously caused ordinary text messages to be rejected. */
-  (async function(){
-    try{
-      var ready=await ensureChat(_ct);
-      if(ready)await saveMsg('user',_ct);
-    }catch(saveError){console.warn('Pelex: user message history save failed; continuing chat',saveError)}
-  })();
+  var userHistorySave=queueHistorySave('user',_ct,_ct);
   try{
     var reply=await askAgentRetry(text);wait.remove();
-    (async function(){try{if(curChatId)await saveMsg('assistant',reply)}catch(saveError){console.warn('Pelex: assistant history save failed',saveError)}})();
+    queueHistorySave('assistant',reply,_ct);
     var node;
     var retryFn=function(){
       var w2=add('Thinking...','sys');stepWait(w2);
@@ -2492,7 +2487,7 @@ async function sendImage(){
   var userNode=add(q,'me',datas),waitNode=add('Looking at the image...','sys'),completed=false;
   stepWait(waitNode);
   /* Save history independently; never let it reset or block the visible conversation. */
-  (async function(){try{var ready=await ensureChat(q);if(ready)await saveMsg('user',imageLabel)}catch(e){console.warn('Pelex: image history save failed; continuing',e)}})();
+  var imageHistorySave=queueHistorySave('user',imageLabel,q);
   input.value='';
   try{
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
@@ -2502,7 +2497,7 @@ async function sendImage(){
     /* Mark the attachment as sent immediately after backend success, before rendering the reply. */
     clearAttach();
     waitNode.remove();
-    (async function(){try{if(curChatId)await saveMsg('assistant',result)}catch(e){console.warn('Pelex: image reply history save failed',e)}})();
+    queueHistorySave('assistant',result,q);
     try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
     try{window.notifyReply&&window.notifyReply(result)}catch(e){}
   }catch(err){
@@ -2888,6 +2883,18 @@ function chatFail(what,err){
   if(dbWarned)return;dbWarned=true;
   var m=String((err&&(err.message||err.details))||'unknown error');
   try{add('Your '+what+' ('+m+'). Please refresh Pelex and try again. If this continues, share this error with support.','sys')}catch(x){}
+}
+var pelexHistoryQueue=Promise.resolve();
+function queueHistorySave(role,content,chatTitle){
+  pelexHistoryQueue=pelexHistoryQueue.then(async function(){
+    if(!dbOk()||!window.histOn())return true;
+    if(!curChatId){
+      var ready=await ensureChat(chatTitle||content);
+      if(!ready||!curChatId)return false;
+    }
+    return await saveMsg(role,content);
+  }).catch(function(e){console.warn('Pelex: ordered chat persistence failed',e);return false});
+  return pelexHistoryQueue;
 }
 async function ensureChat(firstText){
   if(!dbOk()||!window.histOn())return true;
