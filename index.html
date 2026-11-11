@@ -5123,6 +5123,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'&&ready())setTimeout(loadWs,150)};
  window.addEventListener('load',function(){if(ready())setTimeout(loadWs,400)});
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject'&&ready())setTimeout(function(){loadNotes(ws())},0)});
 })();
 </script>
 <script>
