@@ -13,6 +13,7 @@
  function money(v,c){return esc(c||'NGN')+' '+Number(v||0).toLocaleString(undefined,{maximumFractionDigits:2})}
  function type(code){return types.find(function(x){return x.code===code})||types[0]}
  function ensure(){
+  var legacy=$('setupCard');if(legacy)legacy.hidden=true;
   var host=$('lsWrap');if(!host||$('pxProjectManager'))return !!$('pxProjectManager');
   var card=document.createElement('section');card.className='dcard';card.id='pxProjectManager';
   card.innerHTML='<div class="dhead"><h2>Projects · business setup</h2><span class="ttag">Each project is independent</span></div>'+
@@ -68,7 +69,7 @@
   var saved='';try{saved=localStorage.getItem('px_project_'+ws())||''}catch(e){}
   selected=projects.some(function(p){return p.id===saved})?saved:(projects[0]&&projects[0].id)||'';
   if(selected){try{localStorage.setItem('px_project_'+ws(),selected)}catch(e){}}
-  renderList();
+  syncModules();renderList();
   var picker=$('pxTrProject');
   if(picker&&projects.length){
    picker.value=selected;
@@ -88,9 +89,10 @@
   box.querySelectorAll('[data-px-select]').forEach(function(b){b.onclick=function(){select(b.getAttribute('data-px-select'))}});
   box.querySelectorAll('[data-px-edit]').forEach(function(b){b.onclick=function(){edit(b.getAttribute('data-px-edit'))}});
  }
+ function syncModules(){var p=projects.find(function(x){return x.id===selected}),t=p?type(p.business_type):null,card=$('agreeCard');if(card)card.hidden=!(t&&t.modules&&t.modules.indexOf('agreements')>=0)}
  function select(id){
   selected=id;try{localStorage.setItem('px_project_'+ws(),id)}catch(e){}
-  renderList();var p=$('pxTrProject');if(p){p.value=id;p.dispatchEvent(new Event('change',{bubbles:true}))}
+  syncModules();renderList();var p=$('pxTrProject');if(p){p.value=id;p.dispatchEvent(new Event('change',{bubbles:true}))}
   msg('Selected project. Data entry and financial summaries will now use this project only.');
  }
  function edit(id){
