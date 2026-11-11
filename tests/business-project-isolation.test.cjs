@@ -11,7 +11,7 @@ const ops = fs.readFileSync('supabase/migrations/20261111_business_project_opera
 
 test('project manager JavaScript parses and is loaded by the main frontend',()=>{
  assert.doesNotThrow(()=>new vm.Script(manager));
- assert.match(index,/<script src="\/pelex_projects\.js\?v=11"><\/script>/);
+ assert.match(index,/<script src="\/pelex_projects\.js\?v=12"><\/script>/);
 });
 
 test('project setup is dynamic for every configured business type',()=>{
