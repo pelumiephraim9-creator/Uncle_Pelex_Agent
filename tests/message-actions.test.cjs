@@ -94,3 +94,17 @@ test('General Agent archive scope and modal controls have no known runtime or la
   assert.match(html, /for="pBody"/);
   assert.match(html, /devShortcut/);
 });
+
+test('audited Pelex add-on loads and keeps its business records project-scoped', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const addon = fs.readFileSync('pelex_addons_runtime.js', 'utf8');
+  new vm.Script(addon);
+  assert.match(html, /<script src="\/pelex_addons_runtime\.js\?v=1"><\/script>/);
+  assert.match(addon, /window\.pxReadDocument=pxReadDocument/);
+  assert.match(addon, /window\.pxOpenSlipCapture/);
+  assert.match(addon, /p_project:projectId\(\)/);
+  assert.match(addon, /business_types/);
+  assert.match(addon, /\.eq\('project_id',projectId\(\)\)/);
+  assert.doesNotMatch(addon, /list_audit/);
+  assert.doesNotMatch(addon, /\.select\('id'\)\.eq\('workspace_id',wsId\(\)\)\.order\('created_at'/);
+});
