@@ -5,6 +5,12 @@
 const ADDON = '/pelex_addons.js';
 
 export async function onRequest(context) {
+  // Redirect only the Pages project hostname to the canonical public domain.
+  const requestUrl = new URL(context.request.url);
+  if (requestUrl.hostname === 'pelex-dev.pages.dev') {
+    const destination = new URL(requestUrl.pathname + requestUrl.search, 'https://pelex.tech');
+    return Response.redirect(destination.toString(), 301);
+  }
   const pathname = new URL(context.request.url).pathname;
   if (pathname !== '/' && pathname !== '/index.html') {
     return context.next();
