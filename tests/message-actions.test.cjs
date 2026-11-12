@@ -63,13 +63,34 @@ test('failed actions show feedback and restore button availability; share cancel
 });
 
 
-test('General Chat keeps the original ordered history persistence flow', () => {
+test('General Agent awaits user persistence and pins each turn to its original chat', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /var userHistorySave=queueHistorySave\('user',_ct,_ct\)/);
-  assert.match(html, /var historySaved=await queueHistorySave\('assistant',reply,_ct\)/);
-  assert.match(html, /function queueHistorySave\(role,content,chatTitle\)/);
-  assert.match(html, /function saveMsg\(role,content\)/);
-  assert.match(html, /insert\(\{chat_id:cid,user_id:curUser\.id,role:role,content:body\}\)/);
-  assert.match(html, /if\(!dbOk\(\)\|\|!window\.histOn\(\)\)return true/);
+  const turn = html.slice(html.indexOf('async function turn(text,shown,img,el){'), html.indexOf('async function sendTyped(){'));
+  assert.match(turn, /await authReadyPromise/);
+  assert.match(turn, /await queueHistorySave\('user',_ct,_ct,historyContext,userMessageId\)/);
+  assert.ok(turn.indexOf("await queueHistorySave('user'") < turn.indexOf('askAgentRetry(text)'));
+  assert.match(turn, /historyContext=\{chatId:curChatId,userId:curUser\.id/);
+  assert.match(html, /function queueHistorySave\(role,content,chatTitle,context,messageId,attachments\)/);
+  assert.match(html, /async function saveMsg\(role,content,context,messageId,attachments\)/);
+  assert.match(html, /insert\(\{id:id,chat_id:cid,user_id:uid,role:role,content:body\}\)/);
+  assert.match(html, /pelex_chat_pending_v2/);
+  assert.match(html, /async function flushPendingMessages/);
+  assert.doesNotMatch(html, /async async function flushPendingMessages/);
+  assert.match(html, /storeChatAttachments\(attachments,uid,cid,id\)/);
+  assert.match(html, /__pelexChatMessage:1/);
+  assert.match(html, /pendingChatFor\(id,curUser\.id\)/);
+  assert.match(html, /signedChatImages\(parsed\.attachments\)/);
+  assert.match(html, /await queueHistorySave\('user',imageLabel,q,historyContext,userMessageId,datas\)/);
+  assert.match(html, /select\('id,role,content,created_at'\)\.eq\('chat_id',id\)/);
   assert.match(html, /line\.replace\(\/\\\\\(\[\*_\x60~\]\)\/g,'\$1'\)/);
+});
+
+test('General Agent archive scope and modal controls have no known runtime or label defects', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.doesNotMatch(html, /loadNotes\(ws\(\)\)/);
+  assert.match(html, /loadNotes\(wsId\(\)\)/);
+  assert.match(html, /document\.querySelectorAll\('\.pvmodal'\)\.forEach/);
+  assert.match(html, /for="pSubj"/);
+  assert.match(html, /for="pBody"/);
+  assert.match(html, /devShortcut/);
 });
