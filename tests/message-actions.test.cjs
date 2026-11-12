@@ -66,8 +66,8 @@ test('failed actions show feedback and restore button availability; share cancel
 test('General Chat persists chat and message ownership and normalizes escaped Markdown', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   assert.match(html, /insert\(\{title:title,project_id:projectId,user_id:curUser\.id\}\)/);
-  assert.match(html, /insert\(\{chat_id:cid,user_id:curUser\.id,role:role,content:body\}\)/);
-  assert.match(html, /\.eq\('user_id',curUser\.id\).*\.eq\('role',role\)/);
+  assert.match(html, /insert\(\{chat_id:cid,user_id:ownerId,role:role,content:body\}\)/);
+  assert.match(html, /\.eq\('user_id',ownerId\)\.eq\('title',title\)/);
   assert.match(html, /var userHistorySaved=await queueHistorySave\('user',_ct,_ct\)/);
   assert.match(html, /var assistantHistorySaved=await queueHistorySave\('assistant',reply,_ct\)/);
   assert.match(html, /!userHistorySaved\|\|!assistantHistorySaved/);
