@@ -61,3 +61,12 @@ test('failed actions show feedback and restore button availability; share cancel
   assert.equal(control(node,'Reload').disabled,false);
   assert.equal(node.querySelector('.msgactions').children.at(-1).textContent,'Offline');
 });
+
+
+test('General Chat persists chat and message ownership and normalizes escaped Markdown', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /insert\(\{title:title,project_id:projectId,user_id:curUser\.id\}\)/);
+  assert.match(html, /insert\(\{chat_id:cid,user_id:curUser\.id,role:role,content:body\}\)/);
+  assert.match(html, /\.eq\('user_id',curUser\.id\).*\.eq\('role',role\)/);
+  assert.match(html, /line\.replace\(\/\\\\\(\[\*_\x60~\]\)\/g,'\$1'\)/);
+});
