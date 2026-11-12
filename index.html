@@ -2301,17 +2301,15 @@ async function turn(text,shown,img,el){
   if(el){el.classList.remove('live');el.textContent=shown||text;userNode=el}else userNode=add(shown||text,'me',img);
   var wait=add('Thinking...','sys');stepWait(wait);
   var _ct=shown||text;
-  /* Chat history is best-effort and must never block delivery to the AI agent.
-     Supabase/network failures previously caused ordinary text messages to be rejected. */
-  var userHistorySave=queueHistorySave('user',_ct,_ct);
+  /* Save the user's message first. The agent response may proceed even if
+     history is temporarily unavailable, but the result tracks both writes. */
   try{
+    var userHistorySaved=await queueHistorySave('user',_ct,_ct);
     var reply=await askAgentRetry(text);wait.remove();
-    /* Do not show a completed reply until both sides of this turn have
-       finished their ordered persistence attempt. This makes a visible reply
-       a reliable signal that refresh history has been written (when signed in). */
-    var historySaved=await queueHistorySave('assistant',reply,_ct);
-    if(!historySaved&&dbOk()&&window.histOn()){
-      add('Your reply is ready, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    var assistantHistorySaved=await queueHistorySave('assistant',reply,_ct);
+    if((!userHistorySaved||!assistantHistorySaved)&&dbOk()&&window.histOn()){
+      var failedSide=!userHistorySaved&&!assistantHistorySaved?'your message and the reply':!userHistorySaved?'your message':'the reply';
+      add('Your reply is ready, but '+failedSide+' could not be confirmed in chat history. Keep this page open while we retry.','sys');
     }
     var node;
     var retryFn=function(){
@@ -2497,7 +2495,7 @@ async function sendImage(){
   var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
   var userNode=add(q,'me',datas),waitNode=add('Looking at the image...','sys'),completed=false;
   stepWait(waitNode);
-  /* Save history independently; never let it reset or block the visible conversation. */
+  /* Confirm the user's image request before saving the generated response. */
   var imageHistorySave=queueHistorySave('user',imageLabel,q);
   input.value='';
   try{
@@ -2508,9 +2506,10 @@ async function sendImage(){
     /* Mark the attachment as sent immediately after backend success, before rendering the reply. */
     clearAttach();
     waitNode.remove();
-    var imageHistorySaved=await queueHistorySave('assistant',result,q);
-    if(!imageHistorySaved&&dbOk()&&window.histOn()){
-      add('Your image was processed, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    var imageUserSaved=await imageHistorySave;
+    var imageAssistantSaved=await queueHistorySave('assistant',result,q);
+    if((!imageUserSaved||!imageAssistantSaved)&&dbOk()&&window.histOn()){
+      add('Your image was processed, but one or both messages could not be confirmed in chat history. Keep this page open while we retry.','sys');
     }
     try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
     try{window.notifyReply&&window.notifyReply(result)}catch(e){}
