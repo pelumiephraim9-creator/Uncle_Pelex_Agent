@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'pelex_addons.js'
       - 'tests/business-ui.test.cjs'
+      - 'tests/message-actions.test.cjs'
       - '.github/workflows/business-ui-tests.yml'
   pull_request:
     branches: [main]
@@ -27,4 +28,4 @@ jobs:
         with:
           node-version: 22
       - name: Run Business UI regression tests
-        run: node --test tests/business-ui.test.cjs
+        run: node --test tests/business-ui.test.cjs tests/message-actions.test.cjs
