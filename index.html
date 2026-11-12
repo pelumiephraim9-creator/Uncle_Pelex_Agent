@@ -2947,14 +2947,19 @@ async function signedChatImages(paths){
   }
   return out;
 }
-async function flushPendingMessages(){
+async async function flushPendingMessages(){
   try{await authReadyPromise}catch(e){}
   if(!dbOk()||!window.histOn())return;
   var uid=curUser.id,rows=readPendingChat().filter(function(x){return String(x.userId)===String(uid)});
   for(var i=0;i<rows.length;i++){
     var x=rows[i];
     try{
-      var r=await sb.from('messages').insert({id:x.id,chat_id:x.chatId,user_id:x.userId,role:x.role,content:x.content});
+      var body=x.content;
+      if(x.attachmentsData&&x.attachmentsData.length){
+        var paths=await storeChatAttachments(x.attachmentsData,x.userId,x.chatId,x.id);
+        body=JSON.stringify({__pelexChatMessage:1,text:x.content,attachments:paths});
+      }
+      var r=await sb.from('messages').insert({id:x.id,chat_id:x.chatId,user_id:x.userId,role:x.role,content:body});
       if(!r||r.error){
         if(r&&r.error&&r.error.code==='23505'){
           var check=await sb.from('messages').select('id').eq('id',x.id).eq('chat_id',x.chatId).eq('user_id',uid).maybeSingle();
@@ -2971,7 +2976,7 @@ async function flushPendingMessages(){
 }
 window.addEventListener('online',flushPendingMessages);
 setInterval(function(){if(navigator.onLine)flushPendingMessages()},30000);
-function queueHistorySave(role,content,chatTitle,context,messageId){
+function queueHistorySave(role,content,chatTitle,context,messageId,attachments){
   var captured=context?{chatId:context.chatId,userId:context.userId,projectId:context.projectId||null}:null;
   pelexHistoryQueue=pelexHistoryQueue.then(async function(){
     try{await authReadyPromise}catch(e){}
@@ -2984,7 +2989,7 @@ function queueHistorySave(role,content,chatTitle,context,messageId){
       captured={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
     }
     if(String(captured.userId)!==String(curUser.id))return {ok:false,queued:false,error:{message:'The signed-in account changed before this message was saved.'}};
-    return await saveMsg(role,content,captured,messageId);
+    return await saveMsg(role,content,captured,messageId,attachments);
   }).catch(function(e){
     console.warn('Pelex: ordered chat persistence failed',e);
     return {ok:false,queued:false,error:e};
@@ -3026,18 +3031,37 @@ async function ensureChat(firstText){
   chatFail('chat could not be saved',lastError||{message:'Unknown database error'});
   return false;
 }
-async function saveMsg(role,content,context,messageId){
+async function storeChatAttachments(attachments,uid,cid,messageId){
+  var paths=[],bucket=sb.storage.from('pelex-chat-attachments');
+  for(var i=0;i<(attachments||[]).length;i++){
+    var src=attachments[i],blob;
+    if(typeof src!=='string'||src.indexOf('data:image/')!==0)throw new Error('An attached image is not in a supported format.');
+    var parts=src.split(','),mime=(parts[0].match(/data:([^;]+)/)||[])[1]||'image/jpeg';
+    var binary=atob(parts[1]||''),bytes=new Uint8Array(binary.length);
+    for(var n=0;n<binary.length;n++)bytes[n]=binary.charCodeAt(n);
+    blob=new Blob([bytes],{type:mime});
+    var path=uid+'/'+cid+'/'+messageId+'/'+i+'.'+(mime==='image/png'?'png':'jpg');
+    var uploaded=await bucket.upload(path,blob,{contentType:mime,upsert:true});
+    if(uploaded.error)throw uploaded.error;
+    paths.push(path);
+  }
+  return paths;
+}
+async function saveMsg(role,content,context,messageId,attachments){
   context=context||{chatId:curChatId,userId:curUser&&curUser.id};
   if(!dbOk()||!context.chatId||!context.userId||!content||!window.histOn())return {ok:true,skipped:true};
-  var cid=context.chatId,uid=context.userId,body=String(content).slice(0,20000);
-  var id=messageId||newMessageId(),lastError=null;
-  var pendingStored=rememberPendingChat({id:id,chatId:cid,userId:uid,role:role,content:body,createdAt:new Date().toISOString()});
+  var cid=context.chatId,uid=context.userId,plain=String(content).slice(0,16000);
+  var id=messageId||newMessageId(),lastError=null,paths=[];
+  var pendingStored=rememberPendingChat({id:id,chatId:cid,userId:uid,role:role,content:plain,attachmentsData:Array.isArray(attachments)?attachments:[],createdAt:new Date().toISOString()});
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
     return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
   }
   for(var attempt=0;attempt<3;attempt++){
     try{
+      if(attachments&&attachments.length)paths=await storeChatAttachments(attachments,uid,cid,id);
+      var body=paths.length?JSON.stringify({__pelexChatMessage:1,text:plain,attachments:paths}):plain;
+      rememberPendingChat({id:id,chatId:cid,userId:uid,role:role,content:body,attachmentsData:[],createdAt:new Date().toISOString()});
       var mr=await sb.from('messages').insert({id:id,chat_id:cid,user_id:uid,role:role,content:body});
       if(mr&&mr.error){
         if(mr.error.code==='23505'){
@@ -3057,13 +3081,16 @@ async function saveMsg(role,content,context,messageId){
         var check=await sb.from('messages').select('id').eq('id',id).eq('chat_id',cid).eq('user_id',uid).maybeSingle();
         if(!check.error&&check.data){forgetPendingChat(id);return {ok:true}}
       }catch(checkError){console.warn('Pelex: message save verification failed',checkError)}
-      if(!isTransient(e))break;
+      // Preserve the original data URLs for retry if storage or the message insert failed.
+      rememberPendingChat({id:id,chatId:cid,userId:uid,role:role,content:plain,attachmentsData:Array.isArray(attachments)?attachments:[],createdAt:new Date().toISOString()});
+      if(!isTransient(e)&&!attachments?.length)break;
       if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
     }
   }
   console.error('Pelex: message persistence failed; local queue retained',lastError);
   return {ok:false,queued:pendingStored,error:lastError||{message:'Unknown database error'}};
 }
+
 function resetChatView(){window.__hist=[];chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
 function newChat(projectId){
   curChatId=null;curProjectId=projectId||null;pendingDoc=null;
