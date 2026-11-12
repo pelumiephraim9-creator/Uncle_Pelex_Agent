@@ -108,3 +108,9 @@ test('audited Pelex add-on loads and keeps its business records project-scoped',
   assert.doesNotMatch(addon, /list_audit/);
   assert.doesNotMatch(addon, /\.select\('id'\)\.eq\('workspace_id',wsId\(\)\)\.order\('created_at'/);
 });
+
+test('existing connector cards map to the backend connector catalogue slugs', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /var aliases=\{gcalendar:'google-calendar',gsheets:'google-sheets',gmeet:'google-meet'\}/);
+  assert.match(html, /sb\.from\('connectors'\)\.select\('slug,status,group_name,needs'\)/);
+});
