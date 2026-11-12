@@ -2707,16 +2707,23 @@ document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click'
       if(i>-1)saved.splice(i,1);else saved.push(b.dataset.pname);
       try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
       paint(row)})});
-  /* Live status: the connector_status table in Supabase (id, active) decides what shows Active.
-     Flip active to true there when a connector's backend is wired. No redeploy needed. */
+  /* The database connector catalogue is authoritative for backend readiness.
+     This updates the existing connector cards; it does not invent a connection or OAuth action. */
   function applyStatus(map){
     document.querySelectorAll('#plugs .crow').forEach(function(row){
-      if(!map[row.dataset.cid])return;
-      var st=row.querySelector('.cstat');st.textContent='Active';st.classList.add('on');
-      var b=row.querySelector('[data-plug]');if(b)b.remove()});
+      var item=map[row.dataset.cid];if(!item)return;
+      var st=row.querySelector('.cstat'),active=item.status==='active';
+      st.textContent=active?'Active':(item.group_name==='Google'?'Waiting for Google verification':'Coming soon');
+      st.classList.toggle('on',active);
+      if(item.needs)st.title=item.needs;
+      var b=row.querySelector('[data-plug]');
+      if(active&&b)b.remove();
+    });
   }
-  try{if(typeof sb!=='undefined'&&sb&&sb.from){sb.from('connector_status').select('id,active').then(function(r){
-    if(!r||!r.data)return;var m={};r.data.forEach(function(x){if(x.active)m[x.id]=1});applyStatus(m)}).catch(function(){})}}catch(e){}
+  try{if(typeof sb!=='undefined'&&sb&&sb.from){sb.from('connectors').select('slug,status,group_name,needs').order('sort_order',{ascending:true}).then(function(r){
+    if(!r||r.error||!Array.isArray(r.data))return;
+    var m={};r.data.forEach(function(x){m[x.slug]=x});applyStatus(m);
+  }).catch(function(e){console.warn('Pelex: connector status could not be loaded',e)})}}catch(e){}
 })();
 
 (function(){
