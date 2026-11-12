@@ -2310,7 +2310,10 @@ async function turn(text,shown,img,el){
       }
       historyContext={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
       var userSaved=await queueHistorySave('user',_ct,_ct,historyContext,userMessageId);
-      if(!userSaved.ok)add(userSaved.queued?'Your message is kept on this device and will sync when the connection is restored.':'Your message could not be saved. Please keep this page open and retry.','sys');
+      if(!userSaved.ok){
+        if(userSaved.queued)add('Your message is kept on this device and will sync when the connection is restored.','sys');
+        else{input.value=text;throw new Error('I could not safely save your message, so I did not send it to the agent. Your text is back in the message box. Please retry.')}
+      }
     }
     var reply=await askAgentRetry(text);wait.remove();
     if(historyContext){
@@ -2509,7 +2512,10 @@ async function sendImage(){
       }
       historyContext={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
       var userSaved=await queueHistorySave('user',imageLabel,q,historyContext,userMessageId,datas);
-      if(!userSaved.ok)add(userSaved.queued?'Your image is kept on this device and will sync when the connection is restored.':'Your image could not be saved to chat history. Please keep this page open and retry.','sys');
+      if(!userSaved.ok){
+        if(userSaved.queued)add('Your image is kept on this device and will sync when the connection is restored.','sys');
+        else{input.value=typed;throw new Error('I could not safely save this image, so I did not send it to the agent. Your attachment is still available in the composer. Please retry.')}
+      }
     }
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
     if(AGENT_URL.indexOf('PASTE_')===0)throw new Error('The Pelex image service is not connected. Please try again shortly.');
