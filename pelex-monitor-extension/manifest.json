@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Pelex Business Monitor",
+  "version": "0.1.0",
+  "description": "User-authorized transaction text monitoring for approved business dashboards. Banking sources are blocked.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "action": {
+    "default_title": "Pelex Business Monitor",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {}
+}
