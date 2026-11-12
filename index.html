@@ -2567,7 +2567,7 @@ document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('c
 var SB_URL='https://lmqcbiiggcgppwfonlpn.supabase.co';
 var SB_KEY='sb_publishable_qeB6BYPzhFGfo695cucUJg_dQsl_7QR';
 var sb=null;try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{experimental:{passkey:true}}})}catch(e){}
-var signedIn=false, authMode='in';
+var signedIn=false, authMode='in', authReadyPromise=Promise.resolve(false);
 function authMsg(t,bad){var m=document.getElementById('authMsg');m.textContent=t||'';m.style.color=bad?'#b3261e':''}
 function setAuthMode(m){
   authMode=m;authMsg('');var cw=document.getElementById('authCodeWrap');if(cw)cw.hidden=true;
@@ -2657,10 +2657,17 @@ document.getElementById('sbAccountBtn').addEventListener('click',function(){
 var lo=document.getElementById('logoutBtn');
 if(lo)lo.addEventListener('click',async function(){if(sb)await sb.auth.signOut();go('chat')});
 if(sb){
-  sb.auth.getSession().then(function(r){applyUser(r.data&&r.data.session?r.data.session.user:null)});
+  authReadyPromise=sb.auth.getSession().then(function(r){
+    applyUser(r.data&&r.data.session?r.data.session.user:null);
+    return true;
+  }).catch(function(e){
+    console.warn('Pelex: initial authentication check failed',e);
+    applyUser(null);
+    return false;
+  });
   sb.auth.onAuthStateChange(function(ev,session){
     applyUser(session?session.user:null);
-    if(session&&(ev==='SIGNED_IN')&&!document.getElementById('v-signin').hidden)go('chat');
+    if(session){flushPendingMessages();if(ev==='SIGNED_IN'&&!document.getElementById('v-signin').hidden)go('chat')}
   });
 }
 setAuthMode('in');
@@ -2899,15 +2906,90 @@ function chatFail(what,err){
   try{add('Your '+what+' ('+m+'). Please refresh Pelex and try again. If this continues, share this error with support.','sys')}catch(x){}
 }
 var pelexHistoryQueue=Promise.resolve();
-function queueHistorySave(role,content,chatTitle){
+var PELEX_PENDING_CHAT_KEY='pelex_chat_pending_v2';
+function readPendingChat(){
+  try{var rows=JSON.parse(localStorage.getItem(PELEX_PENDING_CHAT_KEY)||'[]');return Array.isArray(rows)?rows:[]}catch(e){return []}
+}
+function writePendingChat(rows){
+  try{localStorage.setItem(PELEX_PENDING_CHAT_KEY,JSON.stringify(rows.slice(-120)));return true}catch(e){return false}
+}
+function rememberPendingChat(row){
+  var rows=readPendingChat(),at=rows.findIndex(function(x){return x.id===row.id});
+  if(at>=0)rows[at]=row;else rows.push(row);
+  return writePendingChat(rows);
+}
+function forgetPendingChat(id){return writePendingChat(readPendingChat().filter(function(x){return x.id!==id}))}
+function pendingChatFor(chatId,userId){
+  return readPendingChat().filter(function(x){return String(x.chatId)===String(chatId)&&String(x.userId)===String(userId)})
+    .sort(function(a,b){return new Date(a.createdAt)-new Date(b.createdAt)});
+}
+function newMessageId(){
+  try{if(window.crypto&&window.crypto.randomUUID)return window.crypto.randomUUID()}catch(e){}
+  var b=new Uint8Array(16);
+  try{window.crypto.getRandomValues(b)}catch(e){for(var i=0;i<16;i++)b[i]=Math.floor(Math.random()*256)}
+  b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;
+  var h=Array.prototype.map.call(b,function(x){return x.toString(16).padStart(2,'0')}).join('');
+  return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
+}
+function parseChatContent(content){
+  var raw=String(content==null?'':content);
+  try{
+    var v=JSON.parse(raw);
+    if(v&&v.__pelexChatMessage===1)return {text:String(v.text||''),attachments:Array.isArray(v.attachments)?v.attachments:[]};
+  }catch(e){}
+  return {text:raw,attachments:[]};
+}
+async function signedChatImages(paths){
+  var out=[],bucket=sb.storage.from('pelex-chat-attachments');
+  for(var i=0;i<paths.length;i++){
+    var r=await bucket.createSignedUrl(paths[i],3600);
+    if(r.error)throw r.error;
+    if(r.data&&r.data.signedUrl)out.push(r.data.signedUrl);
+  }
+  return out;
+}
+async function flushPendingMessages(){
+  try{await authReadyPromise}catch(e){}
+  if(!dbOk()||!window.histOn())return;
+  var uid=curUser.id,rows=readPendingChat().filter(function(x){return String(x.userId)===String(uid)});
+  for(var i=0;i<rows.length;i++){
+    var x=rows[i];
+    try{
+      var r=await sb.from('messages').insert({id:x.id,chat_id:x.chatId,user_id:x.userId,role:x.role,content:x.content});
+      if(!r||r.error){
+        if(r&&r.error&&r.error.code==='23505'){
+          var check=await sb.from('messages').select('id').eq('id',x.id).eq('chat_id',x.chatId).eq('user_id',uid).maybeSingle();
+          if(!check.error&&check.data){forgetPendingChat(x.id);continue}
+        }
+        continue;
+      }
+      forgetPendingChat(x.id);
+      sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',x.chatId)
+        .then(function(u){if(u&&u.error)console.warn('Pelex: pending chat timestamp update failed',u.error)})
+        .catch(function(e){console.warn('Pelex: pending chat timestamp update failed',e)});
+    }catch(e){console.warn('Pelex: pending chat sync is waiting for connection',e);break}
+  }
+}
+window.addEventListener('online',flushPendingMessages);
+setInterval(function(){if(navigator.onLine)flushPendingMessages()},30000);
+function queueHistorySave(role,content,chatTitle,context,messageId){
+  var captured=context?{chatId:context.chatId,userId:context.userId,projectId:context.projectId||null}:null;
   pelexHistoryQueue=pelexHistoryQueue.then(async function(){
-    if(!dbOk()||!window.histOn())return true;
-    if(!curChatId){
-      var ready=await ensureChat(chatTitle||content);
-      if(!ready||!curChatId)return false;
+    try{await authReadyPromise}catch(e){}
+    if(!dbOk()||!window.histOn())return {ok:true,skipped:true};
+    if(!captured||!captured.chatId){
+      if(!curChatId){
+        var ready=await ensureChat(chatTitle||content);
+        if(!ready||!curChatId)return {ok:false,queued:false,error:{message:'The chat could not be created.'}};
+      }
+      captured={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
     }
-    return await saveMsg(role,content);
-  }).catch(function(e){console.warn('Pelex: ordered chat persistence failed',e);return false});
+    if(String(captured.userId)!==String(curUser.id))return {ok:false,queued:false,error:{message:'The signed-in account changed before this message was saved.'}};
+    return await saveMsg(role,content,captured,messageId);
+  }).catch(function(e){
+    console.warn('Pelex: ordered chat persistence failed',e);
+    return {ok:false,queued:false,error:e};
+  });
   return pelexHistoryQueue;
 }
 async function ensureChat(firstText){
@@ -2928,10 +3010,8 @@ async function ensureChat(firstText){
     }catch(e){
       lastError=e;
       if(!isTransient(e))break;
-      // A timed-out response may follow a successful insert. Reuse that row
-      // before attempting another insert, avoiding duplicate empty chats.
       try{
-        var q=sb.from('chats').select('id,created_at').eq('title',title)
+        var q=sb.from('chats').select('id,created_at').eq('title',title).eq('user_id',curUser.id)
           .order('created_at',{ascending:false}).limit(20);
         q=projectId?q.eq('project_id',projectId):q.is('project_id',null);
         var found=await q;
@@ -2947,40 +3027,43 @@ async function ensureChat(firstText){
   chatFail('chat could not be saved',lastError||{message:'Unknown database error'});
   return false;
 }
-async function saveMsg(role,content){
-  if(!dbOk()||!curChatId||!content||!window.histOn())return true;
-  var cid=curChatId,body=String(content).slice(0,20000),lastError=null;
+async function saveMsg(role,content,context,messageId){
+  context=context||{chatId:curChatId,userId:curUser&&curUser.id};
+  if(!dbOk()||!context.chatId||!context.userId||!content||!window.histOn())return {ok:true,skipped:true};
+  var cid=context.chatId,uid=context.userId,body=String(content).slice(0,20000);
+  var id=messageId||newMessageId(),lastError=null;
+  var pendingStored=rememberPendingChat({id:id,chatId:cid,userId:uid,role:role,content:body,createdAt:new Date().toISOString()});
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
     return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
   }
   for(var attempt=0;attempt<3;attempt++){
     try{
-      var mr=await sb.from('messages').insert({chat_id:cid,user_id:curUser.id,role:role,content:body});
-      if(!mr||mr.error)throw (mr&&mr.error)||new Error('No database response');
-      // Keep timestamp maintenance separate: it must not invalidate a saved message.
+      var mr=await sb.from('messages').insert({id:id,chat_id:cid,user_id:uid,role:role,content:body});
+      if(mr&&mr.error){
+        if(mr.error.code==='23505'){
+          var duplicate=await sb.from('messages').select('id').eq('id',id).eq('chat_id',cid).eq('user_id',uid).maybeSingle();
+          if(!duplicate.error&&duplicate.data){forgetPendingChat(id);return {ok:true,duplicate:true}}
+        }
+        throw mr.error;
+      }
+      forgetPendingChat(id);
       sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)
         .then(function(ur){if(ur&&ur.error)console.warn('Pelex: chat timestamp update failed',ur.error)})
         .catch(function(ue){console.warn('Pelex: chat timestamp update failed',ue)});
-      return true;
+      return {ok:true};
     }catch(e){
       lastError=e;
-      if(!isTransient(e))break;
-      // Check whether Supabase committed the insert but the browser lost its response.
       try{
-        var check=await sb.from('messages').select('id,created_at').eq('chat_id',cid)
-          .eq('user_id',curUser.id).eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
-        if(!check.error&&Array.isArray(check.data)){
-          var cutoff=Date.now()-120000;
-          if(check.data.some(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff}))return true;
-        }
+        var check=await sb.from('messages').select('id').eq('id',id).eq('chat_id',cid).eq('user_id',uid).maybeSingle();
+        if(!check.error&&check.data){forgetPendingChat(id);return {ok:true}}
       }catch(checkError){console.warn('Pelex: message save verification failed',checkError)}
+      if(!isTransient(e))break;
       if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
     }
   }
-  console.error('Pelex: message persistence failed after retries',lastError);
-  chatFail('message could not be saved',lastError||{message:'Unknown database error'});
-  return false;
+  console.error('Pelex: message persistence failed; local queue retained',lastError);
+  return {ok:false,queued:pendingStored,error:lastError||{message:'Unknown database error'}};
 }
 function resetChatView(){window.__hist=[];chat.querySelectorAll('.msg').forEach(function(m){m.remove()});syncWelcome()}
 function newChat(projectId){
