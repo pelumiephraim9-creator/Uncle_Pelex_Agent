@@ -5228,10 +5228,23 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(f.size>MAX){$w('upReview').hidden=true;$w('upCur').hidden=true;$w('upActs').hidden=true;upSay('That file is larger than 10 MB.',true);return}
   if(!/\.(csv|xlsx|xls)$/i.test(f.name)){$w('upReview').hidden=true;$w('upCur').hidden=true;$w('upActs').hidden=true;return}
   try{
-   upSay('Reading your data…');var parsed=await readTabular(f);window.__pxUploadParsed={file:f,parsed:parsed};
-   showUploadPreview(f,parsed);
-   if(!parsed.rows.length)upSay('The file opened, but no usable transaction rows were found. Check the column headings and date/amount values.',true);
-   else upSay(parsed.rows.length+' rows read. Review the sample, then confirm to add them to your business ledger.');
+   upSay('Reading your file locally…');
+   if(/\\.(csv|tsv|xlsx|xls|xlsm)$/i.test(f.name)){
+    var parsed=await readTabular(f);
+    if(!parsed)throw new Error('This spreadsheet could not be read.');
+    window.__pxUploadParsed={file:f,parsed:parsed};
+    showUploadPreview(f,parsed);
+    if(!parsed.rows.length)upSay('The file opened, but no usable transaction rows were found. Check the column headings and date/amount values.',true);
+    else upSay(parsed.rows.length+' rows read. Review the sample, then confirm to add them to the selected project.');
+   }else{
+    if(typeof window.pxLocalRead!=='function')throw new Error('The local document reader is unavailable. Refresh the page and try again.');
+    var doc=await window.pxLocalRead(f);
+    window.__pxUploadParsed=null;
+    $w('upReview').hidden=false;$w('upCur').hidden=true;$w('upActs').hidden=true;
+    var preview=String(doc.text||'');
+    $w('upReview').innerHTML='<div class="irow"><b>Local document reading complete:</b> '+esc(f.name)+'</div><div class="irow"><b>Reader:</b> '+esc(doc.kind)+'</div><div class="irow">'+esc(doc.note)+'</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto">'+esc(preview||'No readable text was found in this file.')+'</pre><div class="muted dnote">This is a document preview only. It has not been added to your ledger. Use CSV or Excel with date and amount columns for transaction import.</div>';
+    upSay(preview?'Document read locally. Nothing was uploaded or saved.':'No readable text was found. Try a clearer scan or another file.',!preview);
+   }
   }catch(e){window.__pxUploadParsed=null;upSay('Could not read this file: '+(e.message||e),true)}
  });
  $w('upCancel').onclick=function(){window.__pxUploadParsed=null;$w('upReview').hidden=true;$w('upCur').hidden=true;$w('upActs').hidden=true;$w('upFile').value='';$w('upLabel').textContent='Tap to choose a file';upSay('Upload cancelled.')};
