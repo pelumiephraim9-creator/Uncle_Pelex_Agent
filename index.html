@@ -2300,18 +2300,22 @@ async function turn(text,shown,img,el){
   var userNode;
   if(el){el.classList.remove('live');el.textContent=shown||text;userNode=el}else userNode=add(shown||text,'me',img);
   var wait=add('Thinking...','sys');stepWait(wait);
-  var _ct=shown||text;
-  /* Chat history is best-effort and must never block delivery to the AI agent.
-     Supabase/network failures previously caused ordinary text messages to be rejected. */
-  var userHistorySave=queueHistorySave('user',_ct,_ct);
+  var _ct=shown||text,historyContext=null,userMessageId=newMessageId();
   try{
+    await authReadyPromise;
+    if(dbOk()&&window.histOn()){
+      if(!curChatId){
+        var made=await ensureChat(_ct);
+        if(!made||!curChatId)throw new Error('Your chat could not be created, so the message was not sent. Please try again.');
+      }
+      historyContext={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
+      var userSaved=await queueHistorySave('user',_ct,_ct,historyContext,userMessageId);
+      if(!userSaved.ok)add(userSaved.queued?'Your message is kept on this device and will sync when the connection is restored.':'Your message could not be saved. Please keep this page open and retry.','sys');
+    }
     var reply=await askAgentRetry(text);wait.remove();
-    /* Do not show a completed reply until both sides of this turn have
-       finished their ordered persistence attempt. This makes a visible reply
-       a reliable signal that refresh history has been written (when signed in). */
-    var historySaved=await queueHistorySave('assistant',reply,_ct);
-    if(!historySaved&&dbOk()&&window.histOn()){
-      add('Your reply is ready, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    if(historyContext){
+      var assistantSaved=await queueHistorySave('assistant',reply,_ct,historyContext,newMessageId());
+      if(!assistantSaved.ok)add(assistantSaved.queued?'The reply is safely queued on this device and will sync when the connection is restored.':'The reply could not be saved to chat history. Please keep this page open and retry.','sys');
     }
     var node;
     var retryFn=function(){
@@ -2321,8 +2325,8 @@ async function turn(text,shown,img,el){
     };
     node=add(reply,null,null,retryFn);
     try{window.notifyReply&&window.notifyReply(reply)}catch(e3){}
-    return reply}
-  catch(e){wait.remove();await showErr(e);return ''}
+    return reply;
+  }catch(e){wait.remove();await showErr(e);return ''}
 }
 async function sendTyped(){
   if(pendingImgs.length){await sendImage();return}
@@ -2490,42 +2494,37 @@ async function sendImage(){
   var ANALYSE_CMDS=['data','analyze','analyse','csv','summarize','summary','tldr','translate','explain','define','wiki','read','review','debug','code','sql','regex','explainimage','describe','ocr','extract'];
   var cmdM=typed.match(/^\/([a-zA-Z][a-zA-Z0-9_-]{0,30})(?:\s+([\s\S]*))?$/);
   var cmdName=cmdM?cmdM[1].toLowerCase():'';
-  if(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0){
-    q='Apply the '+cmdName+' command to this image, producing the picture the command asks for.'+(cmdM[2]?' Details: '+cmdM[2].trim():'');
-  }
+  if(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)q='Apply the '+cmdName+' command to this image, producing the picture the command asks for.'+(cmdM[2]?' Details: '+cmdM[2].trim():'');
   var intent=(cmdM&&ANALYSE_CMDS.indexOf(cmdName)<0)||/\b(enhance|brighten|brighter|darken|sharpen|remove|retouch|edit|change|make it|fix|colou?r|background|crop|blur|improve)\b/i.test(q)?'edit':'analyse';
   var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
   var userNode=add(q,'me',datas),waitNode=add('Looking at the image...','sys'),completed=false;
-  stepWait(waitNode);
-  /* Save history independently; never let it reset or block the visible conversation. */
-  var imageHistorySave=queueHistorySave('user',imageLabel,q);
-  input.value='';
+  var historyContext=null,userMessageId=newMessageId();
+  stepWait(waitNode);input.value='';
   try{
+    await authReadyPromise;
+    if(dbOk()&&window.histOn()){
+      if(!curChatId){
+        var made=await ensureChat(imageLabel);
+        if(!made||!curChatId)throw new Error('Your chat could not be created, so the image was not sent. Please try again.');
+      }
+      historyContext={chatId:curChatId,userId:curUser.id,projectId:curProjectId||null};
+      var userSaved=await queueHistorySave('user',imageLabel,q,historyContext,userMessageId,datas);
+      if(!userSaved.ok)add(userSaved.queued?'Your image is kept on this device and will sync when the connection is restored.':'Your image could not be saved to chat history. Please keep this page open and retry.','sys');
+    }
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
     if(AGENT_URL.indexOf('PASTE_')===0)throw new Error('The Pelex image service is not connected. Please try again shortly.');
     var result=await askPublicAgent(q,Object.assign({},agentMeta(),{images:sendDatas,intent:intent}));
-    completed=true;
-    /* Mark the attachment as sent immediately after backend success, before rendering the reply. */
-    clearAttach();
-    waitNode.remove();
-    var imageHistorySaved=await queueHistorySave('assistant',result,q);
-    if(!imageHistorySaved&&dbOk()&&window.histOn()){
-      add('Your image was processed, but chat history could not be confirmed as saved. Keep this page open and try again before refreshing.','sys');
+    completed=true;clearAttach();waitNode.remove();
+    if(historyContext){
+      var assistantSaved=await queueHistorySave('assistant',result,q,historyContext,newMessageId());
+      if(!assistantSaved.ok)add(assistantSaved.queued?'The image reply is safely queued on this device and will sync when the connection is restored.':'The image reply could not be saved to chat history. Please keep this page open and retry.','sys');
     }
     try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
     try{window.notifyReply&&window.notifyReply(result)}catch(e){}
   }catch(err){
     try{waitNode.remove()}catch(e){}
-    if(!completed){
-      /* Keep the original image bubble and attachment available for a safe retry. */
-      input.value=typed;
-      await showErr(err);
-    }else{
-      console.error('Pelex: post-send UI error',err);
-    }
-  }finally{
-    imageSending=false;
-  }
+    if(!completed){input.value=typed;await showErr(err)}else console.error('Pelex: post-send UI error',err);
+  }finally{imageSending=false}
 }
 $('file').onchange=async function(e){
   var fs=[].slice.call((e.target&&e.target.files)||[]);try{e.target.value=''}catch(x){}if(!fs.length)return;
@@ -4874,6 +4873,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function ul(arr){if(!arr||!arr.length)return '<p class="muted">None listed.</p>';return '<ul>'+arr.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ul>'}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
  function openProposal(x){
+  document.querySelectorAll('.pvmodal').forEach(function(old){old.remove()});
   var o=document.createElement('div');o.className='pvmodal';
   var box=document.createElement('div');box.className='pvbox';box.style.cssText='height:auto;max-height:90%;max-width:560px;overflow:auto';
   box.innerHTML='<div class="pvtop"><b>Proposal: '+esc(x.company)+'</b><button type="button" class="pvx" aria-label="Close">\u00d7</button></div><div class="pdet" style="padding:14px 16px 18px"></div>';
@@ -4884,7 +4884,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<p><b>Apply directly here:</b><br><a class="link" href="'+esc(x.direct_link||'#')+'" target="_blank" rel="noopener">'+esc(x.direct_link||'No direct link found')+'</a></p>'+
    '<h3>Why it fits you</h3>'+ul(x.pros)+'<h3>Risks to weigh</h3>'+ul(x.cons)+
    '<h3>Before the interview</h3>'+ul(x.prep_tips)+'<h3>Qualities they look for</h3>'+ul(x.qualities)+
-   '<h3>Your email</h3><label class="muted">Subject</label><input id="pSubj" value="'+esc(x.subject||'')+'"><label class="muted">Body</label><textarea id="pBody">'+esc(x.body||'')+'</textarea>'+
+   '<h3>Your email</h3><label class="muted" for="pSubj">Subject</label><input id="pSubj" value="'+esc(x.subject||'')+'"><label class="muted" for="pBody">Body</label><textarea id="pBody">'+esc(x.body||'')+'</textarea>'+
    '<div class="acts"><button type="button" class="go" id="pApprove">Approve and send via Gmail Bot</button><button type="button" id="pRedraft">Redraft the tone</button><button type="button" id="pClose">Not now</button></div>'+
    '<div class="muted dnote" id="pActMsg">Approving hands the subject, body, company link and your portfolio to the Gmail Bot. Nothing is sent before you approve.</div>';
   o.appendChild(box);document.body.appendChild(o);
@@ -5236,7 +5236,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'&&ready())setTimeout(loadWs,150)};
  window.addEventListener('load',function(){if(ready())setTimeout(loadWs,400)});
- document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject'&&ready())setTimeout(function(){loadNotes(ws())},0)});
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject'&&ready())setTimeout(function(){loadNotes(ws)},0)});
 })();
 </script>
 <script>
