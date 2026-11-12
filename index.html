@@ -2710,8 +2710,9 @@ document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click'
   /* The database connector catalogue is authoritative for backend readiness.
      This updates the existing connector cards; it does not invent a connection or OAuth action. */
   function applyStatus(map){
+    var aliases={gcalendar:'google-calendar',gsheets:'google-sheets',gmeet:'google-meet'};
     document.querySelectorAll('#plugs .crow').forEach(function(row){
-      var item=map[row.dataset.cid];if(!item)return;
+      var key=row.dataset.cid,item=map[key]||map[aliases[key]];if(!item)return;
       var st=row.querySelector('.cstat'),active=item.status==='active';
       st.textContent=active?'Active':(item.group_name==='Google'?'Waiting for Google verification':'Coming soon');
       st.classList.toggle('on',active);
