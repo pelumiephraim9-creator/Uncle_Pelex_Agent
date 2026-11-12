@@ -2969,7 +2969,7 @@ async function saveMsg(role,content){
       // Check whether Supabase committed the insert but the browser lost its response.
       try{
         var check=await sb.from('messages').select('id,created_at').eq('chat_id',cid)
-          .eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
+          .eq('user_id',curUser.id).eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
         if(!check.error&&Array.isArray(check.data)){
           var cutoff=Date.now()-120000;
           if(check.data.some(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff}))return true;
