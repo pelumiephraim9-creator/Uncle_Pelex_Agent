@@ -2925,7 +2925,7 @@ function queueHistorySave(role,content,chatTitle,context){
 }
 async function ensureChat(firstText,ownerId,projectSnapshot,sessionSnapshot){
   if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!window.histOn())return false;
-  var title=String(firstText||'New chat').replace(/\\s+/g,' ').trim().slice(0,48)||'New chat';
+  var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
   var projectId=projectSnapshot||null,sessionId=sessionSnapshot||sid,lastError=null;
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
