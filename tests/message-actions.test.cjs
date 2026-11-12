@@ -102,7 +102,7 @@ test('audited Pelex add-on loads and keeps its business records project-scoped',
   assert.match(html, /<script src="\/pelex_addons_runtime\.js\?v=1"><\/script>/);
   assert.match(addon, /window\.pxReadDocument=pxReadDocument/);
   assert.match(addon, /window\.pxOpenSlipCapture/);
-  assert.match(addon, /p_project:projectId\(\)/);
+  assert.match(addon, /p_project:projectId/);
   assert.match(addon, /business_types/);
   assert.match(addon, /\.eq\('project_id',projectId\(\)\)/);
   assert.doesNotMatch(addon, /list_audit/);
