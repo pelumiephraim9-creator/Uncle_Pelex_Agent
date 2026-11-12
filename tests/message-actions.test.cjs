@@ -63,21 +63,13 @@ test('failed actions show feedback and restore button availability; share cancel
 });
 
 
-test('General Chat persists chat and message ownership and normalizes escaped Markdown', () => {
+test('General Chat keeps the original ordered history persistence flow', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /insert\(\{title:title,project_id:projectId,user_id:ownerId\}\)/);
-  assert.match(html, /insert\(\{chat_id:cid,user_id:ownerId,role:role,content:body\}\)/);
-  assert.match(html, /\.eq\('user_id',ownerId\)\.eq\('title',title\)/);
-  assert.match(html, /queueHistorySave\('user',_ct,_ct,turnHistory\)/);
-  assert.match(html, /queueHistorySave\('assistant',reply,_ct,turnHistory\)/);
-  assert.match(html, /!userHistorySaved\|\|!assistantHistorySaved/);
-  assert.match(html, /function historyContext\(\)/);
-  assert.match(html, /chatId:curChatId\|\|null/);
-  assert.match(html, /ctx\.chatId=createdChatId/);
-  assert.match(html, /saveMsg\(role,content,ctx\.userId,ctx\.chatId\)/);
-  assert.match(html, /\.eq\('user_id',ownerId\)\.eq\('title',title\)/);
-  assert.match(html, /insert\(\{chat_id:cid,user_id:ownerId,role:role,content:body\}\)\.select\('id'\)\.single\(\)/);
-  assert.match(html, /replace\(\/\\s\+\/g/);
-  assert.match(html, /var imageUserSaved=await imageHistorySave/);
+  assert.match(html, /var userHistorySave=queueHistorySave\('user',_ct,_ct\)/);
+  assert.match(html, /var historySaved=await queueHistorySave\('assistant',reply,_ct\)/);
+  assert.match(html, /function queueHistorySave\(role,content,chatTitle\)/);
+  assert.match(html, /function saveMsg\(role,content\)/);
+  assert.match(html, /insert\(\{chat_id:cid,user_id:curUser\.id,role:role,content:body\}\)/);
+  assert.match(html, /if\(!dbOk\(\)\|\|!window\.histOn\(\)\)return true/);
   assert.match(html, /line\.replace\(\/\\\\\(\[\*_\x60~\]\)\/g,'\$1'\)/);
 });
