@@ -2847,7 +2847,7 @@ async function notifyScheduledTask(row){
   var push=document.getElementById('pvPush'),enabled=document.getElementById('pvNotifTasks');
   if(!push||!push.checked||!enabled||!enabled.checked||!document.hidden)return;
   if(!('Notification' in window)||Notification.permission!=='granted')return;
-  var instruction=String(row.instruction||'Your scheduled task has finished.').replace(/\\s+/g,' ').slice(0,110);
+  var instruction=String(row.instruction||'Your scheduled task has finished.').replace(/\s+/g,' ').slice(0,110);
   var title='Pelex scheduled task completed';
   var options={body:instruction,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'pelex-schedule-'+row.id,renotify:true,data:{url:'/'}};
   try{
