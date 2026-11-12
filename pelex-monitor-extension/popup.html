@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pelex Business Monitor</title><style>
+body{font:14px Arial,sans-serif;width:340px;margin:0;padding:16px;color:#14213d;background:#f5f7fb}h2{font-size:17px;margin:0 0 8px}.muted{color:#64748b;font-size:12px;line-height:1.5}.row{display:flex;gap:8px;margin:12px 0}button{border:0;border-radius:8px;padding:10px 12px;background:#155eef;color:white;cursor:pointer}button.secondary{background:#e7edf7;color:#14213d}button:disabled{opacity:.5;cursor:not-allowed}#status{margin:10px 0;padding:9px;background:#fff;border:1px solid #dbe3ef;border-radius:8px;white-space:pre-wrap}#result{white-space:pre-wrap;max-height:180px;overflow:auto;background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:9px;font-size:11px}small{display:block;margin-top:8px;color:#64748b}
+</style></head><body>
+<h2>Pelex Business Monitor</h2>
+<p class="muted">Enable monitoring only on a business dashboard you trust. Pelex reads visible transaction text on that approved site; it does not read passwords or form-field values.</p>
+<div class="row"><button id="enable">Approve this site</button><button id="stop" class="secondary">Stop site</button></div>
+<div id="status" role="status">Checking current website…</div>
+<div class="row"><button id="capture" class="secondary">Capture visible transactions</button><button id="copy" class="secondary">Copy result</button></div>
+<div id="result">No transaction text captured yet.</div>
+<small>Banking domains and banking-related pages are blocked. No transaction is saved to your Pelex ledger by this extension. Review and import it in Pelex.</small>
+<script src="popup.js"></script></body></html>
