@@ -2915,9 +2915,9 @@ function queueHistorySave(role,content,chatTitle,context){
       return false;
     }
     if(!ctx.chatId){
-      var ready=await ensureChat(chatTitle||content,ctx.userId,ctx.projectId,ctx.sessionId);
-      if(!ready||!curChatId)return false;
-      ctx.chatId=curChatId;
+      var createdChatId=await ensureChat(chatTitle||content,ctx.userId,ctx.projectId,ctx.sessionId);
+      if(!createdChatId)return false;
+      ctx.chatId=createdChatId;
     }
     return await saveMsg(role,content,ctx.userId,ctx.chatId);
   }).catch(function(e){console.warn('Pelex: ordered chat persistence failed',e);return false});
@@ -2925,7 +2925,6 @@ function queueHistorySave(role,content,chatTitle,context){
 }
 async function ensureChat(firstText,ownerId,projectSnapshot,sessionSnapshot){
   if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!window.histOn())return false;
-  if(curChatId)return true;
   var title=String(firstText||'New chat').replace(/\\s+/g,' ').trim().slice(0,48)||'New chat';
   var projectId=projectSnapshot||null,sessionId=sessionSnapshot||sid,lastError=null;
   function isTransient(e){
@@ -2938,7 +2937,7 @@ async function ensureChat(firstText,ownerId,projectSnapshot,sessionSnapshot){
       var r=await sb.from('chats').insert({title:title,project_id:projectId,user_id:ownerId}).select('id').single();
       if(r&&r.error)throw r.error;
       if(!r||!r.data||!r.data.id)throw new Error('Chat creation returned no ID');
-      curChatId=r.data.id;mapSid(curChatId,sessionId);loadRecents();return true;
+      var createdId=r.data.id;if(sid===sessionId&&!curChatId)curChatId=createdId;mapSid(createdId,sessionId);loadRecents();return createdId;
     }catch(e){
       lastError=e;
       if(!isTransient(e))break;
@@ -2950,7 +2949,7 @@ async function ensureChat(firstText,ownerId,projectSnapshot,sessionSnapshot){
         if(!found.error&&Array.isArray(found.data)){
           var cutoff=Date.now()-120000;
           var match=found.data.find(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff});
-          if(match){curChatId=match.id;mapSid(curChatId,sessionId);loadRecents();return true}
+          if(match){if(sid===sessionId&&!curChatId)curChatId=match.id;mapSid(match.id,sessionId);loadRecents();return match.id}
         }
       }catch(verifyError){console.warn('Pelex: chat creation verification failed',verifyError)}
       if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
