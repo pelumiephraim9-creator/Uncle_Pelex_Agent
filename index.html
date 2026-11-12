@@ -2301,13 +2301,14 @@ async function turn(text,shown,img,el){
   if(el){el.classList.remove('live');el.textContent=shown||text;userNode=el}else userNode=add(shown||text,'me',img);
   var wait=add('Thinking...','sys');stepWait(wait);
   var _ct=shown||text;
-  /* Save the user's message first. The agent response may proceed even if
-     history is temporarily unavailable, but the result tracks both writes. */
+  /* Keep both halves of this turn tied to the same signed-in session.
+     Do not let auth initialization mid-request save only the assistant reply. */
+  var turnHistory=historyContext();
   try{
-    var userHistorySaved=await queueHistorySave('user',_ct,_ct);
+    var userHistorySaved=turnHistory.enabled?await queueHistorySave('user',_ct,_ct,turnHistory):true;
     var reply=await askAgentRetry(text);wait.remove();
-    var assistantHistorySaved=await queueHistorySave('assistant',reply,_ct);
-    if((!userHistorySaved||!assistantHistorySaved)&&dbOk()&&window.histOn()){
+    var assistantHistorySaved=turnHistory.enabled?await queueHistorySave('assistant',reply,_ct,turnHistory):true;
+    if(turnHistory.enabled&&(!userHistorySaved||!assistantHistorySaved)){
       var failedSide=!userHistorySaved&&!assistantHistorySaved?'your message and the reply':!userHistorySaved?'your message':'the reply';
       add('Your reply is ready, but '+failedSide+' could not be confirmed in chat history. Keep this page open while we retry.','sys');
     }
@@ -2495,8 +2496,9 @@ async function sendImage(){
   var imageLabel=(datas.length>1?'[Images x'+datas.length+'] ':'[Image] ')+(typed||q);
   var userNode=add(q,'me',datas),waitNode=add('Looking at the image...','sys'),completed=false;
   stepWait(waitNode);
-  /* Confirm the user's image request before saving the generated response. */
-  var imageHistorySave=queueHistorySave('user',imageLabel,q);
+  /* Both image-history writes use the same signed-in session snapshot. */
+  var imageHistoryContext=historyContext();
+  var imageHistorySave=imageHistoryContext.enabled?queueHistorySave('user',imageLabel,q,imageHistoryContext):Promise.resolve(true);
   input.value='';
   try{
     var sendDatas=intent==='edit'?await Promise.all(datas.map(function(src){return resizeDataUrl(src,1200)})):datas;
@@ -2507,8 +2509,8 @@ async function sendImage(){
     clearAttach();
     waitNode.remove();
     var imageUserSaved=await imageHistorySave;
-    var imageAssistantSaved=await queueHistorySave('assistant',result,q);
-    if((!imageUserSaved||!imageAssistantSaved)&&dbOk()&&window.histOn()){
+    var imageAssistantSaved=imageHistoryContext.enabled?await queueHistorySave('assistant',result,q,imageHistoryContext):true;
+    if(imageHistoryContext.enabled&&(!imageUserSaved||!imageAssistantSaved)){
       add('Your image was processed, but one or both messages could not be confirmed in chat history. Keep this page open while we retry.','sys');
     }
     try{add(result)}catch(renderError){console.error('Pelex: reply rendering failed after successful image send',renderError);add('Your image was sent successfully, but this reply could not be displayed fully. Please try opening the chat again.','sys')}
@@ -2898,21 +2900,32 @@ function chatFail(what,err){
   try{add('Your '+what+' ('+m+'). Please refresh Pelex and try again. If this continues, share this error with support.','sys')}catch(x){}
 }
 var pelexHistoryQueue=Promise.resolve();
-function queueHistorySave(role,content,chatTitle){
+/* Capture history eligibility and account identity when a turn starts.
+   Auth can finish initializing while the AI request is in flight; without this
+   snapshot the user message can be skipped and only the later assistant reply saved. */
+function historyContext(){
+  return {enabled:!!(dbOk()&&window.histOn()),userId:curUser&&curUser.id||null};
+}
+function queueHistorySave(role,content,chatTitle,context){
+  var ctx=context||historyContext();
+  if(!ctx.enabled)return Promise.resolve(true);
   pelexHistoryQueue=pelexHistoryQueue.then(async function(){
-    if(!dbOk()||!window.histOn())return true;
+    if(!dbOk()||!curUser||curUser.id!==ctx.userId){
+      chatFail('chat history paused because the signed-in account changed',{message:'Account session changed during this reply. Your message is still visible; please send it again after sign-in finishes.'});
+      return false;
+    }
     if(!curChatId){
-      var ready=await ensureChat(chatTitle||content);
+      var ready=await ensureChat(chatTitle||content,ctx.userId);
       if(!ready||!curChatId)return false;
     }
-    return await saveMsg(role,content);
+    return await saveMsg(role,content,ctx.userId);
   }).catch(function(e){console.warn('Pelex: ordered chat persistence failed',e);return false});
   return pelexHistoryQueue;
 }
-async function ensureChat(firstText){
-  if(!dbOk()||!window.histOn())return true;
+async function ensureChat(firstText,ownerId){
+  if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!window.histOn())return false;
   if(curChatId)return true;
-  var title=String(firstText||'New chat').replace(/\s+/g,' ').trim().slice(0,48)||'New chat';
+  var title=String(firstText||'New chat').replace(/\\s+/g,' ').trim().slice(0,48)||'New chat';
   var projectId=curProjectId||null,lastError=null;
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
@@ -2920,17 +2933,16 @@ async function ensureChat(firstText){
   }
   for(var attempt=0;attempt<3;attempt++){
     try{
-      var r=await sb.from('chats').insert({title:title,project_id:projectId,user_id:curUser.id}).select('id').single();
+      if(!dbOk()||!curUser||curUser.id!==ownerId)throw new Error('Signed-in account changed before chat creation');
+      var r=await sb.from('chats').insert({title:title,project_id:projectId,user_id:ownerId}).select('id').single();
       if(r&&r.error)throw r.error;
       if(!r||!r.data||!r.data.id)throw new Error('Chat creation returned no ID');
       curChatId=r.data.id;mapSid(curChatId,sid);loadRecents();return true;
     }catch(e){
       lastError=e;
       if(!isTransient(e))break;
-      // A timed-out response may follow a successful insert. Reuse that row
-      // before attempting another insert, avoiding duplicate empty chats.
       try{
-        var q=sb.from('chats').select('id,created_at').eq('title',title)
+        var q=sb.from('chats').select('id,created_at').eq('user_id',ownerId).eq('title',title)
           .order('created_at',{ascending:false}).limit(20);
         q=projectId?q.eq('project_id',projectId):q.is('project_id',null);
         var found=await q;
@@ -2946,8 +2958,9 @@ async function ensureChat(firstText){
   chatFail('chat could not be saved',lastError||{message:'Unknown database error'});
   return false;
 }
-async function saveMsg(role,content){
-  if(!dbOk()||!curChatId||!content||!window.histOn())return true;
+async function saveMsg(role,content,ownerId){
+  if(!content)return true;
+  if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!curChatId||!window.histOn())return false;
   var cid=curChatId,body=String(content).slice(0,20000),lastError=null;
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
@@ -2955,9 +2968,10 @@ async function saveMsg(role,content){
   }
   for(var attempt=0;attempt<3;attempt++){
     try{
-      var mr=await sb.from('messages').insert({chat_id:cid,user_id:curUser.id,role:role,content:body});
+      if(!dbOk()||!curUser||curUser.id!==ownerId)throw new Error('Signed-in account changed during message save');
+      var mr=await sb.from('messages').insert({chat_id:cid,user_id:ownerId,role:role,content:body}).select('id').single();
       if(!mr||mr.error)throw (mr&&mr.error)||new Error('No database response');
-      // Keep timestamp maintenance separate: it must not invalidate a saved message.
+      if(!mr.data||!mr.data.id)throw new Error('Message insert was not confirmed by Supabase');
       sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)
         .then(function(ur){if(ur&&ur.error)console.warn('Pelex: chat timestamp update failed',ur.error)})
         .catch(function(ue){console.warn('Pelex: chat timestamp update failed',ue)});
@@ -2965,10 +2979,9 @@ async function saveMsg(role,content){
     }catch(e){
       lastError=e;
       if(!isTransient(e))break;
-      // Check whether Supabase committed the insert but the browser lost its response.
       try{
         var check=await sb.from('messages').select('id,created_at').eq('chat_id',cid)
-          .eq('user_id',curUser.id).eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
+          .eq('user_id',ownerId).eq('role',role).eq('content',body).order('created_at',{ascending:false}).limit(5);
         if(!check.error&&Array.isArray(check.data)){
           var cutoff=Date.now()-120000;
           if(check.data.some(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff}))return true;
