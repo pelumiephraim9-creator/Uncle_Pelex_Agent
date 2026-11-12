@@ -1,0 +1,12 @@
+const $=id=>document.getElementById(id);let selected=null,lastText="";
+function status(t){$("status").textContent=t;}
+async function refresh(){const list=await window.pelexMonitor.listSources();$("sources").replaceChildren();for(const s of list){const row=document.createElement("div");row.className="source"+(s.blocked?" blocked":"");const img=document.createElement("img");img.src=s.thumbnail;const name=document.createElement("span");name.textContent=s.name;const btn=document.createElement("button");btn.textContent=s.blocked?"Blocked":"Select";btn.disabled=s.blocked;btn.addEventListener("click",async()=>{const r=await window.pelexMonitor.selectSource(s.id);if(r.ok){selected=s.id;status("Selected: "+r.name);$("capture").disabled=false;$("start").disabled=false;document.querySelectorAll(".source").forEach(x=>x.style.outline="");row.style.outline="2px solid #155eef";}else status(r.error);});row.append(img,name,btn);$("sources").append(row);}}
+function show(r){if(!r.ok){status(r.error||"Capture failed.");if(r.blocked){$("live").textContent="BLOCKED";$("live").classList.remove("live");$("stop").disabled=true;$("start").disabled=false;}return;}lastText=r.text||"No transaction-like text found. Check the selected window."; $("output").textContent=lastText;status("Captured locally from "+r.source+" at "+new Date(r.capturedAt).toLocaleTimeString()+". Nothing was uploaded.");if(r.preview){$("preview").src=r.preview;$("preview").hidden=false;}}
+$("refresh").addEventListener("click",refresh);
+$("capture").addEventListener("click",async()=>show(await window.pelexMonitor.captureOnce()));
+$("start").addEventListener("click",async()=>{const r=await window.pelexMonitor.start(Number($("interval").value));if(r.ok){$("live").textContent="MONITORING";$("live").classList.add("live");$("stop").disabled=false;$("start").disabled=true;show(r.first);}else status(r.error);});
+$("stop").addEventListener("click",async()=>{await window.pelexMonitor.stop();$("live").textContent="STOPPED";$("live").classList.remove("live");$("stop").disabled=true;$("start").disabled=!selected;status("Monitoring stopped.");});
+$("ontop").addEventListener("change",e=>window.pelexMonitor.setAlwaysOnTop(e.target.checked));
+$("copy").addEventListener("click",async()=>{if(lastText){await navigator.clipboard.writeText(lastText);status("Captured text copied to clipboard.");}});
+$("import").addEventListener("click",()=>window.pelexMonitor.openImport());
+window.pelexMonitor.onCapture(show);refresh().catch(e=>status(e.message));
