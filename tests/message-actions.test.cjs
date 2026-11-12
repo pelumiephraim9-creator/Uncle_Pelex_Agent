@@ -68,6 +68,8 @@ test('General Agent awaits user persistence and pins each turn to its original c
   const turn = html.slice(html.indexOf('async function turn(text,shown,img,el){'), html.indexOf('async function sendTyped(){'));
   assert.match(turn, /await authReadyPromise/);
   assert.match(turn, /await queueHistorySave\('user',_ct,_ct,historyContext,userMessageId\)/);
+  assert.match(turn, /if\(!userSaved\.ok\)\{/);
+  assert.match(turn, /I could not safely save your message, so I did not send it to the agent/);
   assert.ok(turn.indexOf("await queueHistorySave('user'") < turn.indexOf('askAgentRetry(text)'));
   assert.match(turn, /historyContext=\{chatId:curChatId,userId:curUser\.id/);
   assert.match(html, /function queueHistorySave\(role,content,chatTitle,context,messageId,attachments\)/);
@@ -81,6 +83,7 @@ test('General Agent awaits user persistence and pins each turn to its original c
   assert.match(html, /pendingChatFor\(id,curUser\.id\)/);
   assert.match(html, /signedChatImages\(parsed\.attachments\)/);
   assert.match(html, /await queueHistorySave\('user',imageLabel,q,historyContext,userMessageId,datas\)/);
+  assert.match(html, /I could not safely save this image, so I did not send it to the agent/);
   assert.match(html, /select\('id,role,content,created_at'\)\.eq\('chat_id',id\)/);
   assert.match(html, /line\.replace\(\/\\\\\(\[\*_\x60~\]\)\/g,'\$1'\)/);
 });
