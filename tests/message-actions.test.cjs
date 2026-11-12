@@ -71,6 +71,13 @@ test('General Chat persists chat and message ownership and normalizes escaped Ma
   assert.match(html, /var userHistorySaved=await queueHistorySave\('user',_ct,_ct\)/);
   assert.match(html, /var assistantHistorySaved=await queueHistorySave\('assistant',reply,_ct\)/);
   assert.match(html, /!userHistorySaved\|\|!assistantHistorySaved/);
+  assert.match(html, /function historyContext\(\)/);
+  assert.match(html, /chatId:curChatId\|\|null/);
+  assert.match(html, /ctx\.chatId=createdChatId/);
+  assert.match(html, /saveMsg\(role,content,ctx\.userId,ctx\.chatId\)/);
+  assert.match(html, /\.eq\('user_id',ownerId\)\.eq\('title',title\)/);
+  assert.match(html, /insert\(\{chat_id:cid,user_id:ownerId,role:role,content:body\}\)\.select\('id'\)\.single\(\)/);
+  assert.match(html, /replace\(\/\\s\+\/g/);
   assert.match(html, /var imageUserSaved=await imageHistorySave/);
   assert.match(html, /line\.replace\(\/\\\\\(\[\*_\x60~\]\)\/g,'\$1'\)/);
 });
