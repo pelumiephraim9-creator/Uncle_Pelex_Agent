@@ -46,11 +46,10 @@ test('ambiguous slip templates require explicit money direction', () => {
   }
 });
 
-test('slip capture validates direction, date and positive amounts before saving', () => {
-  assert.match(source, /type!=='receipt'&&type!=='expense'/);
-  assert.match(source, /Please confirm whether this document records money in or money out/);
-  assert.match(source, /Please enter a valid transaction date/);
-  assert.match(source, /Every saved line needs an amount above zero/);
+test('broken experimental Capture Slip popup is removed without removing project upload', () => {
+  assert.doesNotMatch(source, /pxSlipOpen|pxOpenSlipCapture|pxSlipModal/);
+  const html = fs.readFileSync('index.html', 'utf8');
+  assert.match(html, /Upload data/i);
 });
 
 
