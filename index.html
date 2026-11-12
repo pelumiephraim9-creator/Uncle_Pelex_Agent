@@ -2947,7 +2947,7 @@ async function signedChatImages(paths){
   }
   return out;
 }
-async async function flushPendingMessages(){
+async function flushPendingMessages(){
   try{await authReadyPromise}catch(e){}
   if(!dbOk()||!window.histOn())return;
   var uid=curUser.id,rows=readPendingChat().filter(function(x){return String(x.userId)===String(uid)});
@@ -3476,6 +3476,17 @@ function wipe(){var id=ignSid;if(id&&dbOk())try{sb.rpc('ignitor_wipe',{p_session
 function ignOn(){ignSid='ign-'+(curUser?curUser.id:'guest')+'-'+Math.random().toString(36).slice(2)+Date.now().toString(36);window.__ign=true;newChat();$('ignBar').hidden=false;$('ignBtn').classList.add('on');$('keepBtn').hidden=true;$('keepAsk').hidden=true}
 function ignOff(){wipe();window.__ign=false;ignSid='';$('ignBar').hidden=true;$('ignBtn').classList.remove('on');newChat()}
 $('ignBtn').onclick=function(){window.__ign?ignOff():ignOn()};$('ignOff').onclick=ignOff;
+/* Developer-shortcut deterrent: switch to the existing private Ignitor view.
+   This does not secure source code or replace server-side access controls. */
+document.addEventListener('keydown',function(e){
+  var k=String(e.key||'').toLowerCase();
+  var devShortcut=k==='f12'||((e.ctrlKey||e.metaKey)&&e.shiftKey&&(k==='i'||k==='j'||k==='c'))||((e.ctrlKey||e.metaKey)&&k==='u');
+  if(!devShortcut)return;
+  e.preventDefault();e.stopPropagation();
+  if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  var privateButton=document.getElementById('ignBtn');
+  if(privateButton&&!window.__ign)privateButton.click();
+},true);
 window.addEventListener('pagehide',function(){if(window.__ign)wipe()});
 // ---------- How long to keep a chat ----------
 var ask=document.createElement('div');ask.id='keepAsk';ask.hidden=true;ask.innerHTML='<span>How long should Pelex keep this chat?</span><button type="button" class="btn" id="kaStd">Standard, 30 days</button><button type="button" class="btn alt" id="kaPick">Choose</button><button type="button" class="btn alt" id="kaNo">Not now</button>';document.body.appendChild(ask);
@@ -5278,7 +5289,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'&&ready())setTimeout(loadWs,150)};
  window.addEventListener('load',function(){if(ready())setTimeout(loadWs,400)});
- document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject'&&ready())setTimeout(function(){loadNotes(ws)},0)});
+ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pxTrProject'&&ready())setTimeout(function(){loadNotes(wsId())},0)});
 })();
 </script>
 <script>
