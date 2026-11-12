@@ -2969,9 +2969,11 @@ async function saveMsg(role,content,ownerId,chatId){
   for(var attempt=0;attempt<3;attempt++){
     try{
       if(!dbOk()||!curUser||curUser.id!==ownerId)throw new Error('Signed-in account changed during message save');
-      var mr=await sb.from('messages').insert({chat_id:cid,user_id:ownerId,role:role,content:body}).select('id').single();
+      /* Do not request a returned row here: INSERT success is the confirmation.
+         Requiring .select() couples message saving to SELECT RLS and can report
+         failure after Postgres has already committed the message. */
+      var mr=await sb.from('messages').insert({chat_id:cid,user_id:ownerId,role:role,content:body});
       if(!mr||mr.error)throw (mr&&mr.error)||new Error('No database response');
-      if(!mr.data||!mr.data.id)throw new Error('Message insert was not confirmed by Supabase');
       sb.from('chats').update({updated_at:new Date().toISOString()}).eq('id',cid)
         .then(function(ur){if(ur&&ur.error)console.warn('Pelex: chat timestamp update failed',ur.error)})
         .catch(function(ue){console.warn('Pelex: chat timestamp update failed',ue)});
