@@ -3516,7 +3516,7 @@ $('keepBtn').onclick=sheet;
 $('kaPick').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1');sheet()};$('kaNo').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1')};
 $('kaStd').onclick=async function(){ask.hidden=true;ls('pelex_keep_asked','1');ls('pelex_keep','standard');await setKeep('standard')};
 var _ec=ensureChat;ensureChat=async function(t){if(window.__ign)return false;var had=curChatId;var ready=await _ec(t);var d=ls('pelex_keep');if(!had&&curChatId&&d&&d!=='standard')await setKeep(d);return ready===true&&!!curChatId};
-var _sm=saveMsg;saveMsg=function(role,c){if(window.__ign)return;_sm(role,c);if(role==='assistant'&&curChatId&&!window.__ign&&dbOk()&&!ls('pelex_keep_asked'))ask.hidden=false};
+var _sm=saveMsg;saveMsg=function(){if(window.__ign)return Promise.resolve({ok:true,skipped:true});var result=_sm.apply(this,arguments);if(arguments[0]==='assistant'&&curChatId&&!window.__ign&&dbOk()&&!ls('pelex_keep_asked'))ask.hidden=false;return result};
 setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},1500);
 // ---------- Image creation ----------
 var imgMode=false,ta=$('send').parentElement.querySelector('textarea,input[type=text]'),ph=ta?ta.placeholder:'';
