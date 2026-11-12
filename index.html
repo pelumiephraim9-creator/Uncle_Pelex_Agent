@@ -3185,13 +3185,21 @@ async function openChat(id){
   if(!dbOk())return;
   go('chat');
   var c=(chatsCache||[]).filter(function(x){return String(x.id)===String(id)})[0];
-  var r=await sb.from('messages').select('role,content').eq('chat_id',id).order('created_at',{ascending:true}).limit(500);
+  var r=await sb.from('messages').select('id,role,content,created_at').eq('chat_id',id).order('created_at',{ascending:true}).limit(500);
   if(r.error){
     console.warn('Pelex: chat messages could not be opened',r.error);
     chatFail('messages for this chat could not be opened',r.error);
     return;
   }
-  var messages=Array.isArray(r.data)?r.data:[];
+  var messages=Array.isArray(r.data)?r.data.slice():[];
+  // Show locally queued user messages immediately; they remain until Supabase confirms the same stable ID.
+  var pending=pendingChatFor(id,curUser.id);
+  pending.forEach(function(x){
+    if(!messages.some(function(m){return String(m.id)===String(x.id)})){
+      messages.push({id:x.id,role:x.role,content:x.content,created_at:x.createdAt,__pending:true,attachmentsData:x.attachmentsData||[]});
+    }
+  });
+  messages.sort(function(x,y){return new Date(x.created_at||0)-new Date(y.created_at||0)});
   // Recovery path for scheduled-result chats: if the chat row exists but its
   // messages were not visible/saved, load the completed result from its task row.
   if(!messages.length){
@@ -3233,7 +3241,14 @@ async function openChat(id){
   }
   curChatId=id;curProjectId=c?c.project_id:null;pendingDoc=null;
   resetChatView();
-  messages.forEach(function(m){if(m.role==='user')add(m.content,'me');else add(m.content)});
+  for(var mi=0;mi<messages.length;mi++){
+    var message=messages[mi],parsed=parseChatContent(message.content),images=message.attachmentsData||[];
+    if(!images.length&&parsed.attachments.length){
+      try{images=await signedChatImages(parsed.attachments)}catch(imageReadError){console.warn('Pelex: saved chat image could not be opened',imageReadError);images=[]}
+    }
+    if(message.role==='user')add(parsed.text,'me',images);
+    else add(parsed.text);
+  }
   chat.scrollTop=chat.scrollHeight;loadRecents();
 }
 async function delChat(id){
