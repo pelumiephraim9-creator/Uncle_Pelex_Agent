@@ -38,9 +38,12 @@ $("capture").addEventListener("click",async()=>{
    const parts=[];let node;
    while((node=walker.nextNode())&&parts.length<1500){const p=node.parentElement;if(!p||skip.has(p.tagName)||p.closest("input,textarea,select,[contenteditable=true]"))continue;const s=(node.nodeValue||"").replace(/\s+/g," ").trim();if(s.length>2&&!forbidden.test(s))parts.push(s);}
    const text=parts.join("\n");
+   const bankContext=/\\b(bank|banking|internet banking|mobile banking|bank statement|account balance|beneficiary|sort code|swift code|IBAN|bank transfer)\\b/i;
+   if(bankContext.test(document.title+"\\n"+text)) return {blocked:true,reason:"Banking-related page content detected. Capture was blocked."};
    const lines=text.split("\n").filter(x=>/transaction|receipt|invoice|order|sale|paid|payment|amount|total|quantity|cashier|POS|reference|status|₦|NGN|USD|EUR|GBP/i.test(x));
-   return {text:lines.slice(0,250).join("\n").slice(0,18000),pageTitle:document.title,source:location.origin};
+   return {blocked:false,text:lines.slice(0,250).join("\n").slice(0,18000),pageTitle:document.title,source:location.origin};
   }});
+  if(results?.[0]?.result?.blocked){$("status").textContent=results[0].result.reason;$("result").textContent="Capture blocked.";return;}
   lastResult=results?.[0]?.result?.text||"No transaction-like text was found on this page.";
   $("result").textContent=lastResult;
   $("status").textContent="Captured visible business text for review. Nothing has been saved.";
