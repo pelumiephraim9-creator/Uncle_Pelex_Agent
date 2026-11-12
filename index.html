@@ -2904,7 +2904,7 @@ var pelexHistoryQueue=Promise.resolve();
    Auth can finish initializing while the AI request is in flight; without this
    snapshot the user message can be skipped and only the later assistant reply saved. */
 function historyContext(){
-  return {enabled:!!(dbOk()&&window.histOn()),userId:curUser&&curUser.id||null};
+  return {enabled:!!(dbOk()&&window.histOn()),userId:curUser&&curUser.id||null,chatId:curChatId||null,projectId:curProjectId||null,sessionId:sid};
 }
 function queueHistorySave(role,content,chatTitle,context){
   var ctx=context||historyContext();
@@ -2914,19 +2914,20 @@ function queueHistorySave(role,content,chatTitle,context){
       chatFail('chat history paused because the signed-in account changed',{message:'Account session changed during this reply. Your message is still visible; please send it again after sign-in finishes.'});
       return false;
     }
-    if(!curChatId){
-      var ready=await ensureChat(chatTitle||content,ctx.userId);
+    if(!ctx.chatId){
+      var ready=await ensureChat(chatTitle||content,ctx.userId,ctx.projectId,ctx.sessionId);
       if(!ready||!curChatId)return false;
+      ctx.chatId=curChatId;
     }
-    return await saveMsg(role,content,ctx.userId);
+    return await saveMsg(role,content,ctx.userId,ctx.chatId);
   }).catch(function(e){console.warn('Pelex: ordered chat persistence failed',e);return false});
   return pelexHistoryQueue;
 }
-async function ensureChat(firstText,ownerId){
+async function ensureChat(firstText,ownerId,projectSnapshot,sessionSnapshot){
   if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!window.histOn())return false;
   if(curChatId)return true;
   var title=String(firstText||'New chat').replace(/\\s+/g,' ').trim().slice(0,48)||'New chat';
-  var projectId=curProjectId||null,lastError=null;
+  var projectId=projectSnapshot||null,sessionId=sessionSnapshot||sid,lastError=null;
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
     return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
@@ -2937,7 +2938,7 @@ async function ensureChat(firstText,ownerId){
       var r=await sb.from('chats').insert({title:title,project_id:projectId,user_id:ownerId}).select('id').single();
       if(r&&r.error)throw r.error;
       if(!r||!r.data||!r.data.id)throw new Error('Chat creation returned no ID');
-      curChatId=r.data.id;mapSid(curChatId,sid);loadRecents();return true;
+      curChatId=r.data.id;mapSid(curChatId,sessionId);loadRecents();return true;
     }catch(e){
       lastError=e;
       if(!isTransient(e))break;
@@ -2949,7 +2950,7 @@ async function ensureChat(firstText,ownerId){
         if(!found.error&&Array.isArray(found.data)){
           var cutoff=Date.now()-120000;
           var match=found.data.find(function(row){return row.created_at&&new Date(row.created_at).getTime()>=cutoff});
-          if(match){curChatId=match.id;mapSid(curChatId,sid);loadRecents();return true}
+          if(match){curChatId=match.id;mapSid(curChatId,sessionId);loadRecents();return true}
         }
       }catch(verifyError){console.warn('Pelex: chat creation verification failed',verifyError)}
       if(attempt<2)await new Promise(function(resolve){setTimeout(resolve,650*(attempt+1))});
@@ -2958,10 +2959,10 @@ async function ensureChat(firstText,ownerId){
   chatFail('chat could not be saved',lastError||{message:'Unknown database error'});
   return false;
 }
-async function saveMsg(role,content,ownerId){
+async function saveMsg(role,content,ownerId,chatId){
   if(!content)return true;
-  if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!curChatId||!window.histOn())return false;
-  var cid=curChatId,body=String(content).slice(0,20000),lastError=null;
+  if(!ownerId||!dbOk()||!curUser||curUser.id!==ownerId||!chatId||!window.histOn())return false;
+  var cid=chatId,body=String(content).slice(0,20000),lastError=null;
   function isTransient(e){
     var m=String(e&&(e.message||e.details)||e||'');
     return e instanceof TypeError||/load failed|failed to fetch|network|timeout|fetch failed|connection/i.test(m);
