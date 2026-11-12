@@ -1,0 +1,40 @@
+name: Pelex Monitor isolated tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pelex-monitor-extension/**'
+      - 'pelex-monitor-desktop/**'
+      - 'PELEX_MONITOR_IOS.md'
+      - '.github/workflows/pelex-monitor-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'pelex-monitor-extension/**'
+      - 'pelex-monitor-desktop/**'
+      - 'PELEX_MONITOR_IOS.md'
+      - '.github/workflows/pelex-monitor-tests.yml'
+
+jobs:
+  monitor-security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate JavaScript syntax
+        run: |
+          node --check pelex-monitor-extension/background.js
+          node --check pelex-monitor-extension/popup.js
+          node --check pelex-monitor-desktop/main.js
+          node --check pelex-monitor-desktop/preload.js
+          node --check pelex-monitor-desktop/renderer.js
+          node --check pelex-monitor-desktop/security.js
+      - name: Run desktop privacy tests
+        run: node --test pelex-monitor-desktop/tests/*.test.cjs
+      - name: Validate extension and desktop manifests
+        run: |
+          node -e "const m=require('./pelex-monitor-extension/manifest.json'); if(m.manifest_version!==3) process.exit(1); if(!m.permissions.includes('activeTab') || !m.permissions.includes('scripting')) process.exit(1)"
+          node -e "const p=require('./pelex-monitor-desktop/package.json'); if(!p.dependencies['tesseract.js'] || !p.devDependencies.electron) process.exit(1)"
