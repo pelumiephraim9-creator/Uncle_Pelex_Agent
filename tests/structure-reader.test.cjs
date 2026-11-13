@@ -43,3 +43,15 @@ test('does not treat footer testing instructions as line items', () => {
   ]);
   assert.equal(result.lines.length, 1);
 });
+
+test('new bridge and slip integration scripts parse without syntax errors', () => {
+  const fs = require('node:fs');
+  const vm = require('node:vm');
+  for (const file of ['pelex_structure.js','pelex_structure_bridge.js','pelex_addons_runtime.js']) {
+    new vm.Script(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'), {filename:file});
+  }
+  const html = fs.readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  const match = html.match(/<script>\s*\/\* ---- document reading ---- \*\/[\s\S]*?<\/script>/);
+  assert.ok(match, 'document reading inline script should be present');
+  new vm.Script(match[0].replace(/^<script>/,'').replace(/<\/script>$/,''), {filename:'index.html document reader'});
+});
