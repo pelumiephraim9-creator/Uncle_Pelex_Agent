@@ -5548,7 +5548,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   wrap.innerHTML=
    '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
    '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="day">Daily · last 30 days</option><option value="week">Weekly · last 12 weeks</option><option value="month">Monthly · last 12 months</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
-   '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
+   '<div class="ls-tl"><button type="button" class="btn alt" id="lsBack" aria-label="Move to previous date">Back</button><input type="range" id="lsSlider" min="0" max="0" value="0" aria-label="Move analysis date"><button type="button" class="btn alt" id="lsForward" aria-label="Move to next date">Forward</button></div>'+
    '<div id="lsDays"></div><div id="lsDayView"></div><div id="lsFileBar"></div><div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
    '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
    '<div class="dnote" style="margin-top:12px"><b>Sales and invoices</b></div><div id="lsRev"></div>'+
@@ -5565,6 +5565,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsCur').onchange=function(){rep=this.value;render()};
   $l('lsGran').onchange=function(){render()};
   $l('lsDate').onchange=function(){render()};
+  function moveAnalysisDate(step){var a=parseD(asOf());if(!a||isNaN(a.getTime()))a=parseD(maxDate());a.setDate(a.getDate()+step);var lo=parseD(minDate()),hi=parseD(maxDate());if(a<lo)a=lo;if(a>hi)a=hi;$l('lsDate').value=iso(a);render()}
+  $l('lsBack').onclick=function(){moveAnalysisDate(-1)};
+  $l('lsForward').onclick=function(){moveAnalysisDate(1)};
   $l('lsSlider').oninput=function(){var a=parseD(minDate());a.setDate(a.getDate()+Number(this.value));$l('lsDate').value=iso(a);render()};
   $l('lsSend').onclick=ask;$l('lsAsk').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}});
  }
@@ -7082,7 +7085,7 @@ function pxCommandHelp(){
    if(rows.error)throw rows.error;
    var yearRows=(rows.data||[]).filter(function(x){return String(x.month).slice(0,4)===String(y)});
    var total=yearRows.reduce(function(a,x){a.revenue+=Number(x.profit||0)+0; a.cashIn+=Number(x.money_in||0);a.cashOut+=Number(x.money_out||0);a.closing=Number(x.closing||0);return a},{revenue:0,cashIn:0,cashOut:0,closing:0});
-   var yearCards=[['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]];
+   var yearCards=[['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]];
    if(modules.indexOf('agreements')>=0)yearCards.push(['Recorded receivables outstanding',d.recorded_receivables_outstanding]);
    $('pxYearCards').innerHTML=yearCards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
    $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td><button type="button" class="btn alt" data-px-month-open="'+esc(x.month)+'" style="padding:4px 8px">'+esc(x.month)+'</button></td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
