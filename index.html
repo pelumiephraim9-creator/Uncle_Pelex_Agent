@@ -5750,19 +5750,31 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  /* ---- document reading ---- */
  var pendingDoc=null;
  function rowTable(rows,cur){
-  var h='<table class="rv-table"><tr><th>Date</th><th>Type</th><th>Customer</th><th>Amount</th><th>Currency</th><th>Due</th></tr>';
-  rows.forEach(function(x,i){h+='<tr data-i="'+i+'"><td><input data-k="date" value="'+esc(x.date||'')+'"></td><td><input data-k="type" value="'+esc(x.type||'other')+'"></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input data-k="due" value="'+esc(x.due||'')+'"></td></tr>'});
-  return h+'</table>';
+  var types=[['sale','Sale / service received'],['invoice','Invoice issued'],['receipt','Receipt / payment received'],['expense','Expense paid'],['other','Other']];
+  var kinds=[['income','Operating income'],['expense','Operating expense'],['principal_in','Loan principal repaid'],['principal_out','Loan principal issued'],['receivable_in','Invoice payment received'],['savings_in','Customer savings received'],['capital','Owner capital introduced'],['transfer','Cash transfer out']];
+  var h='<div style="overflow-x:auto"><table class="rv-table"><thead><tr><th>Date</th><th>Transaction type</th><th>Accounting classification</th><th>Customer / description</th><th>Amount</th><th>Currency</th><th>Due</th></tr></thead><tbody>';
+  rows.forEach(function(x,i){
+   var type=String(x.type||'other').toLowerCase(),kind=String(x.kind||(type==='expense'?'expense':(['sale','invoice','receipt','payment'].indexOf(type)>=0?'income':''))).toLowerCase();
+   h+='<tr data-i="'+i+'"><td><input type="date" data-k="date" value="'+esc(x.date||'')+'"></td><td><select data-k="type">'+types.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===type?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><select data-k="kind"><option value="">Choose classification</option>'+kinds.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===kind?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input type="number" min="0.01" step="0.01" data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input type="date" data-k="due" value="'+esc(x.due||'')+'"></td></tr>';
+  });
+  return h+'</tbody></table></div>';
  }
  function readReview(){
   var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('input[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=inp.value.trim()});out.push(o)});return out;
  }
  function toRows(list){
-  var ok=[],bad=0;
-  list.forEach(function(x){var d=x.date&&!isNaN(new Date(x.date))?new Date(x.date).toISOString().slice(0,10):null;var a=parseFloat(String(x.amount).replace(/[^0-9.\-]/g,''));
-   if(!d||isNaN(a)){bad++;return}
-   var t=['invoice','receipt','sale','expense','payment','other'].indexOf(String(x.type).toLowerCase())>=0?String(x.type).toLowerCase():'other';
-   ok.push({date:d,type:t,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null})});
+  var ok=[],bad=0,validKinds=['income','expense','principal_in','principal_out','receivable_in','savings_in','capital','transfer'];
+  list.forEach(function(x){
+   var d=x.date&&!isNaN(new Date(x.date))?new Date(x.date).toISOString().slice(0,10):null;
+   var a=parseFloat(String(x.amount).replace(/[^0-9.\\-]/g,''));
+   var t=String(x.type||'other').toLowerCase();
+   if(['invoice','receipt','sale','expense','payment','other'].indexOf(t)<0)t='other';
+   var kind=String(x.kind||'').toLowerCase();
+   if(!kind)kind=t==='expense'?'expense':(['invoice','receipt','sale','payment'].indexOf(t)>=0?'income':'');
+   if(!d||!isFinite(a)||a<=0||validKinds.indexOf(kind)<0){bad++;return}
+   var due=x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null;
+   ok.push({date:d,type:t,kind:kind,category:x.category||null,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:due});
+  });
   return {ok:ok,bad:bad};
  }
  async function readDoc(){
@@ -5774,11 +5786,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var sr=await window.pxReadFileStructured(f);
    if(sr.kind==='error'||sr.kind==='unsupported'){$p('upMsg').textContent=(sr.warnings||['The document could not be read.']).join(' ');return}
    var sf=sr.fields||{},isTest=/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(sr.text||'');
+   if(isTest||sr.testOnly)sr.testOnly=true;
    var sbx=$p('rvBox');if(!sbx){sbx=document.createElement('div');sbx.id='rvBox';sbx.className='ilist';$p('upMsg').parentNode.insertBefore(sbx,$p('upMsg'))}
-   if(isTest||sr.testOnly){
-    pendingDoc=null;
-    sr.testOnly=true;
-    if(!sr.lines.length){
+   if(!sr.lines.length){
      sbx.innerHTML='<div class="irow"><b>Test document:</b> '+esc(f.name)+'</div><div class="irow">No line items were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'')+'</pre>';
      $p('upMsg').textContent='Test data detected. Nothing was saved or imported.';
      return;
@@ -5802,8 +5812,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     var ff=confirmed.fields||{},dateText=String(ff.date||'').trim(),isoDate='',dm=/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/.exec(dateText);
     if(dm){var months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},mn=months[dm[2].slice(0,3).toLowerCase()];if(mn)isoDate=dm[3]+'-'+String(mn).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0')}
     else{dm=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(dateText);if(dm)isoDate=dm[3]+'-'+String(Number(dm[2])).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}$/.test(dateText))isoDate=dateText}
-    pendingDoc={file:f,type:'other',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',rows:confirmed.lines.map(function(line){return {date:isoDate,type:'other',party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:''}})};
-    sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div><div class="irow">Rows are initially unclassified. Review each transaction type and date. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3><div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div><div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
+    var defaultType=String(ff.type||'').toLowerCase()==='invoice'?'invoice':(String(ff.type||'').toLowerCase()==='receipt'?'sale':'other');
+    pendingDoc={file:f,type:ff.type||'document',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',testOnly:!!(isTest||sr.testOnly),rows:confirmed.lines.map(function(line){return {date:isoDate,type:defaultType,kind:defaultType==='other'?'':(defaultType==='expense'?'expense':'income'),party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:'',category:null}})};
+    sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div>'+(pendingDoc.testOnly?'<div class="irow" style="color:#9a3412"><b>TEST DOCUMENT:</b> This is test material. It can be imported only after an additional explicit confirmation, so you can test the complete business workflow.</div>':'')+'<div class="irow">Review both transaction type and accounting classification. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3>'+rowTable(pendingDoc.rows,pendingDoc.currency)+'<div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
     $p('rvSave').onclick=saveReviewed;$p('rvCancel').onclick=function(){sbx.innerHTML='';pendingDoc=null;$p('upMsg').textContent='Cancelled. Nothing was imported.'};
     $p('upMsg').textContent='Structural review complete. Correct dates and accounting classifications, then confirm. Nothing is saved yet.';
    });
@@ -5833,7 +5844,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var uploadedPath=null,uploadId=null,uploadRecordCreated=false;
   try{
    var reviewed=readReview(),t=toRows(reviewed);
-   if(!t.ok.length){$p('upMsg').textContent='No valid rows. Enter a valid date and amount for at least one row.';return}
+   if(pendingDoc.testOnly&&!window.confirm('This document is marked as test material. Import the reviewed rows into the selected business ledger so you can test the complete workflow?'))return;
+   if(!t.ok.length){$p('upMsg').textContent='No valid rows. Enter a valid date, amount and accounting classification for at least one row.';return}
    var ws=wsId();if(!ws){$p('upMsg').textContent='Create or join a workspace first.';return}
    var projectId='';try{projectId=localStorage.getItem('px_project_'+ws)||''}catch(e){}
    if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
@@ -5858,7 +5870,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:det.type||pendingDoc.type||'other',confidence:'Reviewed',currency:rc});
    if(ins.error)throw ins.error;
    uploadRecordCreated=true;
-   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
+   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,kind:x.kind,category:x.category,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
    $p('upMsg').textContent='Adding '+rows.length+' reviewed row(s) to your business ledger…';
    var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
    if(cf.error)throw cf.error;
@@ -7048,8 +7060,8 @@ function pxCommandHelp(){
    var dayKeys=Object.keys(daily);
    if(window.pxChart)window.pxChart($('pxVolChart'),{id:'pxProjectVolume',title:'Transaction volume',labels:dayKeys.map(function(x){return x.slice(8)}),dates:dayKeys,values:dayKeys.map(function(x){return daily[x]}),fmt:function(v){return Number(v).toLocaleString()+' transactions'}});
    if(window.pxPie)window.pxPie($('pxTxnPie'),txMix,{title:'Transaction mix'});
-   var opMix={};opsSummary.forEach(function(x){var k=String(x.module_key||'operations').replace(/_/g,' ');opMix[k]=(opMix[k]||0)+Number(x.record_count||0)});
-   if(window.pxPie)window.pxPie($('pxOpsPie'),opMix,{title:'Operational activity mix'});
+   var opMix={};opsSummary.forEach(function(x){var k=String(x.module_key||'operations').replace(/_/g,' ');opMix[k]=(opMix[k]||0)+Number(x.amount_total||0)});
+   if(window.pxPie)window.pxPie($('pxOpsPie'),opMix,{title:'Operational value by module'});
    var bt=await sb.from('business_types').select('modules').eq('code',d.business_type).maybeSingle();
    if(bt.error)throw bt.error;
    var modules=(bt.data&&bt.data.modules)||[],cards=[
@@ -7070,10 +7082,9 @@ function pxCommandHelp(){
    if(rows.error)throw rows.error;
    var yearRows=(rows.data||[]).filter(function(x){return String(x.month).slice(0,4)===String(y)});
    var total=yearRows.reduce(function(a,x){a.revenue+=Number(x.profit||0)+0; a.cashIn+=Number(x.money_in||0);a.cashOut+=Number(x.money_out||0);a.closing=Number(x.closing||0);return a},{revenue:0,cashIn:0,cashOut:0,closing:0});
-   $('pxYearCards').innerHTML=[
-    ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]
-   ];
-   if(modules.indexOf('agreements')>=0)$('pxYearCards').innerHTML=$('pxYearCards').innerHTML+'<div class="ls-kpi"><b>'+cash(d.recorded_receivables_outstanding,cur)+'</b><span>Recorded receivables outstanding</span></div>';
+   var yearCards=[['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]];
+   if(modules.indexOf('agreements')>=0)yearCards.push(['Recorded receivables outstanding',d.recorded_receivables_outstanding]);
+   $('pxYearCards').innerHTML=yearCards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
    $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td><button type="button" class="btn alt" data-px-month-open="'+esc(x.month)+'" style="padding:4px 8px">'+esc(x.month)+'</button></td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
    $('pxYearTable').querySelectorAll('[data-px-month-open]').forEach(function(b){b.onclick=function(){var v=b.getAttribute('data-px-month-open');$('pxMonthPick').value=v;$('pxTrYear').value=v.slice(0,4);$('pxTrMonth').value=v.slice(5,7);$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));$('pxMonthPick').dispatchEvent(new Event('change',{bubbles:true}));var reg=$('pxTrRows');if(reg){var panel=reg.closest('.dcard')||reg;panel.scrollIntoView({behavior:'smooth',block:'start'});}};});
    $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Select a month to open its detailed transactions in the register.';
