@@ -5750,11 +5750,11 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  /* ---- document reading ---- */
  var pendingDoc=null;
  function rowTable(rows,cur){
-  var types=[['sale','Sale / service received'],['invoice','Invoice issued'],['receipt','Receipt / payment received'],['expense','Expense paid'],['other','Other']];
+  var types=[['sale','Sale / service received'],['invoice','Invoice issued'],['receipt','Receipt / payment received'],['payment','Payment'],['expense','Expense paid'],['other','Other']];
   var kinds=[['income','Operating income'],['expense','Operating expense'],['principal_in','Loan principal repaid'],['principal_out','Loan principal issued'],['receivable_in','Invoice payment received'],['savings_in','Customer savings received'],['capital','Owner capital introduced'],['transfer','Cash transfer out']];
   var h='<div style="overflow-x:auto"><table class="rv-table"><thead><tr><th>Date</th><th>Transaction type</th><th>Accounting classification</th><th>Customer / description</th><th>Amount</th><th>Currency</th><th>Due</th></tr></thead><tbody>';
   rows.forEach(function(x,i){
-   var type=String(x.type||'other').toLowerCase(),kind=String(x.kind||(type==='expense'?'expense':(['sale','invoice','receipt','payment'].indexOf(type)>=0?'income':''))).toLowerCase();
+   var type=String(x.type||'other').toLowerCase(),kind=String(x.kind||(type==='expense'?'expense':(['sale','receipt','payment'].indexOf(type)>=0?'income':''))).toLowerCase();
    h+='<tr data-i="'+i+'"><td><input type="date" data-k="date" value="'+esc(x.date||'')+'"></td><td><select data-k="type">'+types.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===type?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><select data-k="kind"><option value="">Choose classification</option>'+kinds.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===kind?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input type="number" min="0.01" step="0.01" data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input type="date" data-k="due" value="'+esc(x.due||'')+'"></td></tr>';
   });
   return h+'</tbody></table></div>';
@@ -5770,7 +5770,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var t=String(x.type||'other').toLowerCase();
    if(['invoice','receipt','sale','expense','payment','other'].indexOf(t)<0)t='other';
    var kind=String(x.kind||'').toLowerCase();
-   if(!kind)kind=t==='expense'?'expense':(['invoice','receipt','sale','payment'].indexOf(t)>=0?'income':'');
+   if(!kind)kind=t==='expense'?'expense':(['receipt','sale','payment'].indexOf(t)>=0?'income':'');
    if(!d||!isFinite(a)||a<=0||validKinds.indexOf(kind)<0){bad++;return}
    var due=x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null;
    ok.push({date:d,type:t,kind:kind,category:x.category||null,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:due});
