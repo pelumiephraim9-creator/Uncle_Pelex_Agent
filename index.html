@@ -5669,6 +5669,30 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  async function readDoc(){
   var f=$p('upFile').files[0];if(!f){$p('upMsg').textContent='Choose a document picture first.';return}
   if(!ready()){$p('upMsg').textContent='Sign in to read documents.';return}
+  var structuredFile=/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name||'')||/^image\//i.test(f.type)||/\.(png|jpe?g|webp|bmp|gif|tiff?)$/i.test(f.name||'');
+  if(structuredFile&&typeof window.pxReadFileStructured==='function'&&window.pxStructure){
+   $p('upMsg').textContent='Reading document structure locally…';
+   var sr=await window.pxReadFileStructured(f);
+   if(sr.kind==='error'||sr.kind==='unsupported'){$p('upMsg').textContent=(sr.warnings||['The document could not be read.']).join(' ');return}
+   var sf=sr.fields||{},isTest=/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(sr.text||'');
+   var sbx=$p('rvBox');if(!sbx){sbx=document.createElement('div');sbx.id='rvBox';sbx.className='ilist';$p('upMsg').parentNode.insertBefore(sbx,$p('upMsg'))}
+   if(!sr.lines.length||isTest){
+    pendingDoc=null;
+    sbx.innerHTML='<div class="irow"><b>Document read:</b> '+esc(f.name)+' · '+esc(sr.kind)+'</div>'+(isTest?'<div class="irow">Synthetic/test material detected. These rows are for testing only and cannot be imported.</div>':'<div class="irow">No transaction rows were identified. Nothing has been imported.</div>')+'<pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'No readable text was found.')+'</pre>';
+    $p('upMsg').textContent=isTest?'Test data detected. Nothing has been saved or imported.':((sr.warnings||[]).join(' ')||'Document read locally. Nothing was imported.');
+    return;
+   }
+   window.pxStructure.review(sbx,sr,function(confirmed){
+    var ff=confirmed.fields||{},dateText=String(ff.date||'').trim(),isoDate='',dm=/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/.exec(dateText);
+    if(dm){var months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},mn=months[dm[2].slice(0,3).toLowerCase()];if(mn)isoDate=dm[3]+'-'+String(mn).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0')}
+    else{dm=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(dateText);if(dm)isoDate=dm[3]+'-'+String(Number(dm[2])).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}$/.test(dateText))isoDate=dateText}
+    pendingDoc={file:f,type:'other',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',rows:confirmed.lines.map(function(line){return {date:isoDate,type:'other',party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:''}})};
+    sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div><div class="irow">Rows are initially unclassified. Review each transaction type and date. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3><div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div><div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
+    $p('rvSave').onclick=saveReviewed;$p('rvCancel').onclick=function(){sbx.innerHTML='';pendingDoc=null;$p('upMsg').textContent='Cancelled. Nothing was imported.'};
+    $p('upMsg').textContent='Structural review complete. Correct dates and accounting classifications, then confirm. Nothing is saved yet.';
+   });
+   return;
+  }
   $p('upMsg').textContent='Reading the document...';
   var dataUrl=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var u=String(r.result||'');var ext=(f.name.split('.').pop()||'').toLowerCase();var mime={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext];if(mime&&u.toLowerCase().indexOf('data:application/octet-stream;')===0)u='data:'+mime+';'+u.slice('data:application/octet-stream;'.length);res(u)};r.onerror=function(){rej(new Error('The selected file could not be opened on this device.'))};r.readAsDataURL(f)});
   var raw;

@@ -1,0 +1,24 @@
+name: Pelex structure reader tests
+on:
+  push:
+    branches: [main, feat/pelex-structured-document-reader]
+    paths:
+      - 'pelex_structure.js'
+      - 'pelex_structure_bridge.js'
+      - 'tests/structure-reader.test.cjs'
+      - '.github/workflows/structure-reader-tests.yml'
+  pull_request:
+    paths:
+      - 'pelex_structure.js'
+      - 'pelex_structure_bridge.js'
+      - 'tests/structure-reader.test.cjs'
+      - '.github/workflows/structure-reader-tests.yml'
+jobs:
+  structure-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test tests/structure-reader.test.cjs

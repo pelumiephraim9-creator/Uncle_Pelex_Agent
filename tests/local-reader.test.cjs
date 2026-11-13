@@ -59,3 +59,49 @@ test('CSV and Excel retain the existing explicit confirmation and project scope 
  assert.match(html,/business_projects/);
  assert.match(html,/upConfirm/);
 });
+
+test('new Pelex structure engine reconstructs positioned receipt lines and totals',()=>{
+ const structure=require('../pelex_structure.js');
+ const items=[
+  {str:'Fashion retail sales receipt',x:0,y:100},
+  {str:'Date: 12 Nov 2026',x:0,y:90},
+  {str:'Slip reference: PXL-TEST-018',x:0,y:80},
+  {str:'Description Qty Unit price (NGN) Line total (NGN)',x:0,y:70},
+  {str:"Men's senator fabric 2 18,500.00 37,000.00",x:0,y:60},
+  {str:'Tailoring accessories set 1 7,500.00 7,500.00',x:0,y:50},
+  {str:'Ready-made shirt 1 22,000.00 22,000.00',x:0,y:40},
+  {str:'Subtotal: NGN 66,500.00',x:0,y:30},
+  {str:'Total: NGN 66,500.00',x:0,y:20},
+  {str:'Payment method: Cash',x:0,y:10},
+  {str:'Status: Paid Currency: NGN',x:0,y:0}
+ ];
+ const result=structure.structure(items);
+ assert.equal(result.fields.date,'12 Nov 2026');
+ assert.equal(result.fields.reference,'PXL-TEST-018');
+ assert.equal(result.fields.total,66500);
+ assert.equal(result.fields.currency,'NGN');
+ assert.equal(result.lines.length,3);
+ assert.equal(result.total_from_lines,66500);
+ assert.deepEqual(result.lines.map(x=>x.line_total),[37000,7500,22000]);
+ assert.equal(result.warnings.length,0);
+});
+test('structure engine keeps page groups in document order and ignores testing footer',()=>{
+ const structure=require('../pelex_structure.js');
+ const rows=structure.groupRows([{str:'Page two',x:0,y:-99300},{str:'Page one',x:0,y:700}]);
+ assert.equal(rows[0].text,'Page one');assert.equal(rows[1].text,'Page two');
+ const result=structure.structure([
+  {str:'Men senator fabric 2 18,500.00 37,000.00',x:0,y:30},
+  {str:'This document has no transaction rows to import. Nothing has been added to your ledger.',x:0,y:10}
+ ]);
+ assert.equal(result.lines.length,1);
+});
+test('new bridge, slip runtime and integrated document reader scripts have valid syntax',()=>{
+ for(const name of ['pelex_structure.js','pelex_structure_bridge.js','pelex_addons_runtime.js'])
+  new vm.Script(fs.readFileSync(name,'utf8'),{filename:name});
+ const marker=html.indexOf('async function readDoc()');
+ const scriptStart=html.lastIndexOf('<script',marker);
+ const scriptBody=html.indexOf('>',scriptStart)+1;
+ const scriptEnd=html.indexOf('</script>',marker);
+ assert.ok(marker>=0&&scriptStart>=0&&scriptEnd>scriptBody,'document reading inline script should be present');
+ new vm.Script(html.slice(scriptBody,scriptEnd),{filename:'index.html document reader'});
+});
