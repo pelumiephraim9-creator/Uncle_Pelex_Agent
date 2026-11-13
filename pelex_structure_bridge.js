@@ -25,8 +25,26 @@
  async function ensureOcr(){await loadScript(TESS_URL,function(){return !!window.Tesseract})}
  async function ocrBlob(blob){
   await ensureOcr();
-  var r=await window.Tesseract.recognize(blob,'eng');
-  return (r&&r.data&&r.data.words)||[];
+  var r=await window.Tesseract.recognize(blob,'eng'),data=r&&r.data||{},out=[];
+  // Tesseract's hierarchical block/paragraph/line result is more reliable
+  // than its flat word list for reconstructing receipt columns.
+  (data.blocks||[]).forEach(function(block,bi){
+   (block.paragraphs||[]).forEach(function(par,pi){
+    (par.lines||[]).forEach(function(line,li){
+     var key=bi+':'+pi+':'+li,words=line.words||[];
+     if(words.length)words.forEach(function(word){out.push(Object.assign({},word,{line_key:key}))});
+     else if(line.text)out.push({text:line.text,bbox:line.bbox||{x0:0,y0:0,y1:0},line_key:key});
+    });
+   });
+  });
+  if(out.length)return out;
+  // Compatibility with Tesseract builds that expose only data.lines or words.
+  (data.lines||[]).forEach(function(line,li){
+   var words=line.words||[];
+   if(words.length)words.forEach(function(word){out.push(Object.assign({},word,{line_key:'flat:'+li}))});
+   else if(line.text)out.push({text:line.text,bbox:line.bbox||{x0:0,y0:0,y1:0},line_key:'flat:'+li});
+  });
+  return out.length?out:(data.words||[]);
  }
  function ocrWordsToItems(words,pageOffset){
   // Tesseract returns word-level boxes. Reuse its block/paragraph/line identity
@@ -39,8 +57,8 @@
   (words||[]).forEach(function(w){
    if(!w||!w.text||!String(w.text).trim())return;
    var b=w.bbox||{x0:0,x1:0,y0:0,y1:0};
-   var hasIds=Number(w.block_num)>0&&Number(w.par_num)>0&&Number(w.line_num)>0;
-   var key=hasIds?'ocr:'+w.block_num+':'+w.par_num+':'+w.line_num:null;
+   var hasIds=!!w.line_key||(Number(w.block_num)>0&&Number(w.par_num)>0&&Number(w.line_num)>0);
+   var key=w.line_key?'ocr:'+w.line_key:(hasIds?'ocr:'+w.block_num+':'+w.par_num+':'+w.line_num:null);
    var center=(Number(b.y0||0)+Number(b.y1==null?b.y0||0:b.y1))/2;
    var height=Math.max(1,Math.abs(Number(b.y1||0)-Number(b.y0||0)));
    fallback.push({word:w,bbox:b,key:key,center:center,height:height});
