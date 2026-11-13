@@ -150,6 +150,11 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
    var structured=await window.pxReadFileStructured(file);
    if(structured.kind==='error'||structured.kind==='unsupported'){msg.textContent=(structured.warnings||['Could not read this file.']).join(' ');return}
    var host=doc.getElementById('slipForm'),fields=structured.fields||{};
+   if(/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(structured.text||'')){
+    host.innerHTML='<div style="font-weight:700;color:#92400e">Test document detected</div><div style="font-size:13px;margin-top:6px">This is synthetic testing material. It can be reviewed but cannot be saved as a real transaction.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto;font:inherit">'+esc(structured.text||'')+'</pre>';
+    msg.textContent='Test data detected. Nothing has been saved.';
+    return;
+   }
    if(!structured.lines.length){
     form(doc,{amount:fields.total==null?'':fields.total,date:slipDate(fields.date)||todayISO(),party:(fields.reference?fields.reference+' ':'')+file.name.replace(/\.[^.]+$/,'').slice(0,50),file:file.name,doc:{template:fields.type||structured.kind,templateName:fields.type||'Document',direction:'unknown',category:'Other',number:fields.reference,date:slipDate(fields.date),total:fields.total||0,lines:[]}},(structured.warnings||[]).join(' ')||'No line items were detected. Check the document total and classify the transaction before saving.');
     return;
