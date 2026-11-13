@@ -1147,6 +1147,23 @@ main{min-height:0;height:100%;overflow:hidden}
  .view:not(#v-chat){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 }
 
+/* Theme-aware structured document review and Capture Slip surface */
+.px-structure-review{color:var(--ink)!important;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.px-structure-review label{color:var(--ink)!important;font-weight:600}
+.px-structure-review input,.px-structure-review select,.px-structure-review textarea{background:var(--bg)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:7px;padding:7px;min-height:34px}
+.px-structure-review table{background:var(--panel);color:var(--ink);border-color:var(--line)}
+.px-structure-review th{background:var(--soft);color:var(--ink)!important;font-weight:700}
+.px-structure-review td{color:var(--ink)!important;border-color:var(--line)}
+.px-structure-review button{background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+.px-structure-review button[data-ok]{background:var(--btn)!important;color:var(--btnink)!important;border:0}
+.px-structure-review [data-del]{color:var(--ink)!important}
+.px-structure-review [style*="color:#b45309"],.px-structure-review [style*="color: #b45309"]{color:#a16207!important}
+.px-slip-card{background:var(--panel)!important;color:var(--ink)!important;border:1px solid var(--line)}
+.px-slip-header{background:var(--panel)!important;color:var(--ink)!important}
+.px-slip-close{background:var(--soft)!important;color:var(--ink)!important;border:1px solid var(--line)!important}
+.px-slip-body{background:var(--panel)!important;color:var(--ink)!important}
+#pxSlipModal input,#pxSlipModal select,#pxSlipModal textarea{background:var(--bg)!important;color:var(--ink)!important;border-color:var(--line)!important}
+#pxSlipModal label,#pxSlipModal p,#pxSlipModal b,#pxSlipModal small{color:var(--ink)}
 /* ===== PHASE 4: alerts and document review ===== */
 .al-item{border:1px solid #f1d58a;background:linear-gradient(90deg,#fff8e6,#fff3d6);color:#6b4a00;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5}
 :root[data-theme="dark"] .al-item{background:#3a2e10;color:#f5dca0;border-color:#6b5520}
@@ -3533,7 +3550,45 @@ document.addEventListener('click',function(e){if(imgMode&&e.target.closest&&e.ta
 document.addEventListener('keydown',function(e){if(imgMode&&ta&&e.target===ta&&e.key==='Enter'&&!e.shiftKey){e.stopImmediatePropagation();e.preventDefault();grab()}},true);
 })();
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}
+<script>
+/* Installed iOS Home Screen apps do not have an app-store update flow.
+   Check for a fresh Cloudflare service worker on launch and whenever the app resumes.
+   A newly activated worker takes control and reloads the app shell once. */
+if('serviceWorker' in navigator){
+  (function(){
+    var hadController=!!navigator.serviceWorker.controller,reloading=false;
+    function refreshRegistration(reg){
+      if(reg&&typeof reg.update==='function')reg.update().catch(function(){});
+    }
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(!hadController||reloading)return;
+      reloading=true;
+      try{sessionStorage.setItem('pelex_sw_reloaded','1')}catch(e){}
+      window.location.reload();
+    });
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(reg){
+        refreshRegistration(reg);
+        reg.addEventListener('updatefound',function(){
+          var worker=reg.installing;if(!worker)return;
+          worker.addEventListener('statechange',function(){
+            if(worker.state==='installed'&&navigator.serviceWorker.controller&&reg.waiting){
+              reg.waiting.postMessage({type:'SKIP_WAITING'});
+            }
+          });
+        });
+      }).catch(function(){});
+    });
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='visible'&&navigator.serviceWorker.getRegistration){
+        navigator.serviceWorker.getRegistration().then(refreshRegistration).catch(function(){});
+      }
+    });
+    window.addEventListener('pageshow',function(){
+      if(navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(refreshRegistration).catch(function(){});
+    });
+  })();
+}
 /* ===== Theme, greeting, Settings that really work ===== */
 (function(){
   var root=document.documentElement;
