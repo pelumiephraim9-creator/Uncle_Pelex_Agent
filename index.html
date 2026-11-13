@@ -1400,7 +1400,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
  <div id="payOut" class="ilist"></div><div class="muted dnote" id="payMsg"></div></div>
 <div class="dcard"><h2>Upload data</h2>
   <p class="muted dnote">Invoices, receipts, sales sheets, expense logs. PDF, Word, Excel, PowerPoint, OpenDocument, CSV, text, JSON, XML, HTML and common image files, up to 10 MB. Pelex reads documents first. Financial imports require a separate confirmation.</p>
-  <label class="upcard" id="upDrop"><input type="file" id="upFile" accept=".csv,.tsv,.xls,.xlsx,.xlsm,.pdf,.doc,.docx,.docm,.dotx,.dotm,.odt,.rtf,.txt,.md,.json,.xml,.html,.htm,.ppt,.pptx,.pptm,.ppsx,.odp,.ods,.png,.jpg,.jpeg,.webp,.heic,.heif,.tif,.tiff" hidden><span id="upLabel">Tap to choose a file</span></label>
+  <label class="upcard" id="upDrop" style="position:relative;overflow:hidden"><input type="file" id="upFile" accept=".csv,.tsv,.xls,.xlsx,.xlsm,.pdf,.doc,.docx,.docm,.dotx,.dotm,.odt,.rtf,.txt,.md,.json,.xml,.html,.htm,.ppt,.pptx,.pptm,.ppsx,.odp,.ods,.png,.jpg,.jpeg,.webp,.heic,.heif,.tif,.tiff" aria-label="Choose a business document" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.01;cursor:pointer"><span id="upLabel" style="pointer-events:none">Tap to choose a file</span></label>
   <div id="upReview" class="ilist" hidden></div>
   <div id="upCur" class="ilist" hidden></div>
   <div class="prow" id="upActs" hidden style="margin-top:10px"><button class="btn" id="upConfirm" type="button">Confirm and save</button><button class="btn alt" id="upCancel" type="button">Cancel</button></div>
@@ -5727,36 +5727,58 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $p('upMsg').textContent=pendingDoc.rows.length?'Review the suggested rows. Nothing is imported until you confirm.':'Document read successfully. Nothing was imported.';
  }
  async function saveReviewed(){
-  var reviewed=readReview();var t=toRows(reviewed);
-  if(!t.ok.length){$p('upMsg').textContent='No valid rows. Fix the dates or amounts first.';return}
-  var ws=wsId();if(!ws){$p('upMsg').textContent='Create or join a workspace first.';return}
-  var cur=t.ok.map(function(x){return x.currency}).filter(Boolean);var uniq=cur.filter(function(c,i){return cur.indexOf(c)===i});
-  var chosen=(document.querySelector('input[name="upcur"]:checked')||{}).value;
-  var rc=uniq.length===1?uniq[0]:(chosen||(uniq.length?null:null));
-  if(!rc){var w=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();rc=(w.data&&w.data.reporting_currency)||null}
-  if(!rc){$p('upMsg').textContent='Set the currency for these rows first.';return}
-  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws)||null}catch(e){}if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
-  var id=(crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
-  var path=ws+'/'+id+'/'+pendingDoc.file.name.replace(/[^A-Za-z0-9._-]/g,'_');
-  $p('upMsg').textContent='Saving...';
-  var up=await sb.storage.from('workspace-uploads').upload(path,pendingDoc.file,{upsert:false});
-  if(up.error){$p('upMsg').textContent='Could not store the file: '+up.error.message;return}
-  var fh=await window.pxFileHash(pendingDoc.file);
-  if(await window.pxDuplicate(fh)){$p('upMsg').textContent='This file is already recorded. Nothing was added again.';return}
-  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:(localStorage.getItem('px_project_'+ws)||null),file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:pendingDoc.type,confidence:'Reviewed',currency:rc});
-  if(ins.error){$p('upMsg').textContent='File stored, but its record was not saved: '+ins.error.message;return}
-  var projectId=null;try{projectId=localStorage.getItem('px_project_'+ws)||null}catch(e){}if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
-  var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
-  var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
-  if(cf.error){$p('upMsg').textContent='Saved the file, but the rows were not added: '+cf.error.message;return}
-  $p('upMsg').textContent='Saved. '+cf.data+' rows added to the ledger'+(t.bad?' ('+t.bad+' rows skipped: unclear date or amount)':'')+'.';
-  $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
+  var saveButton=$p('rvSave');
+  if(!pendingDoc||!pendingDoc.file){$p('upMsg').textContent='The reviewed document is no longer available. Select it again and review it before importing.';return}
+  if(saveButton&&saveButton.disabled)return;
+  if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving…'}
+  var uploadedPath=null,uploadId=null,uploadRecordCreated=false;
+  try{
+   var reviewed=readReview(),t=toRows(reviewed);
+   if(!t.ok.length){$p('upMsg').textContent='No valid rows. Enter a valid date and amount for at least one row.';return}
+   var ws=wsId();if(!ws){$p('upMsg').textContent='Create or join a workspace first.';return}
+   var projectId='';try{projectId=localStorage.getItem('px_project_'+ws)||''}catch(e){}
+   if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
+   var cur=t.ok.map(function(x){return x.currency}).filter(Boolean),uniq=cur.filter(function(c,i){return cur.indexOf(c)===i});
+   var chosen=(document.querySelector('input[name="upcur"]:checked')||{}).value;
+   var rc=uniq.length===1?uniq[0]:(chosen||null);
+   if(!rc){var w=await sb.from('workspaces').select('reporting_currency').eq('id',ws).single();if(w.error)throw w.error;rc=(w.data&&w.data.reporting_currency)||null}
+   if(!rc){$p('upMsg').textContent='Set the currency for these rows first.';return}
+   if(!window.sb||!curUser||!curUser.id)throw new Error('Your sign-in session is not ready. Refresh and sign in again.');
+   $p('upMsg').textContent='Checking for an existing copy…';
+   var fh=await window.pxFileHash(pendingDoc.file);
+   if(await window.pxDuplicate(fh,projectId)){$p('upMsg').textContent='This file is already recorded in this project. Nothing was imported again.';return}
+   var id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+   uploadId=id;
+   var safeName=pendingDoc.file.name.replace(/[^A-Za-z0-9._-]/g,'_');
+   var path=ws+'/'+projectId+'/'+id+'/'+safeName;
+   $p('upMsg').textContent='Uploading the reviewed document…';
+   var up=await sb.storage.from('workspace-uploads').upload(path,pendingDoc.file,{upsert:false});
+   if(up.error)throw up.error;
+   uploadedPath=path;
+   var det=detect((pendingDoc.type||'document')+' '+t.ok.map(function(x){return x.type}).join(' '));
+   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:det.type||pendingDoc.type||'other',confidence:'Reviewed',currency:rc});
+   if(ins.error)throw ins.error;
+   uploadRecordCreated=true;
+   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
+   $p('upMsg').textContent='Adding '+rows.length+' reviewed row(s) to your business ledger…';
+   var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
+   if(cf.error)throw cf.error;
+   $p('upMsg').textContent='Saved successfully. '+cf.data+' row(s) added to the ledger'+(t.bad?' ('+t.bad+' incomplete row(s) skipped)':'')+'.';
+   $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
+  }catch(e){
+   var detail=(e&&e.message)||String(e)||'Unknown error';
+   if(uploadRecordCreated&&uploadId){try{await sb.from('uploads').delete().eq('id',uploadId)}catch(cleanErr){}}
+   if(uploadedPath){try{await sb.storage.from('workspace-uploads').remove([uploadedPath])}catch(cleanErr){}}
+   $p('upMsg').textContent='Import did not complete: '+detail+'. Please correct the issue and try again.';
+  }finally{
+   if(saveButton){saveButton.disabled=false;saveButton.textContent='Confirm and import transactions'}
+  }
  }
  function wireUpload(){
   var fi=$p('upFile');if(!fi||$p('upReadBtn'))return;
   var b=document.createElement('button');b.id='upReadBtn';b.type='button';b.className='btn';b.textContent='Read this document with Pelex';b.hidden=true;b.style.marginTop='10px';
   $p('upMsg').parentNode.insertBefore(b,$p('upMsg'));
-  b.onclick=readDoc;
+  b.onclick=function(){readDoc().catch(function(e){$p('upMsg').textContent='The document could not be read: '+((e&&e.message)||'Please try again with a clearer PDF or image.');});};
   fi.addEventListener('change',function(){var f=fi.files[0];b.hidden=!(f&&/\.(pdf|doc|docx|docm|dotx|dotm|xls|xlsx|xlsm|ppt|pptx|pptm|ppsx|odt|ods|odp|csv|tsv|txt|md|rtf|json|xml|html?|png|jpe?g|webp|heic|heif|tiff?)$/i.test(f.name));if(f&&!b.hidden)$p('upMsg').textContent='Tap “Read this document with Pelex” to extract the rows. Nothing is saved until you confirm.'});
  }
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){setTimeout(function(){buildAlerts();loadAlerts();wireUpload()},300)}};
