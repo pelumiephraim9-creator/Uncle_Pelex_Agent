@@ -1,7 +1,7 @@
 name: Pelex structure reader tests
 on:
   push:
-    branches: [main, feat/pelex-structured-document-reader]
+    branches: [main, feat/pelex-structured-document-reader, fix/pelex-editable-document-review]
     paths:
       - 'pelex_structure.js'
       - 'pelex_structure_bridge.js'
