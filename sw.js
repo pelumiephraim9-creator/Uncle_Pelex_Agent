@@ -1,6 +1,6 @@
 // Pelex PWA service worker. Bump CACHE on each app-shell release.
 // Navigation requests always go to Cloudflare first; cache is an offline fallback only.
-const CACHE='uncle-pelex-v3';
+const CACHE='uncle-pelex-v4';
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
