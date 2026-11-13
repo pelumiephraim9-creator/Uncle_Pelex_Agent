@@ -50,7 +50,7 @@
     var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png')});
     if(blob){
      var words=await ocrBlob(blob);
-     words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:-offset-b.y0})});
+     words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:-offset-(b.y1==null?b.y0:b.y1)})});
     }
    }
   }
@@ -59,7 +59,7 @@
  }
  async function pictureItems(file){
   var words=await ocrBlob(file);
-  return words.filter(function(w){return w.text&&w.text.trim()}).map(function(w){var b=w.bbox||{x0:0,y0:0};return {str:w.text,x:b.x0,y:-b.y0}});
+  return words.filter(function(w){return w.text&&w.text.trim()}).map(function(w){var b=w.bbox||{x0:0,y0:0};return {str:w.text,x:b.x0,y:-(b.y1==null?b.y0:b.y1)}});
  }
  function isStructuredFile(file){
   return !!file&&(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name||'')||/^image\//i.test(file.type)||/\.(png|jpe?g|webp|bmp|gif|tiff?)$/i.test(file.name||''));
