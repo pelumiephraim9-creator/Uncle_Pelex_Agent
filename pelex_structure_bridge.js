@@ -50,7 +50,7 @@
     var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png')});
     if(blob){
      var words=await ocrBlob(blob);
-     words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:offset-b.y0})});
+     words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:-offset-b.y0})});
     }
    }
   }
