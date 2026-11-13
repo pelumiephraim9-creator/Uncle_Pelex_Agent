@@ -70,6 +70,20 @@
   var lines=(result.lines||[]).map(function(l){return {description:l.description||'',qty:Number(l.qty)||1,unit_price:l.unit_price==null?null:Number(l.unit_price),line_total:Number(l.line_total)||0}});
   var f=Object.assign({},result.fields||{});
   function draw(){
+   // Read the active app theme from the document that owns this review.
+   // Inline styles are intentional: they also work when this component is mounted
+   // inside a popup/container whose styles do not inherit the main page stylesheet.
+   var themeDoc=container.ownerDocument||document;
+   var themeRoot=themeDoc.documentElement;
+   var themeWin=themeDoc.defaultView||window;
+   var themeCss=themeWin.getComputedStyle(themeRoot);
+   function themeVar(name,fallback){return (themeCss.getPropertyValue(name)||'').trim()||fallback}
+   var panelColor=themeVar('--panel','#ffffff');
+   var inkColor=themeVar('--ink','#17243b');
+   var lineColor=themeVar('--line','#dfe4ee');
+   var mutedColor=themeVar('--muted','#68758c');
+   var fieldStyle='width:100%;box-sizing:border-box;padding:8px 10px;min-height:38px;border:1px solid '+lineColor+'!important;border-radius:9px;background:'+panelColor+'!important;background-color:'+panelColor+'!important;color:'+inkColor+'!important;-webkit-text-fill-color:'+inkColor+'!important;color-scheme:light!important;opacity:1!important';
+   var labelStyle='display:block;color:'+inkColor+'!important;font-weight:600';
    var total=lines.reduce(function(a,l){return a+(Number(l.line_total)||0)},0);
    var warnings=[];
    if(!lines.length)warnings.push('No line items are present. Add a row or cancel.');
@@ -77,11 +91,11 @@
    container.innerHTML='<div class="px-structure-review" style="font-family:Arial,Helvetica,sans-serif;max-width:100%;overflow:auto">'+
     '<div style="font-weight:700">'+esc(f.type||'document')+' · '+esc(f.currency||'')+'</div>'+(result.testOnly?'<div style="padding:8px;margin:8px 0;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:12px">TEST SAMPLE · You can edit the extracted details and rows, but this sample cannot be saved to the business ledger.</div>':'')+
     '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0;font-size:13px">'+
-    ['type','date','reference','payment_method','status','currency','subtotal'].map(function(k){return '<label>'+esc(k.replace(/_/g,' '))+'<input data-f="'+k+'" value="'+esc(f[k]==null?'':f[k])+'" style="width:100%;box-sizing:border-box;padding:6px"></label>'}).join('')+'</div>'+
+    ['type','date','reference','payment_method','status','currency','subtotal'].map(function(k){return '<label style="'+labelStyle+'">'+esc(k.replace(/_/g,' '))+'<input data-f="'+k+'" value="'+esc(f[k]==null?'':f[k])+'" style="'+fieldStyle+'"></label>'}).join('')+'</div>'+
     '<div class="px-review-table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="px-review-table" style="width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:12px"><colgroup><col style="width:39%"><col style="width:12%"><col style="width:20%"><col style="width:21%"><col style="width:8%"></colgroup><tr><th align="left">Description</th><th>Qty</th><th>Unit</th><th>Line total</th><th></th></tr>'+
-    lines.map(function(l,i){return '<tr><td><input data-i="'+i+'" data-k="description" value="'+esc(l.description)+'" style="width:100%;min-width:0;box-sizing:border-box"></td><td><input data-i="'+i+'" data-k="qty" type="number" min="0.01" step="any" value="'+esc(l.qty)+'" style="width:100%;min-width:0;box-sizing:border-box"></td><td><input data-i="'+i+'" data-k="unit_price" type="number" min="0" step="any" value="'+esc(l.unit_price==null?'':l.unit_price)+'" style="width:100%;min-width:0;box-sizing:border-box"></td><td><input data-i="'+i+'" data-k="line_total" type="number" min="0" step="0.01" value="'+esc(l.line_total)+'" style="width:100%;min-width:0;box-sizing:border-box"></td><td><button type="button" data-del="'+i+'">×</button></td></tr>'}).join('')+
+    lines.map(function(l,i){return '<tr><td><input data-i="'+i+'" data-k="description" value="'+esc(l.description)+'" style="'+fieldStyle+';min-width:0"></td><td><input data-i="'+i+'" data-k="qty" type="number" min="0.01" step="any" value="'+esc(l.qty)+'" style="'+fieldStyle+';min-width:0"></td><td><input data-i="'+i+'" data-k="unit_price" type="number" min="0" step="any" value="'+esc(l.unit_price==null?'':l.unit_price)+'" style="'+fieldStyle+';min-width:0"></td><td><input data-i="'+i+'" data-k="line_total" type="number" min="0" step="0.01" value="'+esc(l.line_total)+'" style="'+fieldStyle+';min-width:0"></td><td><button type="button" data-del="'+i+'" style="color:'+inkColor+'!important;background:'+panelColor+'!important;border:1px solid '+lineColor+'!important">×</button></td></tr>'}).join('')+
     '</table></div><button type="button" data-add="1" style="margin-top:8px">+ Add row</button>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px"><label>Document total<input data-total="1" type="number" min="0" step="0.01" value="'+esc(f.total==null?'':f.total)+'" style="width:100%;box-sizing:border-box;padding:6px"></label><div><b>Total from rows: '+esc(total.toLocaleString())+'</b></div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px"><label style="'+labelStyle+'">Document total<input data-total="1" type="number" min="0" step="0.01" value="'+esc(f.total==null?'':f.total)+'" style="'+fieldStyle+'"></label><div><b style="color:'+inkColor+'!important">Total from rows: '+esc(total.toLocaleString())+'</b></div></div>'+
     warnings.map(function(w){return '<div style="color:#b45309;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
     (result.warnings||[]).map(function(w){return '<div style="color:#64748b;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
     '<button type="button" data-ok="1" style="margin-top:10px;width:100%;padding:10px;border:0;border-radius:999px;background:#0b1b4a;color:#fff">'+(result.testOnly?'Finish test review':'Confirm review')+'</button></div>';
