@@ -5423,7 +5423,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 (function(){
  function $l(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
- var T=[],U=[],rep=null,DAY=864e5;
+ var T=[],U=[],O=[],rep=null,DAY=864e5;
  function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
  function money(n,c){try{return (c||'')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}catch(e){return String(n)}}
  function iso(d){return d.toISOString().slice(0,10)}
@@ -5443,8 +5443,24 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function maxDate(){var all=T.map(function(x){return x.entry_date}).concat(T.map(function(x){return x.due_date}).filter(Boolean));all.sort();return all.length?all[all.length-1]:iso(new Date())}
  function minDate(){var all=T.map(function(x){return x.entry_date});all.sort();return all.length?all[0]:iso(new Date())}
  function setSliderFromDate(d){var s=$l('lsSlider');var a=parseD(minDate()),b=parseD(maxDate()),c=parseD(d);if(!s||isNaN(a)||isNaN(b))return;var days=Math.round((b-a)/DAY);s.max=Math.max(0,days);s.value=Math.max(0,Math.min(days,Math.round((c-a)/DAY)))}
+ function renderDataEntry(){
+  var hidden=window.__lsHiddenFiles||{};
+  var ledgerRecords=T.filter(function(x){return !(x.upload_id&&hidden[x.upload_id])});
+  var linked={};ledgerRecords.forEach(function(x){if(x.source_key)linked[String(x.source_key)]=true});
+  var operational=O.filter(function(x){return !linked['business_project_record:'+x.id]});
+  var counts={};T.forEach(function(x){if(x.upload_id)counts[x.upload_id]=(counts[x.upload_id]||0)+1});
+  var files=U.filter(function(u){return !hidden[u.id]});
+  var recordRows=ledgerRecords.map(function(x){return {date:x.entry_date,type:x.entry_type||x.kind,party:(x.party&&!/^\d+(?:\.\d+)?$/.test(String(x.party)))?x.party:(x.category||'Business transaction'),amount:x.amount,currency:x.currency,source:x.upload_id?'Uploaded document':'Ledger transaction',ref:x.source_key||''}});
+  operational.forEach(function(x){recordRows.push({date:x.record_date,type:x.record_type,party:(x.party&&!/^\d+(?:\.\d+)?$/.test(String(x.party)))?x.party:(x.data&&x.data.details?x.data.details:x.module_key),amount:x.amount,currency:x.currency,source:'Business operations · '+String(x.module_key||'').replace(/_/g,' '),ref:x.reference||''})});
+  recordRows.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
+  var recordHtml=recordRows.length?'<div class="dnote" style="margin:12px 0 6px"><b>Business records</b> · '+recordRows.length+' saved record(s) across the ledger and operations</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Date</th><th>Record type</th><th>Description / party</th><th>Amount</th><th>Currency</th><th>Source</th><th>Reference</th></tr></thead><tbody>'+recordRows.map(function(x){return '<tr><td>'+esc(String(x.date||'').slice(0,10))+'</td><td>'+esc(String(x.type||'record').replace(/_/g,' '))+'</td><td>'+esc(x.party||'Business transaction')+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+esc(x.currency||'-')+'</td><td>'+esc(x.source)+'</td><td>'+esc(x.ref||'-')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No saved business records for this project yet.</div>';
+  var fileHtml=files.length?'<div class="dnote" style="margin:14px 0 6px"><b>Uploaded documents</b> · '+files.length+' file(s)</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>File</th><th>Detected type</th><th>Rows saved</th><th>Status</th><th></th></tr></thead><tbody>'+files.map(function(u){var st=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';return '<tr data-file="'+u.id+'"><td>'+esc(u.file_name||'Untitled document')+'</td><td>'+esc(u.detected_type||'Not classified')+' <small class="muted">('+esc(u.confidence||'')+')</small></td><td>'+Number(counts[u.id]||0)+'</td><td>'+st+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No uploaded documents for this project yet.</div>';
+  var savedRows=Object.keys(counts).reduce(function(n,k){return n+counts[k]},0);
+  $l('lsUploads').innerHTML='<div class="ls-kpis"><div class="ls-kpi"><b>'+recordRows.length+'</b><span>Saved records</span></div><div class="ls-kpi"><b>'+files.length+'</b><span>Uploaded documents</span></div><div class="ls-kpi"><b>'+savedRows+'</b><span>Rows saved from uploads</span></div></div>'+recordHtml+fileHtml;
+ }
  function render(){
   var wrap=$l('lsWrap');if(!wrap)return;
+  renderDataEntry();
   var curs=[];T.forEach(function(x){if(x.currency&&curs.indexOf(x.currency)<0)curs.push(x.currency)});
   var sel=$l('lsCur');
   if(!rep||curs.indexOf(rep)<0)rep=curs[0]||null;
@@ -5475,16 +5491,20 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="ls-kpi"><b>'+money(outT,rep)+'</b><span>Outstanding</span></div>'+
    '<div class="ls-kpi '+(overdue.length?'warn':'')+'"><b>'+overdue.length+' overdue</b><span>'+(overdue.length?money(overdueT,rep)+' past due':'Nothing past due')+'</span></div>';
   // revenue by week (invoices), last 12 weeks to the chosen date
-  var gran=($l('lsGran')&&$l('lsGran').value)||'week',end=parseD(a),weeks=[];
-  if(gran==='day'){for(var w=29;w>=0;w--){var dd=new Date(end);dd.setDate(dd.getDate()-w);weeks.push(iso(dd))}}
-  else{for(var w2=11;w2>=0;w2--){var d=new Date(end);d.setDate(d.getDate()-w2*7);weeks.push(weekStart(iso(d)))}}
-  var keyOf=gran==='day'?function(x){return String(x.entry_date)}:function(x){return weekStart(x.entry_date)};
-  var rev=weeks.map(function(ws){return inv.filter(function(x){return keyOf(x)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
-  var vol=weeks.map(function(ws){return rows.filter(function(x){return keyOf(x)===ws}).length});
-  var lbl=weeks.map(function(s){return s.slice(5)});
-  window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:weeks,values:rev,fmt:function(v){return money(v,rep)},title:'Revenue'});
-  $l('lsRevTable').innerHTML='<table class="ls-table"><tr><th>Week starting</th><th>Invoiced</th></tr>'+weeks.map(function(w,i){return '<tr><td>'+esc(w)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</table>';
-  window.pxChart&&window.pxChart($l('lsVol'),{id:'lsVol',labels:lbl,dates:weeks,values:vol,fmt:function(v){return v+' entries'},title:'Volume'});
+  var gran=($l('lsGran')&&$l('lsGran').value)||'week',end=parseD(a),periods=[];
+  if(gran==='day'){for(var w=29;w>=0;w--){var dd=new Date(end);dd.setDate(dd.getDate()-w);periods.push(iso(dd))}}
+  else if(gran==='month'){for(var m=11;m>=0;m--){var md=new Date(end.getFullYear(),end.getMonth()-m,1);periods.push(md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0'))}}
+  else{for(var w2=11;w2>=0;w2--){var d=new Date(end);d.setDate(d.getDate()-w2*7);periods.push(weekStart(iso(d)))}}
+  var keyOf=gran==='day'?function(x){return String(x.entry_date).slice(0,10)}:gran==='month'?function(x){return String(x.entry_date).slice(0,7)}:function(x){return weekStart(x.entry_date)};
+  var revenueRows=rows.filter(function(x){return x.entry_type==='invoice'||x.entry_type==='sale'});
+  var rev=periods.map(function(p){return revenueRows.filter(function(x){return keyOf(x)===p}).reduce(function(sum,x){return sum+Number(x.amount)},0)});
+  var vol=periods.map(function(p){return rows.filter(function(x){return keyOf(x)===p}).length});
+  var lbl=periods.map(function(p){return gran==='day'?p.slice(5):p});
+  var periodLabel=gran==='day'?'day':gran==='month'?'month':'week';
+  window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:periods,values:rev,fmt:function(v){return money(v,rep)},title:'Sales and invoices by '+periodLabel});
+  var activePeriods=periods.map(function(p,i){return {period:p,value:rev[i]}}).filter(function(x){return x.value>0});
+  $l('lsRevTable').innerHTML=activePeriods.length?'<div class="dnote">Only periods with recorded sales or invoices are listed.</div><table class="ls-table"><thead><tr><th>'+(gran==='day'?'Date':gran==='month'?'Month':'Week starting')+'</th><th>Sales and invoices</th></tr></thead><tbody>'+activePeriods.map(function(x){return '<tr><td>'+esc(x.period)+'</td><td>'+money(x.value,rep)+'</td></tr>'}).join('')+'</tbody></table>':'<div class="ls-empty">No sales or invoices were recorded in this date range.</div>';
+  window.pxChart&&window.pxChart($l('lsVol'),{id:'lsVol',labels:lbl,dates:periods,values:vol,fmt:function(v){return v+' entries'},title:'Transaction volume by '+periodLabel});
   // counts by type
   var types={};rows.forEach(function(x){types[x.entry_type]=(types[x.entry_type]||0)+1});
   $l('lsTypes').innerHTML=Object.keys(types).map(function(t){return '<div class="irow">'+esc(t)+': <b>'+types[t]+'</b></div>'}).join('')||'<div class="ls-empty">No entries yet.</div>';
@@ -5494,25 +5514,20 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     var p=parties[x.party||'Unnamed'];var paid=p&&p.rec>=p.inv;var late=x.due_date&&x.due_date<a;
     var st=paid?'<span class="ls-pill ok">Paid</span>':late?'<span class="ls-pill bad">Overdue</span>':'<span class="ls-pill open">Open</span>';
     return '<tr><td>'+esc(x.party||'Unnamed')+'</td><td>'+money(x.amount,rep)+'</td><td>'+esc(x.due_date||'-')+'</td><td>'+st+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No invoices up to this date.</div>';
-  // data entry: each upload
-  var cnt={};T.forEach(function(x){if(x.upload_id)cnt[x.upload_id]=(cnt[x.upload_id]||0)+1});
-  var Uv=U.filter(function(u){return !(window.__lsHiddenFiles&&window.__lsHiddenFiles[u.id])});
-  $l('lsUploads').innerHTML=Uv.length?'<table class="ls-table"><tr><th>File</th><th>Type</th><th>Rows</th><th>Status</th><th></th></tr>'+Uv.map(function(u){
-    var s=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';
-    return '<tr data-file="'+u.id+'" style="cursor:pointer"><td>'+esc(u.file_name)+'</td><td>'+esc(u.detected_type||'-')+' <small class="muted">('+esc(u.confidence||'-')+')</small></td><td>'+(cnt[u.id]||0)+'</td><td>'+s+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</table><div class="muted dnote">Tap a file to see its own charts and totals.</div>':'<div class="ls-empty">No uploads yet.</div>';
   $l('lsCount').textContent=T.length+' ledger rows \u00b7 '+U.length+' uploads \u00b7 as of '+a;
   var sl=$l('lsSlider');setSliderFromDate(a);
   window.__lsData={T:Tc,U:U,rep:rep,asof:a};if(window.__anRender)window.__anRender();
   window.__lsSummary={asof:a,currency:rep,invoiced:invT,received:recT,outstanding:outT,overdue_count:overdue.length,overdue_amount:overdueT,overdue:overdue.slice(0,10),entries_by_type:types,uploads:U.length,ledger_rows:T.length};
  }
  async function load(){
-  var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
+  var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];O=[];render();return}
   var project='';try{project=localStorage.getItem('px_project_'+w)||''}catch(e){}
-  if(!project||project==='all'){T=[];U=[];render();$l('lsCount').textContent='Select one business project to view its analysis and uploads. Portfolio totals are not merged.';return}
-  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id').eq('workspace_id',w).eq('project_id',project).order('entry_date',{ascending:true}).limit(5000);
+  if(!project||project==='all'){T=[];U=[];O=[];render();$l('lsCount').textContent='Select one business project to view its analysis and uploads. Portfolio totals are not merged.';return}
+  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id,source_key').eq('workspace_id',w).eq('project_id',project).order('entry_date',{ascending:true}).limit(5000);
   var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at,project_id').eq('workspace_id',w).eq('project_id',project).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
-  if(e.error||u.error){$l('lsCount').textContent='Project analysis could not be loaded: '+((e.error||u.error).message||'Please refresh.');return}
-  T=e.data||[];U=u.data||[];render();
+  var o=await sb.from('business_project_records').select('id,module_key,record_type,record_date,amount,currency,party,reference,status,created_at').eq('workspace_id',w).eq('project_id',project).order('record_date',{ascending:false}).limit(5000);
+  if(e.error||u.error||o.error){$l('lsCount').textContent='Project records could not be loaded: '+((e.error||u.error||o.error).message||'Please refresh.');return}
+  T=e.data||[];U=u.data||[];O=o.data||[];render();
  }
  /* chat with the agent about this ledger */
  async function ask(){
@@ -5533,17 +5548,17 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var wrap=document.createElement('div');wrap.id='lsWrap';wrap.className='ls-wrap';
   wrap.innerHTML=
    '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
-   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="week">Weekly</option><option value="day">Daily (last 30 days)</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
-   '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
+   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="day">Daily · last 30 days</option><option value="week">Weekly · last 12 weeks</option><option value="month">Monthly · last 12 months</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
+   '<div class="ls-tl"><button type="button" class="btn alt" id="lsBack" aria-label="Move to previous date">Back</button><input type="range" id="lsSlider" min="0" max="0" value="0" aria-label="Move analysis date"><button type="button" class="btn alt" id="lsForward" aria-label="Move to next date">Forward</button></div>'+
    '<div id="lsDays"></div><div id="lsDayView"></div><div id="lsFileBar"></div><div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
    '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
-   '<div class="dnote" style="margin-top:12px"><b>Revenue, last 12 weeks</b></div><div id="lsRev"></div>'+
+   '<div class="dnote" style="margin-top:12px"><b>Sales and invoices</b></div><div id="lsRev"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div><div id="lsRevTable"></div></details>'+
-   '<div class="dnote" style="margin-top:12px"><b>Volume, last 12 weeks</b></div><div id="lsVol"></div>'+
+   '<div class="dnote" style="margin-top:12px"><b>Transaction volume</b></div><div id="lsVol"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div id="lsTypes"></div></details></div></div>'+
    '<div class="dcard"><h2>Project management</h2><div class="dnote">Each invoice becomes a workflow step: issued, due, then paid or overdue.</div><div id="lsFlow"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div class="dnote">Overdue means the due date has passed and less than the invoiced amount has been received for that customer.</div></details></div>'+
-   '<div class="dcard"><h2>Data entry</h2><div class="dnote">Every upload, with the type Pelex detected and how many rows were saved.</div><div id="lsUploads"></div></div>'+
+   '<div class="dcard"><h2>Data entry</h2><div class="dnote">Saved transactions and uploaded documents, including Pelex’s detected document type and the number of ledger rows saved.</div><div id="lsUploads"></div></div>'+
    '<div class="dcard"><h2>Ask Pelex about this data</h2><div class="dnote">Ask anything about your ledger: what is overdue, which customers pay late, what to chase first.</div>'+
    '<div class="ls-chat-log" id="lsLog"></div>'+
    '<div class="supbar"><input class="inp" id="lsAsk" placeholder="For example: which invoices should I chase first?" maxlength="500"><button class="btn" id="lsSend" type="button">Ask</button></div></div>';
@@ -5551,10 +5566,13 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsCur').onchange=function(){rep=this.value;render()};
   $l('lsGran').onchange=function(){render()};
   $l('lsDate').onchange=function(){render()};
+  function moveAnalysisDate(direction){var a=parseD(asOf());if(!a||isNaN(a.getTime()))a=parseD(maxDate());var gran=$l('lsGran').value;if(gran==='month'){a.setDate(1);a.setMonth(a.getMonth()+direction)}else{a.setDate(a.getDate()+direction*(gran==='week'?7:1))}var lo=parseD(minDate()),hi=parseD(maxDate());if(a<lo)a=lo;if(a>hi)a=hi;$l('lsDate').value=iso(a);render()}
+  $l('lsBack').onclick=function(){moveAnalysisDate(-1)};
+  $l('lsForward').onclick=function(){moveAnalysisDate(1)};
   $l('lsSlider').oninput=function(){var a=parseD(minDate());a.setDate(a.getDate()+Number(this.value));$l('lsDate').value=iso(a);render()};
   $l('lsSend').onclick=ask;$l('lsAsk').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}});
  }
- window.__lsSet=function(t,u){T=t;U=u;rep=null;render()};
+ window.__lsSet=function(t,u,o){T=t;U=u;O=o||[];rep=null;render()};
  window.__lsRender=function(){render()};
  window.__lsLoad=function(){load()};
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){build();setTimeout(load,200)}};
@@ -5750,19 +5768,31 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  /* ---- document reading ---- */
  var pendingDoc=null;
  function rowTable(rows,cur){
-  var h='<table class="rv-table"><tr><th>Date</th><th>Type</th><th>Customer</th><th>Amount</th><th>Currency</th><th>Due</th></tr>';
-  rows.forEach(function(x,i){h+='<tr data-i="'+i+'"><td><input data-k="date" value="'+esc(x.date||'')+'"></td><td><input data-k="type" value="'+esc(x.type||'other')+'"></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input data-k="due" value="'+esc(x.due||'')+'"></td></tr>'});
-  return h+'</table>';
+  var types=[['sale','Sale / service received'],['invoice','Invoice issued'],['receipt','Receipt / payment received'],['payment','Payment'],['expense','Expense paid'],['other','Other']];
+  var kinds=[['income','Operating income'],['expense','Operating expense'],['principal_in','Loan principal repaid'],['principal_out','Loan principal issued'],['receivable_in','Invoice payment received'],['savings_in','Customer savings received'],['capital','Owner capital introduced'],['transfer','Cash transfer out']];
+  var h='<div style="overflow-x:auto"><table class="rv-table"><thead><tr><th>Date</th><th>Transaction type</th><th>Accounting classification</th><th>Customer / description</th><th>Amount</th><th>Currency</th><th>Due</th></tr></thead><tbody>';
+  rows.forEach(function(x,i){
+   var type=String(x.type||'other').toLowerCase(),kind=String(x.kind||(type==='expense'?'expense':(['sale','receipt','payment'].indexOf(type)>=0?'income':''))).toLowerCase();
+   h+='<tr data-i="'+i+'"><td><input type="date" data-k="date" value="'+esc(x.date||'')+'"></td><td><select data-k="type">'+types.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===type?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><select data-k="kind"><option value="">Choose classification</option>'+kinds.map(function(v){return '<option value="'+v[0]+'"'+(v[0]===kind?' selected':'')+'>'+esc(v[1])+'</option>'}).join('')+'</select></td><td><input data-k="party" value="'+esc(x.party||'')+'"></td><td><input type="number" min="0.01" step="0.01" data-k="amount" value="'+esc(x.amount==null?'':x.amount)+'"></td><td><input data-k="currency" value="'+esc(x.currency||cur||'')+'"></td><td><input type="date" data-k="due" value="'+esc(x.due||'')+'"></td></tr>';
+  });
+  return h+'</tbody></table></div>';
  }
  function readReview(){
-  var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('input[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=inp.value.trim()});out.push(o)});return out;
+  var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=String(inp.value==null?'':inp.value).trim()});out.push(o)});return out;
  }
  function toRows(list){
-  var ok=[],bad=0;
-  list.forEach(function(x){var d=x.date&&!isNaN(new Date(x.date))?new Date(x.date).toISOString().slice(0,10):null;var a=parseFloat(String(x.amount).replace(/[^0-9.\-]/g,''));
-   if(!d||isNaN(a)){bad++;return}
-   var t=['invoice','receipt','sale','expense','payment','other'].indexOf(String(x.type).toLowerCase())>=0?String(x.type).toLowerCase():'other';
-   ok.push({date:d,type:t,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null})});
+  var ok=[],bad=0,validKinds=['income','expense','principal_in','principal_out','receivable_in','savings_in','capital','transfer'];
+  list.forEach(function(x){
+   var d=x.date&&!isNaN(new Date(x.date))?new Date(x.date).toISOString().slice(0,10):null;
+   var a=parseFloat(String(x.amount).replace(/[^0-9.\\-]/g,''));
+   var t=String(x.type||'other').toLowerCase();
+   if(['invoice','receipt','sale','expense','payment','other'].indexOf(t)<0)t='other';
+   var kind=String(x.kind||'').toLowerCase();
+   if(!kind)kind=t==='expense'?'expense':(['receipt','sale','payment'].indexOf(t)>=0?'income':'');
+   if(!d||!isFinite(a)||a<=0||validKinds.indexOf(kind)<0){bad++;return}
+   var due=x.due&&!isNaN(new Date(x.due))?new Date(x.due).toISOString().slice(0,10):null;
+   ok.push({date:d,type:t,kind:kind,category:x.category||null,amount:a,currency:(x.currency||'').toUpperCase().slice(0,3)||null,party:x.party||null,due:due});
+  });
   return {ok:ok,bad:bad};
  }
  async function readDoc(){
@@ -5774,24 +5804,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var sr=await window.pxReadFileStructured(f);
    if(sr.kind==='error'||sr.kind==='unsupported'){$p('upMsg').textContent=(sr.warnings||['The document could not be read.']).join(' ');return}
    var sf=sr.fields||{},isTest=/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(sr.text||'');
+   if(isTest||sr.testOnly)sr.testOnly=true;
    var sbx=$p('rvBox');if(!sbx){sbx=document.createElement('div');sbx.id='rvBox';sbx.className='ilist';$p('upMsg').parentNode.insertBefore(sbx,$p('upMsg'))}
-   if(isTest||sr.testOnly){
-    pendingDoc=null;
-    sr.testOnly=true;
-    if(!sr.lines.length){
-     sbx.innerHTML='<div class="irow"><b>Test document:</b> '+esc(f.name)+'</div><div class="irow">No line items were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'')+'</pre>';
-     $p('upMsg').textContent='Test data detected. Nothing was saved or imported.';
-     return;
-    }
-    window.pxStructure.review(sbx,sr,function(confirmed){
-     var ff=confirmed.fields||{};
-     sbx.innerHTML='<div class="irow"><b>Test review completed:</b> '+esc(f.name)+'</div><div class="irow">Reviewed '+confirmed.lines.length+' editable line item(s). Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(ff.date||'Not detected')+' · Total: '+esc(ff.total==null?'Not entered':Number(ff.total).toLocaleString())+' · Payment: '+esc(ff.payment_method||'Not detected')+'</div><div class="irow" style="color:#9a3412">Synthetic test material only. Nothing has been imported into the ledger.</div><button class="btn alt" id="rvEditAgain" type="button">Edit again</button>';
-     $p('rvEditAgain').onclick=function(){window.pxStructure.review(sbx,sr,function(){ $p('upMsg').textContent='Test review completed. Nothing was saved.'; });};
-     $p('upMsg').textContent='Test review completed. Nothing was saved or imported.';
-    });
-    $p('upMsg').textContent='Synthetic test sample detected. Review and edit its extracted fields; nothing can be saved.';
-    return;
-   }
    if(!sr.lines.length){
     pendingDoc=null;
     sbx.innerHTML='<div class="irow"><b>Document read:</b> '+esc(f.name)+' · '+esc(sr.kind)+'</div><div class="irow">No transaction rows were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'No readable text was found.')+'</pre>';
@@ -5802,8 +5816,9 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     var ff=confirmed.fields||{},dateText=String(ff.date||'').trim(),isoDate='',dm=/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/.exec(dateText);
     if(dm){var months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},mn=months[dm[2].slice(0,3).toLowerCase()];if(mn)isoDate=dm[3]+'-'+String(mn).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0')}
     else{dm=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(dateText);if(dm)isoDate=dm[3]+'-'+String(Number(dm[2])).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}$/.test(dateText))isoDate=dateText}
-    pendingDoc={file:f,type:'other',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',rows:confirmed.lines.map(function(line){return {date:isoDate,type:'other',party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:''}})};
-    sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div><div class="irow">Rows are initially unclassified. Review each transaction type and date. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3><div style="overflow-x:auto">'+rowTable(pendingDoc.rows,pendingDoc.currency)+'</div><div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
+    var detectedType=String(ff.type||'').toLowerCase(),defaultType=['invoice','receipt','sale','expense','payment','other'].indexOf(detectedType)>=0?detectedType:'other';
+    pendingDoc={file:f,type:ff.type||'document',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',testOnly:!!(isTest||sr.testOnly),rows:confirmed.lines.map(function(line){return {date:isoDate,type:defaultType,kind:defaultType==='expense'?'expense':(['sale','receipt','payment'].indexOf(defaultType)>=0?'income':''),party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:'',category:null}})};
+    sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div>'+(pendingDoc.testOnly?'<div class="irow" style="color:#9a3412"><b>TEST DOCUMENT:</b> This is test material. It can be imported only after an additional explicit confirmation, so you can test the complete business workflow.</div>':'')+'<div class="irow">Review both transaction type and accounting classification. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3>'+rowTable(pendingDoc.rows,pendingDoc.currency)+'<div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
     $p('rvSave').onclick=saveReviewed;$p('rvCancel').onclick=function(){sbx.innerHTML='';pendingDoc=null;$p('upMsg').textContent='Cancelled. Nothing was imported.'};
     $p('upMsg').textContent='Structural review complete. Correct dates and accounting classifications, then confirm. Nothing is saved yet.';
    });
@@ -5833,7 +5848,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var uploadedPath=null,uploadId=null,uploadRecordCreated=false;
   try{
    var reviewed=readReview(),t=toRows(reviewed);
-   if(!t.ok.length){$p('upMsg').textContent='No valid rows. Enter a valid date and amount for at least one row.';return}
+   if(pendingDoc.testOnly&&!window.confirm('This document is marked as test material. Import the reviewed rows into the selected business ledger so you can test the complete workflow?'))return;
+   if(!t.ok.length){$p('upMsg').textContent='No valid rows. Enter a valid date, amount and accounting classification for at least one row.';return}
    var ws=wsId();if(!ws){$p('upMsg').textContent='Create or join a workspace first.';return}
    var projectId='';try{projectId=localStorage.getItem('px_project_'+ws)||''}catch(e){}
    if(!projectId||projectId==='all'){$p('upMsg').textContent='Choose a specific business project before saving this document. Nothing has been imported.';return}
@@ -5858,7 +5874,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:det.type||pendingDoc.type||'other',confidence:'Reviewed',currency:rc});
    if(ins.error)throw ins.error;
    uploadRecordCreated=true;
-   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
+   var rows=t.ok.map(function(x){return {date:x.date,type:x.type,kind:x.kind,category:x.category,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
    $p('upMsg').textContent='Adding '+rows.length+' reviewed row(s) to your business ledger…';
    var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
    if(cf.error)throw cf.error;
@@ -7048,8 +7064,8 @@ function pxCommandHelp(){
    var dayKeys=Object.keys(daily);
    if(window.pxChart)window.pxChart($('pxVolChart'),{id:'pxProjectVolume',title:'Transaction volume',labels:dayKeys.map(function(x){return x.slice(8)}),dates:dayKeys,values:dayKeys.map(function(x){return daily[x]}),fmt:function(v){return Number(v).toLocaleString()+' transactions'}});
    if(window.pxPie)window.pxPie($('pxTxnPie'),txMix,{title:'Transaction mix'});
-   var opMix={};opsSummary.forEach(function(x){var k=String(x.module_key||'operations').replace(/_/g,' ');opMix[k]=(opMix[k]||0)+Number(x.record_count||0)});
-   if(window.pxPie)window.pxPie($('pxOpsPie'),opMix,{title:'Operational activity mix'});
+   var opMix={};opsSummary.forEach(function(x){var k=String(x.module_key||'operations').replace(/_/g,' ');opMix[k]=(opMix[k]||0)+Number(x.amount_total||0)});
+   if(window.pxPie)window.pxPie($('pxOpsPie'),opMix,{title:'Operational value by module'});
    var bt=await sb.from('business_types').select('modules').eq('code',d.business_type).maybeSingle();
    if(bt.error)throw bt.error;
    var modules=(bt.data&&bt.data.modules)||[],cards=[
@@ -7070,10 +7086,9 @@ function pxCommandHelp(){
    if(rows.error)throw rows.error;
    var yearRows=(rows.data||[]).filter(function(x){return String(x.month).slice(0,4)===String(y)});
    var total=yearRows.reduce(function(a,x){a.revenue+=Number(x.profit||0)+0; a.cashIn+=Number(x.money_in||0);a.cashOut+=Number(x.money_out||0);a.closing=Number(x.closing||0);return a},{revenue:0,cashIn:0,cashOut:0,closing:0});
-   $('pxYearCards').innerHTML=[
-    ['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result*',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]
-   ];
-   if(modules.indexOf('agreements')>=0)$('pxYearCards').innerHTML=$('pxYearCards').innerHTML+'<div class="ls-kpi"><b>'+cash(d.recorded_receivables_outstanding,cur)+'</b><span>Recorded receivables outstanding</span></div>';
+   var yearCards=[['Cash in',total.cashIn],['Cash out',total.cashOut],['Net operating result',yearRows.reduce(function(a,x){return a+Number(x.profit||0)},0)],['Latest closing cash',total.closing]];
+   if(modules.indexOf('agreements')>=0)yearCards.push(['Recorded receivables outstanding',d.recorded_receivables_outstanding]);
+   $('pxYearCards').innerHTML=yearCards.map(function(x){return '<div class="ls-kpi"><b>'+cash(x[1],cur)+'</b><span>'+esc(x[0])+'</span></div>'}).join('');
    $('pxYearTable').innerHTML=yearRows.length?'<div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Month</th><th>Cash in</th><th>Cash out</th><th>Operating profit</th><th>Closing cash</th></tr></thead><tbody>'+yearRows.map(function(x){return '<tr><td><button type="button" class="btn alt" data-px-month-open="'+esc(x.month)+'" style="padding:4px 8px">'+esc(x.month)+'</button></td><td>'+cash(x.money_in,cur)+'</td><td>'+cash(x.money_out,cur)+'</td><td>'+cash(x.profit,cur)+'</td><td>'+cash(x.closing,cur)+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="muted">No ledger transactions for '+y+'.</p>';
    $('pxYearTable').querySelectorAll('[data-px-month-open]').forEach(function(b){b.onclick=function(){var v=b.getAttribute('data-px-month-open');$('pxMonthPick').value=v;$('pxTrYear').value=v.slice(0,4);$('pxTrMonth').value=v.slice(5,7);$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));$('pxMonthPick').dispatchEvent(new Event('change',{bubbles:true}));var reg=$('pxTrRows');if(reg){var panel=reg.closest('.dcard')||reg;panel.scrollIntoView({behavior:'smooth',block:'start'});}};});
    $('pxYearNote').textContent='*Calculated from income less operating expenses. Loan principal, capital and savings are not profit. Select a month to open its detailed transactions in the register.';
@@ -7085,7 +7100,7 @@ function pxCommandHelp(){
   var box=document.createElement('section');box.className='dcard';box.id='pxFinancialSummary';
   box.innerHTML='<div class="dhead"><h2>Monthly and yearly financial summary</h2><input id="pxMonthPick" type="month" value="'+new Date().toISOString().slice(0,7)+'" class="inp" style="max-width:170px"></div>'+
    '<div class="dnote">All figures and visualisations below use only the selected business project and reporting month.</div><h3>Selected month</h3><div class="ls-kpis" id="pxMonthCards"></div><div id="pxOpsDashboard"></div><div class="two" style="margin-top:14px"><div class="an-card"><b>Transaction volume · selected month</b><div id="pxVolChart"></div></div><div class="an-card"><b>Transaction mix</b><div id="pxTxnPie"></div></div></div><div class="an-card" style="margin-top:12px"><b>Operational activity mix</b><div id="pxOpsPie"></div></div><p class="dnote" id="pxMonthNote"></p>'+
-   '<h3>Yearly project management · '+new Date().getFullYear()+'</h3><div class="ls-kpis" id="pxYearCards"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p>';
+   '<section class="px-year-summary" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line)"><div class="dhead"><h3 style="margin:0">Yearly project management</h3><span class="ttag">'+new Date().getFullYear()+'</span></div><p class="dnote">Annual cash movement, operating performance and closing position for this project.</p><div class="ls-kpis" id="pxYearCards" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))"></div><div id="pxYearTable"></div><p class="dnote" id="pxYearNote"></p></section>';
   dash.insertBefore(box,dash.firstChild);
   $('pxMonthPick').onchange=function(){var v=this.value,parts=/^([0-9]{4})-(0[1-9]|1[0-2])$/.exec(v);if(parts){if($('pxOpsMonth'))$('pxOpsMonth').value=v;if($('pxTrYear'))$('pxTrYear').value=parts[1];if($('pxTrMonth'))$('pxTrMonth').value=parts[2];window.__pxSyncingMonth=true;if($('pxTrYear'))$('pxTrYear').dispatchEvent(new Event('change',{bubbles:true}));if($('pxTrMonth'))$('pxTrMonth').dispatchEvent(new Event('change',{bubbles:true}));window.__pxSyncingMonth=false;}load()};
   window.__pxDashboardLoad=load;
