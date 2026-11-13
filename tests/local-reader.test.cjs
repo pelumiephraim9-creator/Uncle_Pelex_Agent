@@ -98,7 +98,12 @@ test('structure engine keeps page groups in document order and ignores testing f
 test('new bridge, slip runtime and integrated document reader scripts have valid syntax',()=>{
  for(const name of ['pelex_structure.js','pelex_structure_bridge.js','pelex_addons_runtime.js'])
   new vm.Script(fs.readFileSync(name,'utf8'),{filename:name});
- const match=html.match(/<script>\s*\/\* ---- document reading ---- \*\/[\s\S]*?<\/script>/);
+ const marker=html.indexOf('async function readDoc()');
+ const scriptStart=html.lastIndexOf('<script',marker);
+ const scriptBody=html.indexOf('>',scriptStart)+1;
+ const scriptEnd=html.indexOf('</script>',marker);
+ assert.ok(marker>=0&&scriptStart>=0&&scriptEnd>scriptBody,'document reading inline script should be present');
+ new vm.Script(html.slice(scriptBody,scriptEnd),{filename:'index.html document reader'});
  assert.ok(match,'document reading inline script should be present');
  new vm.Script(match[0].replace(/^<script>/,'').replace(/<\/script>$/,''),{filename:'index.html document reader'});
 });
