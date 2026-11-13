@@ -5423,7 +5423,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
 (function(){
  function $l(i){return document.getElementById(i)}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
- var T=[],U=[],rep=null,DAY=864e5;
+ var T=[],U=[],O=[],rep=null,DAY=864e5;
  function wsId(){try{return localStorage.getItem('pelex_ws')||''}catch(e){return ''}}
  function money(n,c){try{return (c||'')+' '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0})}catch(e){return String(n)}}
  function iso(d){return d.toISOString().slice(0,10)}
@@ -5445,12 +5445,18 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function setSliderFromDate(d){var s=$l('lsSlider');var a=parseD(minDate()),b=parseD(maxDate()),c=parseD(d);if(!s||isNaN(a)||isNaN(b))return;var days=Math.round((b-a)/DAY);s.max=Math.max(0,days);s.value=Math.max(0,Math.min(days,Math.round((c-a)/DAY)))}
  function renderDataEntry(){
   var hidden=window.__lsHiddenFiles||{};
-  var records=T.filter(function(x){return !(x.upload_id&&hidden[x.upload_id])}).slice().sort(function(a,b){return String(b.entry_date||'').localeCompare(String(a.entry_date||''))});
+  var ledgerRecords=T.filter(function(x){return !(x.upload_id&&hidden[x.upload_id])});
+  var linked={};ledgerRecords.forEach(function(x){if(x.source_key)linked[String(x.source_key)]=true});
+  var operational=O.filter(function(x){return !linked['business_project_record:'+x.id]});
   var counts={};T.forEach(function(x){if(x.upload_id)counts[x.upload_id]=(counts[x.upload_id]||0)+1});
   var files=U.filter(function(u){return !hidden[u.id]});
-  var recordHtml=records.length?'<div class="dnote" style="margin:12px 0 6px"><b>Recorded transactions</b> · '+records.length+' ledger record(s)</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Date</th><th>Record type</th><th>Description / party</th><th>Amount</th><th>Currency</th><th>Source</th></tr></thead><tbody>'+records.map(function(x){return '<tr><td>'+esc(String(x.entry_date||'').slice(0,10))+'</td><td>'+esc(String(x.entry_type||x.kind||'record').replace(/_/g,' '))+'</td><td>'+esc(x.party||x.category||'Business transaction')+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+esc(x.currency||'-')+'</td><td>'+(x.upload_id?'Uploaded document':'Direct record')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No saved transaction records for this project yet.</div>';
+  var recordRows=ledgerRecords.map(function(x){return {date:x.entry_date,type:x.entry_type||x.kind,party:x.party||x.category,amount:x.amount,currency:x.currency,source:x.upload_id?'Uploaded document':'Ledger transaction',ref:x.source_key||''}});
+  operational.forEach(function(x){recordRows.push({date:x.record_date,type:x.record_type,party:x.party||x.module_key,amount:x.amount,currency:x.currency,source:'Business operations · '+String(x.module_key||'').replace(/_/g,' '),ref:x.reference||''})});
+  recordRows.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
+  var recordHtml=recordRows.length?'<div class="dnote" style="margin:12px 0 6px"><b>Business records</b> · '+recordRows.length+' saved record(s) across the ledger and operations</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Date</th><th>Record type</th><th>Description / party</th><th>Amount</th><th>Currency</th><th>Source</th><th>Reference</th></tr></thead><tbody>'+recordRows.map(function(x){return '<tr><td>'+esc(String(x.date||'').slice(0,10))+'</td><td>'+esc(String(x.type||'record').replace(/_/g,' '))+'</td><td>'+esc(x.party||'Business transaction')+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+esc(x.currency||'-')+'</td><td>'+esc(x.source)+'</td><td>'+esc(x.ref||'-')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No saved business records for this project yet.</div>';
   var fileHtml=files.length?'<div class="dnote" style="margin:14px 0 6px"><b>Uploaded documents</b> · '+files.length+' file(s)</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>File</th><th>Detected type</th><th>Rows saved</th><th>Status</th><th></th></tr></thead><tbody>'+files.map(function(u){var st=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';return '<tr data-file="'+u.id+'"><td>'+esc(u.file_name||'Untitled document')+'</td><td>'+esc(u.detected_type||'Not classified')+' <small class="muted">('+esc(u.confidence||'')+')</small></td><td>'+Number(counts[u.id]||0)+'</td><td>'+st+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No uploaded documents for this project yet.</div>';
-  $l('lsUploads').innerHTML=recordHtml+fileHtml;
+  var savedRows=Object.keys(counts).reduce(function(n,k){return n+counts[k]},0);
+  $l('lsUploads').innerHTML='<div class="ls-kpis"><div class="ls-kpi"><b>'+recordRows.length+'</b><span>Saved records</span></div><div class="ls-kpi"><b>'+files.length+'</b><span>Uploaded documents</span></div><div class="ls-kpi"><b>'+savedRows+'</b><span>Rows saved from uploads</span></div></div>'+recordHtml+fileHtml;
  }
  function render(){
   var wrap=$l('lsWrap');if(!wrap)return;
@@ -5513,13 +5519,14 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   window.__lsSummary={asof:a,currency:rep,invoiced:invT,received:recT,outstanding:outT,overdue_count:overdue.length,overdue_amount:overdueT,overdue:overdue.slice(0,10),entries_by_type:types,uploads:U.length,ledger_rows:T.length};
  }
  async function load(){
-  var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];render();return}
+  var w=wsId();if(!(window.sb&&window.curUser&&w)){T=[];U=[];O=[];render();return}
   var project='';try{project=localStorage.getItem('px_project_'+w)||''}catch(e){}
-  if(!project||project==='all'){T=[];U=[];render();$l('lsCount').textContent='Select one business project to view its analysis and uploads. Portfolio totals are not merged.';return}
-  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id').eq('workspace_id',w).eq('project_id',project).order('entry_date',{ascending:true}).limit(5000);
+  if(!project||project==='all'){T=[];U=[];O=[];render();$l('lsCount').textContent='Select one business project to view its analysis and uploads. Portfolio totals are not merged.';return}
+  var e=await sb.from('ledger_entries').select('entry_date,entry_type,amount,currency,party,due_date,upload_id,kind,category,project_id,source_key').eq('workspace_id',w).eq('project_id',project).order('entry_date',{ascending:true}).limit(5000);
   var u=await sb.from('uploads').select('id,file_name,detected_type,confidence,status,currency,created_at,project_id').eq('workspace_id',w).eq('project_id',project).is('deleted_at',null).order('created_at',{ascending:false}).limit(50);
-  if(e.error||u.error){$l('lsCount').textContent='Project analysis could not be loaded: '+((e.error||u.error).message||'Please refresh.');return}
-  T=e.data||[];U=u.data||[];render();
+  var o=await sb.from('business_project_records').select('id,module_key,record_type,record_date,amount,currency,party,reference,status,created_at').eq('workspace_id',w).eq('project_id',project).order('record_date',{ascending:false}).limit(5000);
+  if(e.error||u.error||o.error){$l('lsCount').textContent='Project records could not be loaded: '+((e.error||u.error||o.error).message||'Please refresh.');return}
+  T=e.data||[];U=u.data||[];O=o.data||[];render();
  }
  /* chat with the agent about this ledger */
  async function ask(){
@@ -5561,7 +5568,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   $l('lsSlider').oninput=function(){var a=parseD(minDate());a.setDate(a.getDate()+Number(this.value));$l('lsDate').value=iso(a);render()};
   $l('lsSend').onclick=ask;$l('lsAsk').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}});
  }
- window.__lsSet=function(t,u){T=t;U=u;rep=null;render()};
+ window.__lsSet=function(t,u,o){T=t;U=u;O=o||[];rep=null;render()};
  window.__lsRender=function(){render()};
  window.__lsLoad=function(){load()};
  var _go=go;go=function(v,t){_go(v,t);if(v==='business'){build();setTimeout(load,200)}};
