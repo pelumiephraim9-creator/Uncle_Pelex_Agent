@@ -2,7 +2,7 @@
    Load the add-on only on the main Pelex application document.
    The add-on itself checks for the Business dashboard before rendering anything.
    Existing HTML, authentication and other application routes are left untouched. */
-const ADDON = '/pelex_addons.js';
+const ADDONS = ['/pelex_addons.js', '/pelex_structure.js', '/pelex_structure_bridge.js'];
 
 export async function onRequest(context) {
   // Redirect only the Pages project hostname to the canonical public domain.
@@ -22,7 +22,7 @@ export async function onRequest(context) {
 
   const rewriter = new HTMLRewriter().on('body', {
     element(element) {
-      element.append('<script src="' + ADDON + '" defer></script>', { html: true });
+      ADDONS.forEach(function(src){ element.append('<script src="' + src + '" defer></script>', { html: true }); });
     }
   });
   return rewriter.transform(response);
