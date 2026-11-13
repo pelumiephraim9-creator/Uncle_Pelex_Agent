@@ -74,7 +74,7 @@
    var warnings=[];
    if(!lines.length)warnings.push('No line items are present. Add a row or cancel.');
    if(f.total!=null&&lines.length&&Math.abs(total-Number(f.total))>0.5)warnings.push('Rows total '+total.toLocaleString()+'; document total '+Number(f.total).toLocaleString()+'. Please reconcile before saving.');
-   container.innerHTML='<div style="font-family:Arial,Helvetica,sans-serif;color:#0b1b4a;max-width:100%;overflow:auto">'+
+   container.innerHTML='<div class="px-structure-review" style="font-family:Arial,Helvetica,sans-serif;max-width:100%;overflow:auto">'+
     '<div style="font-weight:700">'+esc(f.type||'document')+' · '+esc(f.currency||'')+'</div>'+(result.testOnly?'<div style="padding:8px;margin:8px 0;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:12px">TEST SAMPLE · You can edit the extracted details and rows, but this sample cannot be saved to the business ledger.</div>':'')+
     '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0;font-size:13px">'+
     ['type','date','reference','payment_method','status','currency','subtotal'].map(function(k){return '<label>'+esc(k.replace(/_/g,' '))+'<input data-f="'+k+'" value="'+esc(f[k]==null?'':f[k])+'" style="width:100%;box-sizing:border-box;padding:6px"></label>'}).join('')+'</div>'+
