@@ -5443,8 +5443,18 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
  function maxDate(){var all=T.map(function(x){return x.entry_date}).concat(T.map(function(x){return x.due_date}).filter(Boolean));all.sort();return all.length?all[all.length-1]:iso(new Date())}
  function minDate(){var all=T.map(function(x){return x.entry_date});all.sort();return all.length?all[0]:iso(new Date())}
  function setSliderFromDate(d){var s=$l('lsSlider');var a=parseD(minDate()),b=parseD(maxDate()),c=parseD(d);if(!s||isNaN(a)||isNaN(b))return;var days=Math.round((b-a)/DAY);s.max=Math.max(0,days);s.value=Math.max(0,Math.min(days,Math.round((c-a)/DAY)))}
+ function renderDataEntry(){
+  var hidden=window.__lsHiddenFiles||{};
+  var records=T.filter(function(x){return !(x.upload_id&&hidden[x.upload_id])}).slice().sort(function(a,b){return String(b.entry_date||'').localeCompare(String(a.entry_date||''))});
+  var counts={};T.forEach(function(x){if(x.upload_id)counts[x.upload_id]=(counts[x.upload_id]||0)+1});
+  var files=U.filter(function(u){return !hidden[u.id]});
+  var recordHtml=records.length?'<div class="dnote" style="margin:12px 0 6px"><b>Recorded transactions</b> · '+records.length+' ledger record(s)</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>Date</th><th>Record type</th><th>Description / party</th><th>Amount</th><th>Currency</th><th>Source</th></tr></thead><tbody>'+records.map(function(x){return '<tr><td>'+esc(String(x.entry_date||'').slice(0,10))+'</td><td>'+esc(String(x.entry_type||x.kind||'record').replace(/_/g,' '))+'</td><td>'+esc(x.party||x.category||'Business transaction')+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+esc(x.currency||'-')+'</td><td>'+(x.upload_id?'Uploaded document':'Direct record')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No saved transaction records for this project yet.</div>';
+  var fileHtml=files.length?'<div class="dnote" style="margin:14px 0 6px"><b>Uploaded documents</b> · '+files.length+' file(s)</div><div style="overflow-x:auto"><table class="ls-table"><thead><tr><th>File</th><th>Detected type</th><th>Rows saved</th><th>Status</th><th></th></tr></thead><tbody>'+files.map(function(u){var st=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';return '<tr data-file="'+u.id+'"><td>'+esc(u.file_name||'Untitled document')+'</td><td>'+esc(u.detected_type||'Not classified')+' <small class="muted">('+esc(u.confidence||'')+')</small></td><td>'+Number(counts[u.id]||0)+'</td><td>'+st+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="ls-empty">No uploaded documents for this project yet.</div>';
+  $l('lsUploads').innerHTML=recordHtml+fileHtml;
+ }
  function render(){
   var wrap=$l('lsWrap');if(!wrap)return;
+  renderDataEntry();
   var curs=[];T.forEach(function(x){if(x.currency&&curs.indexOf(x.currency)<0)curs.push(x.currency)});
   var sel=$l('lsCur');
   if(!rep||curs.indexOf(rep)<0)rep=curs[0]||null;
@@ -5494,12 +5504,6 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     var p=parties[x.party||'Unnamed'];var paid=p&&p.rec>=p.inv;var late=x.due_date&&x.due_date<a;
     var st=paid?'<span class="ls-pill ok">Paid</span>':late?'<span class="ls-pill bad">Overdue</span>':'<span class="ls-pill open">Open</span>';
     return '<tr><td>'+esc(x.party||'Unnamed')+'</td><td>'+money(x.amount,rep)+'</td><td>'+esc(x.due_date||'-')+'</td><td>'+st+'</td></tr>'}).join('')+'</table>':'<div class="ls-empty">No invoices up to this date.</div>';
-  // data entry: each upload
-  var cnt={};T.forEach(function(x){if(x.upload_id)cnt[x.upload_id]=(cnt[x.upload_id]||0)+1});
-  var Uv=U.filter(function(u){return !(window.__lsHiddenFiles&&window.__lsHiddenFiles[u.id])});
-  $l('lsUploads').innerHTML=Uv.length?'<table class="ls-table"><tr><th>File</th><th>Type</th><th>Rows</th><th>Status</th><th></th></tr>'+Uv.map(function(u){
-    var s=u.status==='confirmed'?'<span class="ls-pill ok">Saved</span>':'<span class="ls-pill warn">Review</span>';
-    return '<tr data-file="'+u.id+'" style="cursor:pointer"><td>'+esc(u.file_name)+'</td><td>'+esc(u.detected_type||'-')+' <small class="muted">('+esc(u.confidence||'-')+')</small></td><td>'+(cnt[u.id]||0)+'</td><td>'+s+'</td><td><button type="button" class="btn alt" data-del="'+u.id+'" style="padding:4px 8px;font-size:12px">Delete</button></td></tr>'}).join('')+'</table><div class="muted dnote">Tap a file to see its own charts and totals.</div>':'<div class="ls-empty">No uploads yet.</div>';
   $l('lsCount').textContent=T.length+' ledger rows \u00b7 '+U.length+' uploads \u00b7 as of '+a;
   var sl=$l('lsSlider');setSliderFromDate(a);
   window.__lsData={T:Tc,U:U,rep:rep,asof:a};if(window.__anRender)window.__anRender();
