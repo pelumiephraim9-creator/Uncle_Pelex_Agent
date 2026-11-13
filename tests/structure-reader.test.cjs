@@ -94,3 +94,30 @@ test('upload import checks duplicates before storage and handles thrown errors',
  assert.match(fn,/catch\(e\)/);
  assert.match(fn,/finally/);
 });
+
+test('groups mobile OCR words by printed line before rebuilding transaction rows',()=>{
+ const previousWindow=global.window;
+ global.window={};
+ delete require.cache[require.resolve('../pelex_structure_bridge.js')];
+ require('../pelex_structure_bridge.js');
+ const words=[
+  {text:"Men's",bbox:{x0:10,y0:100,y1:125},block_num:1,par_num:1,line_num:1},
+  {text:'senator',bbox:{x0:90,y0:103,y1:128},block_num:1,par_num:1,line_num:1},
+  {text:'fabric',bbox:{x0:180,y0:101,y1:126},block_num:1,par_num:1,line_num:1},
+  {text:'2',bbox:{x0:360,y0:104,y1:127},block_num:1,par_num:1,line_num:1},
+  {text:'18,500.00',bbox:{x0:430,y0:102,y1:126},block_num:1,par_num:1,line_num:1},
+  {text:'37,000.00',bbox:{x0:570,y0:101,y1:126},block_num:1,par_num:1,line_num:1},
+  {text:'Ready-made',bbox:{x0:10,y0:160,y1:185},block_num:1,par_num:1,line_num:2},
+  {text:'shirt',bbox:{x0:140,y0:163,y1:187},block_num:1,par_num:1,line_num:2},
+  {text:'1',bbox:{x0:360,y0:161,y1:186},block_num:1,par_num:1,line_num:2},
+  {text:'22,000.00',bbox:{x0:430,y0:160,y1:185},block_num:1,par_num:1,line_num:2},
+  {text:'22,000.00',bbox:{x0:570,y0:162,y1:187},block_num:1,par_num:1,line_num:2}
+ ];
+ const positioned=global.window.pxOcrWordsToItems(words,0);
+ const result=structure.structure(positioned);
+ assert.equal(result.rows.length,2);
+ assert.equal(result.lines.length,2);
+ assert.equal(result.lines[0].line_total,37000);
+ assert.equal(result.lines[1].line_total,22000);
+ global.window=previousWindow;
+});
