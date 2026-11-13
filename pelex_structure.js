@@ -15,7 +15,7 @@
   var rows=[];
   sorted.forEach(function(it){
    var y=Number(it.y),row=null,best=Infinity;
-   for(var i=0;i<rows.length;i++){var delta=Math.abs(rows[i].y-y),rowHeight=rows[i].cells.reduce(function(max,c){return Math.max(max,Number(c.height)||0)},0),itemHeight=Number(it.height)||0,adaptive=Math.max(tol,Math.min(12,Math.max(rowHeight,itemHeight)*0.45));if(delta<=adaptive&&delta<best){row=rows[i];best=delta}}
+   for(var i=0;i<rows.length;i++){var delta=Math.abs(rows[i].y-y);if(delta<=tol&&delta<best){row=rows[i];best=delta}}
    if(!row){row={y:y,cells:[]};rows.push(row)}
    row.cells.push(it);
   });
