@@ -78,12 +78,12 @@
    var themeWin=themeDoc.defaultView||window;
    var themeCss=themeWin.getComputedStyle(themeRoot);
    function themeVar(name,fallback){return (themeCss.getPropertyValue(name)||'').trim()||fallback}
-   var panelColor=themeVar('--panel','#ffffff');
-   var inkColor=themeVar('--ink','#17243b');
-   var lineColor=themeVar('--line','#dfe4ee');
-   var mutedColor=themeVar('--muted','#68758c');
-   var fieldStyle='width:100%;box-sizing:border-box;padding:8px 10px;min-height:38px;border:1px solid '+lineColor+'!important;border-radius:9px;background:'+panelColor+'!important;background-color:'+panelColor+'!important;color:'+inkColor+'!important;-webkit-text-fill-color:'+inkColor+'!important;color-scheme:light!important;opacity:1!important';
-   var labelStyle='display:block;color:'+inkColor+'!important;font-weight:600';
+   var panelColor='#ffffff';
+   var inkColor='#0b1b4a';
+   var lineColor='#0b1b4a';
+   var mutedColor='#33466f';
+   var fieldStyle='display:block;width:100%;min-width:0;box-sizing:border-box;padding:8px 10px;min-height:38px;border:2px solid #0b1b4a!important;border-radius:9px;background:#ffffff!important;background-color:#ffffff!important;color:#0b1b4a!important;-webkit-text-fill-color:#0b1b4a!important;color-scheme:light!important;opacity:1!important;box-shadow:none!important';
+   var labelStyle='display:block;color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;font-weight:700';
    var total=lines.reduce(function(a,l){return a+(Number(l.line_total)||0)},0);
    var warnings=[];
    if(!lines.length)warnings.push('No line items are present. Add a row or cancel.');
