@@ -43,7 +43,7 @@
     var offset=(p-1)*100000;
     pageItems.forEach(function(it){items.push({str:it.str,x:it.x,y:it.y-offset})});
    }else{
-    var viewport=page.getViewport({scale:1.8}),canvas=document.createElement('canvas');
+    var touchDevice=!!(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches),viewport=page.getViewport({scale:touchDevice?1.35:1.8}),canvas=document.createElement('canvas');
     canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
     var ctx=canvas.getContext('2d');
     await page.render({canvasContext:ctx,viewport:viewport}).promise;
@@ -51,6 +51,8 @@
     if(blob){
      var words=await ocrBlob(blob);
      words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:-offset-(b.y1==null?b.y0:b.y1)})});
+     canvas.width=0;canvas.height=0;
+     if(page.cleanup)page.cleanup();
     }
    }
   }
@@ -58,7 +60,15 @@
   return {items:items,warnings:warnings};
  }
  async function pictureItems(file){
-  var words=await ocrBlob(file);
+  var source=file;
+  if(/heic|heif/i.test((file&&file.type||'')+' '+(file&&file.name||''))){
+   if(typeof createImageBitmap!=='function')throw new Error('This iPhone photo is in HEIC format, which this browser cannot decode. Choose a JPEG photo or export the image as PDF and try again.');
+   var bitmap;try{bitmap=await createImageBitmap(file)}catch(e){throw new Error('This iPhone HEIC photo could not be decoded here. Choose a JPEG photo or export it as PDF and try again.')}
+   var canvas=document.createElement('canvas'),scale=Math.min(1,2200/Math.max(bitmap.width,bitmap.height));canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+   canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);if(bitmap.close)bitmap.close();
+   source=await new Promise(function(resolve,reject){canvas.toBlob(function(blob){canvas.width=0;canvas.height=0;blob?resolve(blob):reject(new Error('The iPhone photo could not be prepared for reading.'))},'image/jpeg',0.9)});
+  }
+  var words=await ocrBlob(source);
   return words.filter(function(w){return w.text&&w.text.trim()}).map(function(w){var b=w.bbox||{x0:0,y0:0};return {str:w.text,x:b.x0,y:-(b.y1==null?b.y0:b.y1)}});
  }
  function isStructuredFile(file){
