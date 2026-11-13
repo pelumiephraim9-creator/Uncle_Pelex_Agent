@@ -1263,6 +1263,25 @@ main{min-height:0;height:100%;overflow:hidden}
 .msg.me.imgme .msgactions{justify-content:flex-end;margin-top:8px}
 .msg.me.imgme .msgactions button{background:#203b65!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important}
 #setupCard{display:none!important}
+
+/* FINAL OVERRIDE: OCR review controls must never use browser-default black fields. */
+.px-structure-review{color:var(--ink,#17243b)!important;background:var(--panel,#fff)!important}
+.px-structure-review label,.px-structure-review th,.px-structure-review td,.px-structure-review b,.px-structure-review div{color:var(--ink,#17243b)!important}
+.px-structure-review input,.px-structure-review select,.px-structure-review textarea,
+.px-structure-review input[type="text"],.px-structure-review input[type="number"]{
+  -webkit-appearance:none!important;appearance:none!important;
+  background:var(--panel,#fff)!important;background-color:var(--panel,#fff)!important;background-image:none!important;
+  color:var(--ink,#17243b)!important;-webkit-text-fill-color:var(--ink,#17243b)!important;
+  border:1px solid var(--line,#dfe4ee)!important;opacity:1!important;
+  color-scheme:light!important;box-shadow:none!important;
+}
+.px-structure-review input::placeholder{color:var(--muted,#68758c)!important;-webkit-text-fill-color:var(--muted,#68758c)!important;opacity:1!important}
+.px-structure-review .px-review-table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+.px-structure-review .px-review-table th{font-size:clamp(9px,2.7vw,12px)!important;overflow-wrap:anywhere;padding:4px 2px!important}
+.px-structure-review .px-review-table td{padding:3px 2px!important;min-width:0!important}
+.px-structure-review .px-review-table td input{width:100%!important;min-width:0!important;padding:5px 3px!important;font-size:clamp(10px,3vw,12px)!important}
+@media(max-width:520px){.px-structure-review{padding:9px!important}.px-structure-review .px-review-table-wrap{overflow-x:auto!important}.px-structure-review .px-review-table{min-width:340px!important}}
+
 </style>
 </head>
 <body>
