@@ -9,13 +9,13 @@
  function isNum(s){return NUM.test(String(s).trim())}
  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
  function groupRows(items,tol){
-  tol=Number(tol)||3;
+  tol=Number(tol)||6;
   var sorted=(items||[]).filter(function(i){return i&&i.str&&String(i.str).trim()&&isFinite(Number(i.x))&&isFinite(Number(i.y))})
    .slice().sort(function(a,b){return Number(b.y)-Number(a.y)||Number(a.x)-Number(b.x)});
   var rows=[];
   sorted.forEach(function(it){
    var y=Number(it.y),row=null,best=Infinity;
-   for(var i=0;i<rows.length;i++){var delta=Math.abs(rows[i].y-y);if(delta<=tol&&delta<best){row=rows[i];best=delta}}
+   for(var i=0;i<rows.length;i++){var delta=Math.abs(rows[i].y-y),rowHeight=rows[i].cells.reduce(function(max,c){return Math.max(max,Number(c.height)||0)},0),itemHeight=Number(it.height)||0,adaptive=Math.max(tol,Math.min(12,Math.max(rowHeight,itemHeight)*0.45));if(delta<=adaptive&&delta<best){row=rows[i];best=delta}}
    if(!row){row={y:y,cells:[]};rows.push(row)}
    row.cells.push(it);
   });
