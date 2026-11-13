@@ -121,3 +121,24 @@ test('groups mobile OCR words by printed line before rebuilding transaction rows
  assert.equal(result.lines[1].line_total,22000);
  global.window=previousWindow;
 });
+
+test('preserves Tesseract hierarchical line IDs when OCR word boxes vary vertically',()=>{
+ const previousWindow=global.window;
+ global.window={};
+ delete require.cache[require.resolve('../pelex_structure_bridge.js')];
+ require('../pelex_structure_bridge.js');
+ const words=[
+  {text:'Fresh',line_key:'block:0:0:0',bbox:{x0:10,y0:100,y1:124}},
+  {text:'tomatoes',line_key:'block:0:0:0',bbox:{x0:75,y0:104,y1:128}},
+  {text:'3',line_key:'block:0:0:0',bbox:{x0:300,y0:98,y1:123}},
+  {text:'2,000.00',line_key:'block:0:0:0',bbox:{x0:380,y0:103,y1:127}},
+  {text:'6,000.00',line_key:'block:0:0:0',bbox:{x0:500,y0:101,y1:125}}
+ ];
+ const positioned=global.window.pxOcrWordsToItems(words,0);
+ assert.equal(new Set(positioned.map(x=>x.y)).size,1);
+ const result=structure.structure(positioned);
+ assert.equal(result.lines.length,1);
+ assert.equal(result.lines[0].description,'Fresh tomatoes');
+ assert.equal(result.lines[0].line_total,6000);
+ global.window=previousWindow;
+});
