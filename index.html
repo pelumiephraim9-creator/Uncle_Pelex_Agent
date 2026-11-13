@@ -5789,20 +5789,6 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    if(isTest||sr.testOnly)sr.testOnly=true;
    var sbx=$p('rvBox');if(!sbx){sbx=document.createElement('div');sbx.id='rvBox';sbx.className='ilist';$p('upMsg').parentNode.insertBefore(sbx,$p('upMsg'))}
    if(!sr.lines.length){
-     sbx.innerHTML='<div class="irow"><b>Test document:</b> '+esc(f.name)+'</div><div class="irow">No line items were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'')+'</pre>';
-     $p('upMsg').textContent='Test data detected. Nothing was saved or imported.';
-     return;
-    }
-    window.pxStructure.review(sbx,sr,function(confirmed){
-     var ff=confirmed.fields||{};
-     sbx.innerHTML='<div class="irow"><b>Test review completed:</b> '+esc(f.name)+'</div><div class="irow">Reviewed '+confirmed.lines.length+' editable line item(s). Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(ff.date||'Not detected')+' · Total: '+esc(ff.total==null?'Not entered':Number(ff.total).toLocaleString())+' · Payment: '+esc(ff.payment_method||'Not detected')+'</div><div class="irow" style="color:#9a3412">Synthetic test material only. Nothing has been imported into the ledger.</div><button class="btn alt" id="rvEditAgain" type="button">Edit again</button>';
-     $p('rvEditAgain').onclick=function(){window.pxStructure.review(sbx,sr,function(){ $p('upMsg').textContent='Test review completed. Nothing was saved.'; });};
-     $p('upMsg').textContent='Test review completed. Nothing was saved or imported.';
-    });
-    $p('upMsg').textContent='Synthetic test sample detected. Review and edit its extracted fields; nothing can be saved.';
-    return;
-   }
-   if(!sr.lines.length){
     pendingDoc=null;
     sbx.innerHTML='<div class="irow"><b>Document read:</b> '+esc(f.name)+' · '+esc(sr.kind)+'</div><div class="irow">No transaction rows were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'No readable text was found.')+'</pre>';
     $p('upMsg').textContent=(sr.warnings||[]).join(' ')||'Document read locally. Nothing was imported.';
@@ -5812,8 +5798,8 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
     var ff=confirmed.fields||{},dateText=String(ff.date||'').trim(),isoDate='',dm=/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/.exec(dateText);
     if(dm){var months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},mn=months[dm[2].slice(0,3).toLowerCase()];if(mn)isoDate=dm[3]+'-'+String(mn).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0')}
     else{dm=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(dateText);if(dm)isoDate=dm[3]+'-'+String(Number(dm[2])).padStart(2,'0')+'-'+String(Number(dm[1])).padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}$/.test(dateText))isoDate=dateText}
-    var defaultType=String(ff.type||'').toLowerCase()==='invoice'?'invoice':(String(ff.type||'').toLowerCase()==='receipt'?'sale':'other');
-    pendingDoc={file:f,type:ff.type||'document',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',testOnly:!!(isTest||sr.testOnly),rows:confirmed.lines.map(function(line){return {date:isoDate,type:defaultType,kind:defaultType==='other'?'':(defaultType==='expense'?'expense':'income'),party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:'',category:null}})};
+    var detectedType=String(ff.type||'').toLowerCase(),defaultType=['invoice','receipt','sale','expense','payment','other'].indexOf(detectedType)>=0?detectedType:'other';
+    pendingDoc={file:f,type:ff.type||'document',currency:ff.currency||null,notes:(sr.warnings||[]).join(' '),summary:'Structural extraction · '+String(ff.type||sr.kind)+' · '+String(ff.reference||'No reference'),text:sr.text||'',testOnly:!!(isTest||sr.testOnly),rows:confirmed.lines.map(function(line){return {date:isoDate,type:defaultType,kind:defaultType==='expense'?'expense':(['sale','receipt','payment'].indexOf(defaultType)>=0?'income':''),party:line.description,amount:Number(line.line_total),currency:ff.currency||null,due:'',category:null}})};
     sbx.innerHTML='<div class="irow"><b>Document structure reviewed:</b> '+esc(f.name)+'</div><div class="irow">Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(isoDate||'Enter date')+' · Currency: '+esc(ff.currency||'Select project currency')+'</div>'+(pendingDoc.testOnly?'<div class="irow" style="color:#9a3412"><b>TEST DOCUMENT:</b> This is test material. It can be imported only after an additional explicit confirmation, so you can test the complete business workflow.</div>':'')+'<div class="irow">Review both transaction type and accounting classification. Principal, contributions, capital, savings and project costs must not be treated as ordinary sales.</div><h3>Suggested rows · review classifications</h3>'+rowTable(pendingDoc.rows,pendingDoc.currency)+'<div class="prow" style="margin-top:10px"><button class="btn" id="rvSave" type="button">Confirm and import transactions</button><button class="btn alt" id="rvCancel" type="button">Cancel</button></div>';
     $p('rvSave').onclick=saveReviewed;$p('rvCancel').onclick=function(){sbx.innerHTML='';pendingDoc=null;$p('upMsg').textContent='Cancelled. Nothing was imported.'};
     $p('upMsg').textContent='Structural review complete. Correct dates and accounting classifications, then confirm. Nothing is saved yet.';
