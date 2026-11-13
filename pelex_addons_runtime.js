@@ -135,13 +135,35 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   drop.ondrop=function(e){e.preventDefault();if(e.dataTransfer.files[0])handle(doc,e.dataTransfer.files[0])};
   input.onchange=function(){if(input.files[0])handle(doc,input.files[0])};
  }
+ function slipDate(value){
+  if(!value)return '';
+  var s=String(value).trim(),m=/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/.exec(s);
+  if(m){var months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12},n=months[m[2].slice(0,3).toLowerCase()];if(n)return m[3]+'-'+String(n).padStart(2,'0')+'-'+String(Number(m[1])).padStart(2,'0')}
+  m=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(s);
+  if(m)return m[3]+'-'+String(Number(m[2])).padStart(2,'0')+'-'+String(Number(m[1])).padStart(2,'0');
+  return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'';
+ }
  async function handle(doc,file){
-  var msg=doc.getElementById('slipMsg');msg.textContent='Reading '+file.name+'\u2026';
+  var msg=doc.getElementById('slipMsg');msg.textContent='Reading '+file.name+'…';
+  var isPdf=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name||''),isImage=/^image\//i.test(file.type)||/\.(png|jpe?g|webp|bmp|gif|tiff?)$/i.test(file.name||'');
+  if((isPdf||isImage)&&typeof window.pxReadFileStructured==='function'&&window.pxStructure){
+   var structured=await window.pxReadFileStructured(file);
+   if(structured.kind==='error'||structured.kind==='unsupported'){msg.textContent=(structured.warnings||['Could not read this file.']).join(' ');return}
+   var host=doc.getElementById('slipForm'),fields=structured.fields||{};
+   if(!structured.lines.length){
+    form(doc,{amount:fields.total==null?'':fields.total,date:slipDate(fields.date)||todayISO(),party:(fields.reference?fields.reference+' ':'')+file.name.replace(/\.[^.]+$/,'').slice(0,50),file:file.name,doc:{template:fields.type||structured.kind,templateName:fields.type||'Document',direction:'unknown',category:'Other',number:fields.reference,date:slipDate(fields.date),total:fields.total||0,lines:[]}},(structured.warnings||[]).join(' ')||'No line items were detected. Check the document total and classify the transaction before saving.');
+    return;
+   }
+   window.pxStructure.review(host,structured,function(confirmed){
+    var f=confirmed.fields||{},d={template:f.type||structured.kind,templateName:f.type||'Document',direction:'unknown',category:'Other',number:f.reference||null,date:slipDate(f.date),total:f.total==null?confirmed.total_from_lines:Number(f.total),lines:confirmed.lines.map(function(x){return {description:x.description,amount:Number(x.line_total),qty:Number(x.qty)||1,unit_price:x.unit_price}})};
+    form(doc,{amount:d.total||'',date:d.date||todayISO(),party:(d.number?d.number+' ':'')+file.name.replace(/\.[^.]+$/,'').slice(0,50),file:file.name,doc:d},'Structural review complete. Choose the accounting direction and category, then confirm Save. Nothing has been saved yet.');
+   });
+   return;
+  }
+  // Compatibility path for non-structured file types and older reader callers.
   var text='',note='';
-  try{
-    if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){var r=await readPdf(file);text=r.text;note=r.note}
-    else{note='Pictures are read by you: check the amount before saving.'}
-  }catch(e){note='Could not read the file here. Type the amount.'}
+  try{if(isPdf){var old=await readPdf(file);text=old.text;note=old.note}else note='This file type uses the existing reader. Check the amount before saving.'}
+  catch(e){note='Could not read the file here. Type the amount.'}
   var d=window.pxReadDocument?window.pxReadDocument(text):{total:0,lines:[],template:'general_document',templateName:'General document',direction:'unknown',category:'Other',number:null,date:null};
   form(doc,{amount:d.total||'',date:d.date||todayISO(),party:(d.number?d.number+' ':'')+file.name.replace(/\.[^.]+$/,'').slice(0,50),file:file.name,doc:d},note);
  }
@@ -154,7 +176,7 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
      '<select class="slLineCat" data-i="'+i+'" style="width:100%;padding:4px;margin:2px 0 6px;font-size:12px">'+cats.replace('<option>'+esc(d.category||'Other')+'</option>','<option selected>'+esc(d.category||'Other')+'</option>')+'</select>';
   }).join('')):'';
   f.innerHTML=kindLabel+
-   '<label style="font-size:12px">Type<select id="slType" style="width:100%;padding:6px;margin:2px 0 8px"><option value="receipt"'+(d.direction==='in'?' selected':'')+'>Money in</option><option value="expense"'+(d.direction!=='in'?' selected':'')+'>Money out</option><option value="loan">Loan given</option></select></label>'+
+   '<label style="font-size:12px">Type<select id="slType" style="width:100%;padding:6px;margin:2px 0 8px">'+(d.direction==='unknown'?'<option value="" selected disabled>Choose transaction direction</option>':'')+'<option value="receipt"'+(d.direction==='in'?' selected':'')+'>Money in</option><option value="expense"'+(d.direction==='out'?' selected':'')+'>Money out</option><option value="loan">Loan given</option></select></label>'+
    '<label style="font-size:12px">Total<input id="slAmount" type="number" min="0" step="0.01" value="'+esc(v.amount||'')+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
    '<label style="font-size:12px">Date<input id="slDate" type="date" value="'+esc(v.date)+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
    '<label style="font-size:12px">Party or description<input id="slParty" type="text" value="'+esc(v.party)+'" style="width:100%;padding:6px;margin:2px 0 8px"></label>'+
