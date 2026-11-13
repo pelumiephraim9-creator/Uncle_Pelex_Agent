@@ -76,7 +76,7 @@
     key=candidate||('fallback:'+nextLine++);
     if(!lineMap[key])lineMap[key]={index:nextLine++,center:entry.center};
    }else if(!lineMap[key])lineMap[key]={index:nextLine++,center:entry.center};
-   items.push({str:String(entry.word.text).trim(),x:Number(entry.bbox.x0)||0,y:-(pageOffset+1000+lineMap[key].index*10)});
+   items.push({str:String(entry.word.text).trim(),x:Number(entry.bbox.x0)||0,y:-(pageOffset+1000+lineMap[key].index*10),height:entry.height});
   });
   return items;
  }
