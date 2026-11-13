@@ -1147,6 +1147,31 @@ main{min-height:0;height:100%;overflow:hidden}
  .view:not(#v-chat){padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 }
 
+/* Strong, isolated theme tokens for OCR review controls; placed after app-wide rules. */
+.px-structure-review{color:var(--ink,#17243b)!important;background:var(--panel,#fff)!important}
+.px-structure-review,.px-structure-review *{box-sizing:border-box}
+.px-structure-review label,.px-structure-review th,.px-structure-review td,.px-structure-review b,.px-structure-review div{color:var(--ink,#17243b)}
+.px-structure-review input,.px-structure-review select,.px-structure-review textarea{
+  appearance:none;-webkit-appearance:none;
+  background-color:var(--panel,#fff)!important;
+  color:var(--ink,#17243b)!important;
+  -webkit-text-fill-color:var(--ink,#17243b)!important;
+  border:1px solid var(--line,#dfe4ee)!important;
+  opacity:1!important;
+  color-scheme:light dark;
+}
+.px-structure-review input::placeholder{color:var(--muted,#68758c)!important;-webkit-text-fill-color:var(--muted,#68758c)!important;opacity:1}
+.px-structure-review .px-review-table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+.px-structure-review .px-review-table th{font-size:clamp(9px,2.7vw,12px);overflow-wrap:anywhere;padding:4px 2px}
+.px-structure-review .px-review-table td{padding:3px 2px;min-width:0}
+.px-structure-review .px-review-table td input{width:100%!important;min-width:0!important;padding:5px 3px!important;font-size:clamp(10px,3vw,12px)!important}
+.px-structure-review .px-review-table td button{max-width:100%;padding:3px!important}
+@media(max-width:520px){
+ .px-structure-review{padding:9px!important}
+ .px-structure-review .px-review-table-wrap{overflow-x:auto!important}
+ .px-structure-review .px-review-table{min-width:340px!important}
+ .px-structure-review .px-review-table th,.px-structure-review .px-review-table td{white-space:normal}
+}
 /* Theme-aware structured document review and Capture Slip surface */
 .px-structure-review{color:var(--ink)!important;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
 .px-structure-review label{color:var(--ink)!important;font-weight:600}
