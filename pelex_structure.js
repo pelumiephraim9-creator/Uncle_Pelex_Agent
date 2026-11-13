@@ -24,7 +24,7 @@
    r.parts=r.cells.reduce(function(out,c){
     // PDF.js may return an entire table row as one text item. Split that item
     // into ordered tokens so mixed description/numeric cells remain readable.
-    var tokens=String(c.str).trim().match(/(?:[A-Za-z][A-Za-z'’&./-]*|[-+]?\d[\d,]*(?:\.\d{1,2})?|[^\s])/g)||[];
+    var tokens=String(c.str).trim().match(/(?:[A-Za-z][A-Za-z0-9'’&./-]*\d[A-Za-z0-9'’&./-]*|[A-Za-z][A-Za-z'’&./-]*|[-+]?\d[\d,]*(?:\.\d{1,2})?|[^\s])/g)||[];
     return out.concat(tokens);
    },[]);
    r.text=r.parts.join(' ');
