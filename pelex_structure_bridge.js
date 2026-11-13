@@ -28,6 +28,41 @@
   var r=await window.Tesseract.recognize(blob,'eng');
   return (r&&r.data&&r.data.words)||[];
  }
+ function ocrWordsToItems(words,pageOffset){
+  // Tesseract returns word-level boxes. Reuse its block/paragraph/line identity
+  // so words from one printed row share exactly the same Y coordinate.
+  // Older OCR builds may omit line identity; those words are clustered by
+  // their vertical centre using a tolerance based on glyph height.
+  pageOffset=Number(pageOffset)||0;
+  var lineMap=Object.create(null),nextLine=0,items=[];
+  var fallback=[];
+  (words||[]).forEach(function(w){
+   if(!w||!w.text||!String(w.text).trim())return;
+   var b=w.bbox||{x0:0,x1:0,y0:0,y1:0};
+   var hasIds=Number(w.block_num)>0&&Number(w.par_num)>0&&Number(w.line_num)>0;
+   var key=hasIds?'ocr:'+w.block_num+':'+w.par_num+':'+w.line_num:null;
+   var center=(Number(b.y0||0)+Number(b.y1==null?b.y0||0:b.y1))/2;
+   var height=Math.max(1,Math.abs(Number(b.y1||0)-Number(b.y0||0)));
+   fallback.push({word:w,bbox:b,key:key,center:center,height:height});
+  });
+  // Process in OCR reading order; Tesseract emits words in page order.
+  fallback.forEach(function(entry){
+   var key=entry.key;
+   if(!key){
+    var tolerance=Math.max(12,entry.height*0.55),candidate=null,best=Infinity;
+    Object.keys(lineMap).forEach(function(existing){
+     if(existing.indexOf('fallback:')!==0)return;
+     var delta=Math.abs(lineMap[existing].center-entry.center);
+     if(delta<=tolerance&&delta<best){candidate=existing;best=delta}
+    });
+    key=candidate||('fallback:'+nextLine++);
+    if(!lineMap[key])lineMap[key]={index:nextLine++,center:entry.center};
+   }else if(!lineMap[key])lineMap[key]={index:nextLine++,center:entry.center};
+   items.push({str:String(entry.word.text).trim(),x:Number(entry.bbox.x0)||0,y:-(pageOffset+1000+lineMap[key].index*10)});
+  });
+  return items;
+ }
+ window.pxOcrWordsToItems=ocrWordsToItems;
  async function pdfItems(file){
   await ensurePdf();
   var doc=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,items=[],warnings=[];
@@ -50,7 +85,7 @@
     var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png')});
     if(blob){
      var words=await ocrBlob(blob);
-     words.forEach(function(w){var b=w.bbox||{x0:0,y0:0};if(w.text&&w.text.trim())items.push({str:w.text,x:b.x0,y:-offset-(b.y1==null?b.y0:b.y1)})});
+     items=items.concat(ocrWordsToItems(words,offset));
      canvas.width=0;canvas.height=0;
      if(page.cleanup)page.cleanup();
     }
@@ -69,7 +104,7 @@
    source=await new Promise(function(resolve,reject){canvas.toBlob(function(blob){canvas.width=0;canvas.height=0;blob?resolve(blob):reject(new Error('The iPhone photo could not be prepared for reading.'))},'image/jpeg',0.9)});
   }
   var words=await ocrBlob(source);
-  return words.filter(function(w){return w.text&&w.text.trim()}).map(function(w){var b=w.bbox||{x0:0,y0:0};return {str:w.text,x:b.x0,y:-(b.y1==null?b.y0:b.y1)}});
+  return ocrWordsToItems(words,0);
  }
  function isStructuredFile(file){
   return !!file&&(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name||'')||/^image\//i.test(file.type)||/\.(png|jpe?g|webp|bmp|gif|tiff?)$/i.test(file.name||''));
