@@ -58,3 +58,18 @@ test('new bridge and slip integration scripts parse without syntax errors', () =
   assert.ok(marker >= 0 && scriptStart >= 0 && scriptEnd > scriptBody, 'document reading inline script should be present');
   new vm.Script(html.slice(scriptBody,scriptEnd), {filename:'index.html document reader'});
 });
+
+test('review editor exposes editable receipt metadata and line items in test-only mode',()=>{
+ const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','pelex_structure.js'),'utf8');
+ assert.match(source,/result\.testOnly\?/);
+ assert.match(source,/Finish test review/);
+ assert.match(source,/data-f="currency"/);
+ assert.match(source,/data-k="description"/);
+ assert.match(source,/data-del=/);
+});
+test('bridge preserves a separate test-only marker and filters test boilerplate',()=>{
+ const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','pelex_structure_bridge.js'),'utf8');
+ assert.match(source,/var testOnly=/);
+ assert.match(source,/TESTING INSTRUCTION\|UPLOAD ONLY/);
+ assert.match(source,/testOnly:testOnly/);
+});
