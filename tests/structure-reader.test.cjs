@@ -142,3 +142,22 @@ test('preserves Tesseract hierarchical line IDs when OCR word boxes vary vertica
  assert.equal(result.lines[0].line_total,6000);
  global.window=previousWindow;
 });
+
+test('groups PDF text fragments with small baseline differences into one row',()=>{
+ const result=structure.structure([
+  {str:'Coffee',x:10,y:100,height:12},
+  {str:'beans',x:70,y:104,height:12},
+  {str:'2',x:250,y:101,height:12},
+  {str:'1,500.00',x:300,y:103,height:12},
+  {str:'3,000.00',x:410,y:100,height:12},
+  {str:'Tea',x:10,y:82,height:12},
+  {str:'1',x:250,y:83,height:12},
+  {str:'900.00',x:300,y:82,height:12},
+  {str:'900.00',x:410,y:84,height:12}
+ ]);
+ assert.equal(result.rows.length,2);
+ assert.equal(result.lines.length,2);
+ assert.equal(result.lines[0].description,'Coffee beans');
+ assert.equal(result.lines[0].line_total,3000);
+ assert.equal(result.lines[1].description,'Tea');
+});
