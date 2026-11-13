@@ -14,8 +14,8 @@
    .slice().sort(function(a,b){return Number(b.y)-Number(a.y)||Number(a.x)-Number(b.x)});
   var rows=[];
   sorted.forEach(function(it){
-   var y=Number(it.y),row=null;
-   for(var i=rows.length-1;i>=0;i--){if(Math.abs(rows[i].y-y)<=tol){row=rows[i];break}if(rows[i].y-y>tol)break}
+   var y=Number(it.y),row=null,best=Infinity;
+   for(var i=0;i<rows.length;i++){var delta=Math.abs(rows[i].y-y);if(delta<=tol&&delta<best){row=rows[i];best=delta}}
    if(!row){row={y:y,cells:[]};rows.push(row)}
    row.cells.push(it);
   });
