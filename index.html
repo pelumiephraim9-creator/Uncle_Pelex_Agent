@@ -5485,16 +5485,19 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    '<div class="ls-kpi"><b>'+money(outT,rep)+'</b><span>Outstanding</span></div>'+
    '<div class="ls-kpi '+(overdue.length?'warn':'')+'"><b>'+overdue.length+' overdue</b><span>'+(overdue.length?money(overdueT,rep)+' past due':'Nothing past due')+'</span></div>';
   // revenue by week (invoices), last 12 weeks to the chosen date
-  var gran=($l('lsGran')&&$l('lsGran').value)||'week',end=parseD(a),weeks=[];
-  if(gran==='day'){for(var w=29;w>=0;w--){var dd=new Date(end);dd.setDate(dd.getDate()-w);weeks.push(iso(dd))}}
-  else{for(var w2=11;w2>=0;w2--){var d=new Date(end);d.setDate(d.getDate()-w2*7);weeks.push(weekStart(iso(d)))}}
-  var keyOf=gran==='day'?function(x){return String(x.entry_date)}:function(x){return weekStart(x.entry_date)};
-  var rev=weeks.map(function(ws){return inv.filter(function(x){return keyOf(x)===ws}).reduce(function(s,x){return s+Number(x.amount)},0)});
-  var vol=weeks.map(function(ws){return rows.filter(function(x){return keyOf(x)===ws}).length});
-  var lbl=weeks.map(function(s){return s.slice(5)});
-  window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:weeks,values:rev,fmt:function(v){return money(v,rep)},title:'Revenue'});
-  $l('lsRevTable').innerHTML='<table class="ls-table"><tr><th>Week starting</th><th>Invoiced</th></tr>'+weeks.map(function(w,i){return '<tr><td>'+esc(w)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</table>';
-  window.pxChart&&window.pxChart($l('lsVol'),{id:'lsVol',labels:lbl,dates:weeks,values:vol,fmt:function(v){return v+' entries'},title:'Volume'});
+  var gran=($l('lsGran')&&$l('lsGran').value)||'week',end=parseD(a),periods=[];
+  if(gran==='day'){for(var w=29;w>=0;w--){var dd=new Date(end);dd.setDate(dd.getDate()-w);periods.push(iso(dd))}}
+  else if(gran==='month'){for(var m=11;m>=0;m--){var md=new Date(end.getFullYear(),end.getMonth()-m,1);periods.push(md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0'))}}
+  else{for(var w2=11;w2>=0;w2--){var d=new Date(end);d.setDate(d.getDate()-w2*7);periods.push(weekStart(iso(d)))}}
+  var keyOf=gran==='day'?function(x){return String(x.entry_date).slice(0,10)}:gran==='month'?function(x){return String(x.entry_date).slice(0,7)}:function(x){return weekStart(x.entry_date)};
+  var revenueRows=rows.filter(function(x){return x.entry_type==='invoice'||x.entry_type==='sale'});
+  var rev=periods.map(function(p){return revenueRows.filter(function(x){return keyOf(x)===p}).reduce(function(sum,x){return sum+Number(x.amount)},0)});
+  var vol=periods.map(function(p){return rows.filter(function(x){return keyOf(x)===p}).length});
+  var lbl=periods.map(function(p){return gran==='day'?p.slice(5):p});
+  var periodLabel=gran==='day'?'day':gran==='month'?'month':'week';
+  window.pxChart&&window.pxChart($l('lsRev'),{id:'lsRev',labels:lbl,dates:periods,values:rev,fmt:function(v){return money(v,rep)},title:'Sales and invoices by '+periodLabel});
+  $l('lsRevTable').innerHTML='<table class="ls-table"><thead><tr><th>'+(gran==='day'?'Date':gran==='month'?'Month':'Week starting')+'</th><th>Sales and invoices</th></tr></thead><tbody>'+periods.map(function(p,i){return '<tr><td>'+esc(p)+'</td><td>'+money(rev[i],rep)+'</td></tr>'}).join('')+'</tbody></table>';
+  window.pxChart&&window.pxChart($l('lsVol'),{id:'lsVol',labels:lbl,dates:periods,values:vol,fmt:function(v){return v+' entries'},title:'Transaction volume by '+periodLabel});
   // counts by type
   var types={};rows.forEach(function(x){types[x.entry_type]=(types[x.entry_type]||0)+1});
   $l('lsTypes').innerHTML=Object.keys(types).map(function(t){return '<div class="irow">'+esc(t)+': <b>'+types[t]+'</b></div>'}).join('')||'<div class="ls-empty">No entries yet.</div>';
@@ -5537,17 +5540,17 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var wrap=document.createElement('div');wrap.id='lsWrap';wrap.className='ls-wrap';
   wrap.innerHTML=
    '<div class="dcard"><div class="dhead"><h2>Analysis</h2><span class="ttag" id="lsCount"></span></div>'+
-   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="week">Weekly</option><option value="day">Daily (last 30 days)</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
+   '<div class="ls-tl"><label class="dnote" for="lsCur">Currency</label><select id="lsCur"></select><select id="lsGran" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:7px 9px;font:inherit"><option value="day">Daily · last 30 days</option><option value="week">Weekly · last 12 weeks</option><option value="month">Monthly · last 12 months</option></select><label class="dnote" for="lsDate">As of</label><input type="date" id="lsDate"></div>'+
    '<div class="ls-tl"><span class="dnote">Back</span><input type="range" id="lsSlider" min="0" max="0" value="0"><span class="dnote">Forward</span></div>'+
    '<div id="lsDays"></div><div id="lsDayView"></div><div id="lsFileBar"></div><div class="ls-empty" id="lsEmpty">No ledger data yet. Upload an invoice or data sheet in the Upload card and confirm it.</div>'+
    '<div id="lsBody" hidden><div class="dnote" id="lsFxNote"></div><details class="ls-more"><summary>Exchange rates</summary><div class="dnote">Enter how many units of your reporting currency one unit of each other currency is worth. Rows without a rate are not counted.</div><div id="lsFx" class="ilist"></div></details><div class="ls-kpis" id="lsKpis"></div>'+
-   '<div class="dnote" style="margin-top:12px"><b>Revenue, last 12 weeks</b></div><div id="lsRev"></div>'+
+   '<div class="dnote" style="margin-top:12px"><b>Sales and invoices</b></div><div id="lsRev"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div class="dnote">Invoiced per week, in the chosen currency.</div><div id="lsRevTable"></div></details>'+
-   '<div class="dnote" style="margin-top:12px"><b>Volume, last 12 weeks</b></div><div id="lsVol"></div>'+
+   '<div class="dnote" style="margin-top:12px"><b>Transaction volume</b></div><div id="lsVol"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div id="lsTypes"></div></details></div></div>'+
    '<div class="dcard"><h2>Project management</h2><div class="dnote">Each invoice becomes a workflow step: issued, due, then paid or overdue.</div><div id="lsFlow"></div>'+
    '<details class="ls-more"><summary>Show more</summary><div class="dnote">Overdue means the due date has passed and less than the invoiced amount has been received for that customer.</div></details></div>'+
-   '<div class="dcard"><h2>Data entry</h2><div class="dnote">Every upload, with the type Pelex detected and how many rows were saved.</div><div id="lsUploads"></div></div>'+
+   '<div class="dcard"><h2>Data entry</h2><div class="dnote">Saved transactions and uploaded documents, including Pelex’s detected document type and the number of ledger rows saved.</div><div id="lsUploads"></div></div>'+
    '<div class="dcard"><h2>Ask Pelex about this data</h2><div class="dnote">Ask anything about your ledger: what is overdue, which customers pay late, what to chase first.</div>'+
    '<div class="ls-chat-log" id="lsLog"></div>'+
    '<div class="supbar"><input class="inp" id="lsAsk" placeholder="For example: which invoices should I chase first?" maxlength="500"><button class="btn" id="lsSend" type="button">Ask</button></div></div>';
