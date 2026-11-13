@@ -75,16 +75,16 @@
    if(!lines.length)warnings.push('No line items are present. Add a row or cancel.');
    if(f.total!=null&&lines.length&&Math.abs(total-Number(f.total))>0.5)warnings.push('Rows total '+total.toLocaleString()+'; document total '+Number(f.total).toLocaleString()+'. Please reconcile before saving.');
    container.innerHTML='<div style="font-family:Arial,Helvetica,sans-serif;color:#0b1b4a;max-width:100%;overflow:auto">'+
-    '<div style="font-weight:700">'+esc(f.type||'document')+' · '+esc(f.currency||'')+'</div>'+
+    '<div style="font-weight:700">'+esc(f.type||'document')+' · '+esc(f.currency||'')+'</div>'+(result.testOnly?'<div style="padding:8px;margin:8px 0;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:12px">TEST SAMPLE · You can edit the extracted details and rows, but this sample cannot be saved to the business ledger.</div>':'')+
     '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0;font-size:13px">'+
-    ['date','reference','payment_method','status'].map(function(k){return '<label>'+esc(k)+'<input data-f="'+k+'" value="'+esc(f[k]||'')+'" style="width:100%;box-sizing:border-box;padding:6px"></label>'}).join('')+'</div>'+
+    ['type','date','reference','payment_method','status','currency','subtotal'].map(function(k){return '<label>'+esc(k.replace(/_/g,' '))+'<input data-f="'+k+'" value="'+esc(f[k]==null?'':f[k])+'" style="width:100%;box-sizing:border-box;padding:6px"></label>'}).join('')+'</div>'+
     '<div style="overflow-x:auto"><table style="width:100%;min-width:460px;border-collapse:collapse;font-size:12px"><tr><th align="left">Description</th><th>Qty</th><th>Unit</th><th>Line total</th><th></th></tr>'+
     lines.map(function(l,i){return '<tr><td><input data-i="'+i+'" data-k="description" value="'+esc(l.description)+'" style="width:100%;box-sizing:border-box"></td><td><input data-i="'+i+'" data-k="qty" type="number" min="0.01" step="any" value="'+esc(l.qty)+'" style="width:58px"></td><td><input data-i="'+i+'" data-k="unit_price" type="number" min="0" step="any" value="'+esc(l.unit_price==null?'':l.unit_price)+'" style="width:82px"></td><td><input data-i="'+i+'" data-k="line_total" type="number" min="0" step="0.01" value="'+esc(l.line_total)+'" style="width:92px"></td><td><button type="button" data-del="'+i+'">×</button></td></tr>'}).join('')+
     '</table></div><button type="button" data-add="1" style="margin-top:8px">+ Add row</button>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px"><label>Document total<input data-total="1" type="number" min="0" step="0.01" value="'+esc(f.total==null?'':f.total)+'" style="width:100%;box-sizing:border-box;padding:6px"></label><div><b>Total from rows: '+esc(total.toLocaleString())+'</b></div></div>'+
     warnings.map(function(w){return '<div style="color:#b45309;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
     (result.warnings||[]).map(function(w){return '<div style="color:#64748b;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
-    '<button type="button" data-ok="1" style="margin-top:10px;width:100%;padding:10px;border:0;border-radius:999px;background:#0b1b4a;color:#fff">Confirm review</button></div>';
+    '<button type="button" data-ok="1" style="margin-top:10px;width:100%;padding:10px;border:0;border-radius:999px;background:#0b1b4a;color:#fff">'+(result.testOnly?'Finish test review':'Confirm review')+'</button></div>';
    container.querySelectorAll('[data-f]').forEach(function(el){el.oninput=function(){f[el.getAttribute('data-f')]=el.value}});
    container.querySelectorAll('[data-total]').forEach(function(el){el.oninput=function(){f.total=el.value===''?null:Number(el.value)}});
    container.querySelectorAll('[data-i]').forEach(function(el){el.oninput=function(){var i=Number(el.getAttribute('data-i')),k=el.getAttribute('data-k');lines[i][k]=k==='description'?el.value:(el.value===''?null:Number(el.value))}});
