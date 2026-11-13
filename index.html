@@ -5760,7 +5760,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   return h+'</tbody></table></div>';
  }
  function readReview(){
-  var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('input[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=inp.value.trim()});out.push(o)});return out;
+  var out=[];document.querySelectorAll('#rvBox tr[data-i]').forEach(function(tr){var o={};tr.querySelectorAll('[data-k]').forEach(function(inp){o[inp.getAttribute('data-k')]=String(inp.value==null?'':inp.value).trim()});out.push(o)});return out;
  }
  function toRows(list){
   var ok=[],bad=0,validKinds=['income','expense','principal_in','principal_out','receivable_in','savings_in','capital','transfer'];
