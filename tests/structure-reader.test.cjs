@@ -73,3 +73,24 @@ test('bridge preserves a separate test-only marker and filters test boilerplate'
  assert.match(source,/TESTING INSTRUCTION\|UPLOAD ONLY/);
  assert.match(source,/testOnly:testOnly/);
 });
+
+test('returns positioned rows for bridge cleanup and editable structure',()=>{
+ const result=structure.structure([{str:'Item 1 2 100.00 200.00',x:0,y:20}]);
+ assert.ok(Array.isArray(result.rows));
+ assert.equal(result.rows.length,1);
+ assert.equal(result.rows[0].text,'Item 1 2 100.00 200.00');
+});
+test('mobile capture uses a direct file input and no iframe picker',()=>{
+ const runtime=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','pelex_addons_runtime.js'),'utf8');
+ assert.match(runtime,/position:absolute;inset:0;width:100%;height:100%;opacity:0\.01/);
+ assert.match(runtime,/build\(document,modal\.querySelector\('#pxSlipInlineBody'\)\)/);
+ assert.doesNotMatch(runtime,/frame\.contentDocument/);
+});
+test('upload import checks duplicates before storage and handles thrown errors',()=>{
+ const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+ const start=html.indexOf('async function saveReviewed()');
+ const fn=html.slice(start,html.indexOf('function wireUpload()',start));
+ assert.ok(fn.indexOf('pxDuplicate(fh,projectId)')<fn.indexOf('.upload(path,pendingDoc.file'));
+ assert.match(fn,/catch\(e\)/);
+ assert.match(fn,/finally/);
+});
