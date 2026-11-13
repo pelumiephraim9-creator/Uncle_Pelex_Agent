@@ -78,17 +78,20 @@
    var themeWin=themeDoc.defaultView||window;
    var themeCss=themeWin.getComputedStyle(themeRoot);
    function themeVar(name,fallback){return (themeCss.getPropertyValue(name)||'').trim()||fallback}
-   var panelColor='#ffffff';
+   var panelColor='transparent';
    var inkColor='#0b1b4a';
    var lineColor='#0b1b4a';
    var mutedColor='#33466f';
-   var fieldStyle='display:block;width:100%;min-width:0;box-sizing:border-box;padding:8px 10px;min-height:38px;border:2px solid #0b1b4a!important;border-radius:9px;background:#ffffff!important;background-color:#ffffff!important;color:#0b1b4a!important;-webkit-text-fill-color:#0b1b4a!important;color-scheme:light!important;opacity:1!important;box-shadow:none!important';
-   var labelStyle='display:block;color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;font-weight:700';
+   var themeBackground=(themeWin.getComputedStyle(themeRoot).getPropertyValue('--bg')||'#ffffff').trim();
+   var darkReview=/^(#0|#1|#2|rgb\\(\\s*[0-9]{1,2}\\s*,)/i.test(themeBackground);
+   var labelColor=darkReview?'#ffffff':'#0b1b4a';
+   var fieldStyle='display:block;width:100%;min-width:0;box-sizing:border-box;padding:8px 10px;min-height:38px;border:2px solid #0b1b4a!important;border-radius:9px;background:#ffffff!important;background-color:#ffffff!important;color:#0b1b4a!important;-webkit-text-fill-color:#0b1b4a!important;-webkit-appearance:none!important;appearance:none!important;color-scheme:light!important;opacity:1!important;box-shadow:none!important';
+   var labelStyle='display:block;color:'+labelColor+'!important;-webkit-text-fill-color:'+labelColor+'!important;font-weight:700';
    var total=lines.reduce(function(a,l){return a+(Number(l.line_total)||0)},0);
    var warnings=[];
    if(!lines.length)warnings.push('No line items are present. Add a row or cancel.');
    if(f.total!=null&&lines.length&&Math.abs(total-Number(f.total))>0.5)warnings.push('Rows total '+total.toLocaleString()+'; document total '+Number(f.total).toLocaleString()+'. Please reconcile before saving.');
-   container.innerHTML='<div class="px-structure-review" style="font-family:Arial,Helvetica,sans-serif;max-width:100%;overflow:auto">'+
+   container.innerHTML='<div class="px-structure-review" style="font-family:Arial,Helvetica,sans-serif;max-width:100%;overflow:auto;color:'+labelColor+'!important;background:transparent!important">'+
     '<div style="font-weight:700">'+esc(f.type||'document')+' · '+esc(f.currency||'')+'</div>'+(result.testOnly?'<div style="padding:8px;margin:8px 0;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:12px">TEST SAMPLE · You can edit the extracted details and rows, but this sample cannot be saved to the business ledger.</div>':'')+
     '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0;font-size:13px">'+
     ['type','date','reference','payment_method','status','currency','subtotal'].map(function(k){return '<label style="'+labelStyle+'">'+esc(k.replace(/_/g,' '))+'<input data-f="'+k+'" value="'+esc(f[k]==null?'':f[k])+'" style="'+fieldStyle+'"></label>'}).join('')+'</div>'+
@@ -98,7 +101,7 @@
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px"><label style="'+labelStyle+'">Document total<input data-total="1" type="number" min="0" step="0.01" value="'+esc(f.total==null?'':f.total)+'" style="'+fieldStyle+'"></label><div><b style="color:'+inkColor+'!important">Total from rows: '+esc(total.toLocaleString())+'</b></div></div>'+
     warnings.map(function(w){return '<div style="color:#b45309;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
     (result.warnings||[]).map(function(w){return '<div style="color:#64748b;font-size:12px;margin-top:4px">'+esc(w)+'</div>'}).join('')+
-    '<button type="button" data-ok="1" style="margin-top:10px;width:100%;padding:10px;border:0;border-radius:999px;background:#0b1b4a;color:#fff">'+(result.testOnly?'Finish test review':'Confirm review')+'</button></div>';
+    '<button type="button" data-ok="1" style="margin-top:10px;width:100%;padding:10px;border:2px solid #ffffff;border-radius:999px;background:#0b1b4a;color:#ffffff;-webkit-text-fill-color:#ffffff">'+(result.testOnly?'Finish test review':'Confirm review')+'</button></div>';
    container.querySelectorAll('[data-f]').forEach(function(el){el.oninput=function(){f[el.getAttribute('data-f')]=el.value}});
    container.querySelectorAll('[data-total]').forEach(function(el){el.oninput=function(){f.total=el.value===''?null:Number(el.value)}});
    container.querySelectorAll('[data-i]').forEach(function(el){el.oninput=function(){var i=Number(el.getAttribute('data-i')),k=el.getAttribute('data-k');lines[i][k]=k==='description'?el.value:(el.value===''?null:Number(el.value))}});
