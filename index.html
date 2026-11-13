@@ -2121,7 +2121,14 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
     down.onclick=function(){down.setAttribute('aria-pressed','true');up.setAttribute('aria-pressed','false');fb.textContent='Thanks, noted.'};
     if(t.length>180){
       var esc=function(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
-      var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap}</style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p></body></html>'};
+      var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap}
+/* PELEX LIGHT THEME: true white surfaces throughout; preserve navy dark theme. */
+:root[data-theme="light"]{--bg:#ffffff!important;--panel:#ffffff!important;--card:#ffffff!important;--ink:#0b1b4a!important;--muted:#52617d!important;--line:#d9e0ec!important;--soft:#ffffff!important;color-scheme:light!important}
+:root[data-theme="light"] body,:root[data-theme="light"] main,:root[data-theme="light"] .card,:root[data-theme="light"] .dcard,:root[data-theme="light"] .panel,:root[data-theme="light"] section{background-color:#ffffff}
+:root[data-theme="light"] input,:root[data-theme="light"] select,:root[data-theme="light"] textarea{background-color:#ffffff;color:#0b1b4a}
+:root[data-theme="dark"]{--bg:#0c1423!important;--panel:#121e31!important;--card:#121e31!important;--ink:#e8eef8!important;--muted:#a1aec2!important;--line:#26364d!important;--soft:#17263d!important;color-scheme:dark!important}
+
+</style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p></body></html>'};
       var pdf=document.createElement('button');pdf.type='button';pdf.className='dl';pdf.textContent='PDF';pdf.setAttribute('aria-label','Save as PDF');
       pdf.onclick=function(){var w=window.open('','_blank');if(!w){add('Your browser blocked the PDF window. Allow pop-ups for this site and try again.','sys');return}w.document.write(docHtml());w.document.close();w.focus();setTimeout(function(){try{w.print()}catch(e){}},400)};
       var wd=document.createElement('button');wd.type='button';wd.className='dl';wd.textContent='Word';wd.setAttribute('aria-label','Save as Word document');
@@ -7102,6 +7109,6 @@ function pxCommandHelp(){
 </script>
 
 <script src="/pelex_projects.js?v=12"></script>
-<script src="/pelex_addons_runtime.js?v=1"></script>
+<script src="/pelex_addons_runtime.js?v=2"></script>
 </body>
 </html>
