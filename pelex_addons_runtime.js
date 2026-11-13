@@ -120,20 +120,22 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
   for(var i=1;i<=Math.min(doc.numPages,5);i++){var pg=await doc.getPage(i);var c=await pg.getTextContent();out+=c.items.map(function(x){return x.str}).join(' ')+'\n'}
   return {text:out,note:''};
  }
- function build(doc){
-  doc.body.innerHTML='';
-  doc.body.style.cssText='margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:#0b1b4a;padding:12px;box-sizing:border-box';
-  var box=doc.createElement('div');box.id='slipBox';box.innerHTML=
+ function build(doc,mount){
+  var root=mount||doc.body;
+  if(!mount){doc.body.innerHTML='';doc.body.style.cssText='margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:#0b1b4a;padding:12px;box-sizing:border-box'}
+  root.innerHTML='';
+  var box=doc.createElement('div');box.id='slipBox';box.style.cssText='font-family:Arial,Helvetica,sans-serif;color:#0b1b4a;max-width:100%;overflow:auto';
+  box.innerHTML=
    '<div style="font-weight:700;margin-bottom:8px">Capture a slip</div>'+
-   '<div id="slipDrop" style="border:2px dashed #94a3b8;border-radius:12px;padding:14px;text-align:center;font-size:13px;background:#fff;cursor:pointer">Drop a PDF or picture here, or tap to choose</div>'+
-   '<input id="slipFile" type="file" accept="application/pdf,image/*" hidden>'+
-   '<div id="slipForm" style="margin-top:10px"></div><div id="slipMsg" style="font-size:12px;margin-top:8px;color:#5d6980"></div>';
-  doc.body.appendChild(box);
-  var drop=doc.getElementById('slipDrop'),input=doc.getElementById('slipFile');
-  drop.onclick=function(){input.click()};
+   '<label id="slipDrop" style="position:relative;display:block;border:2px dashed #94a3b8;border-radius:12px;padding:18px 14px;text-align:center;font-size:13px;background:#fff;cursor:pointer;overflow:hidden">Choose a PDF or picture · Tap here'+
+   '<input id="slipFile" type="file" accept="application/pdf,image/*,.heic,.heif" aria-label="Choose a PDF or picture" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.01;cursor:pointer">'+
+   '</label>'+
+   '<div id="slipForm" style="margin-top:10px"></div><div id="slipMsg" role="status" aria-live="polite" style="font-size:12px;margin-top:8px;color:#5d6980"></div>';
+  root.appendChild(box);
+  var drop=box.querySelector('#slipDrop'),input=box.querySelector('#slipFile');
   drop.ondragover=function(e){e.preventDefault()};
-  drop.ondrop=function(e){e.preventDefault();if(e.dataTransfer.files[0])handle(doc,e.dataTransfer.files[0])};
-  input.onchange=function(){if(input.files[0])handle(doc,input.files[0])};
+  drop.ondrop=function(e){e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files[0])handle(doc,e.dataTransfer.files[0]).catch(function(err){var m=box.querySelector('#slipMsg');if(m)m.textContent='Could not read this file: '+(err&&err.message||'Please try another file.');});};
+  input.onchange=function(){if(input.files&&input.files[0])handle(doc,input.files[0]).catch(function(e){var m=box.querySelector('#slipMsg');if(m)m.textContent='Could not read this file: '+(e&&e.message||'Please try another file.');});};
  }
  function slipDate(value){
   if(!value)return '';
@@ -236,8 +238,8 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
  function openInlineCapture(){
   var existing=document.getElementById('pxSlipModal');if(existing){existing.hidden=false;return}
   var modal=document.createElement('div');modal.id='pxSlipModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(10,20,40,.55);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box';
-  modal.innerHTML='<div style="width:min(520px,100%);height:min(760px,92dvh);background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25)"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #dfe4ee;color:#0b1b4a"><b>Capture a slip</b><button type="button" id="pxSlipClose" style="border:0;background:#eef2fb;border-radius:8px;padding:8px 12px">Close</button></div><iframe title="Slip capture form" style="border:0;flex:1;width:100%;min-height:0"></iframe></div>';
-  document.body.appendChild(modal);var frame=modal.querySelector('iframe');frame.addEventListener('load',function(){build(frame.contentDocument)});frame.src='about:blank';
+  modal.innerHTML='<div style="width:min(520px,100%);max-height:92dvh;background:#fff;border-radius:16px;overflow:auto;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25)"><div style="position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #dfe4ee;background:#fff;color:#0b1b4a;z-index:1"><b>Capture a slip</b><button type="button" id="pxSlipClose" style="border:0;background:#eef2fb;border-radius:8px;padding:8px 12px">Close</button></div><div id="pxSlipInlineBody" style="padding:12px;overflow:auto"></div></div>';
+  document.body.appendChild(modal);build(document,modal.querySelector('#pxSlipInlineBody'));
   modal.querySelector('#pxSlipClose').onclick=function(){modal.remove()};modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
  }
  window.pxOpenSlipCapture=async function(){
