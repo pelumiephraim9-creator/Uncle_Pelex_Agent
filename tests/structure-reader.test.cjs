@@ -51,7 +51,12 @@ test('new bridge and slip integration scripts parse without syntax errors', () =
     new vm.Script(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'), {filename:file});
   }
   const html = fs.readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
-  const match = html.match(/<script>\s*\/\* ---- document reading ---- \*\/[\s\S]*?<\/script>/);
+  const marker = html.indexOf('async function readDoc()');
+  const scriptStart = html.lastIndexOf('<script', marker);
+  const scriptBody = html.indexOf('>', scriptStart) + 1;
+  const scriptEnd = html.indexOf('</script>', marker);
+  assert.ok(marker >= 0 && scriptStart >= 0 && scriptEnd > scriptBody, 'document reading inline script should be present');
+  new vm.Script(html.slice(scriptBody,scriptEnd), {filename:'index.html document reader'});
   assert.ok(match, 'document reading inline script should be present');
   new vm.Script(match[0].replace(/^<script>/,'').replace(/<\/script>$/,''), {filename:'index.html document reader'});
 });
