@@ -27,7 +27,7 @@
     var tokens=String(c.str).trim().match(/(?:[A-Za-z][A-Za-z'’&./-]*|[-+]?\d[\d,]*(?:\.\d{1,2})?|[^\s])/g)||[];
     return out.concat(tokens);
    },[]);
-   r.text=r.parts.join('  ');
+   r.text=r.parts.join(' ');
    return r;
   });
  }
@@ -48,7 +48,7 @@
  }
  function readFields(text){
   var t=String(text||'');
-  function grab(re){var m=re.exec(t);return m?m[1].trim():null}
+  function grab(re){var m=re.exec(t);return m?m[1].trim().replace(/\\s+/g,' '):null}
   var total=grab(/\b(?:grand\s*)?total\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/i);
   var sub=grab(/\bsubtotal\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/i);
   var date=grab(/\bdate\s*:?\s*(\d{1,2}\s+\w{3,9}\s+\d{4}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}|\d{4}-\d{2}-\d{2})/i);
