@@ -5676,10 +5676,27 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    if(sr.kind==='error'||sr.kind==='unsupported'){$p('upMsg').textContent=(sr.warnings||['The document could not be read.']).join(' ');return}
    var sf=sr.fields||{},isTest=/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(sr.text||'');
    var sbx=$p('rvBox');if(!sbx){sbx=document.createElement('div');sbx.id='rvBox';sbx.className='ilist';$p('upMsg').parentNode.insertBefore(sbx,$p('upMsg'))}
-   if(!sr.lines.length||isTest){
+   if(isTest||sr.testOnly){
     pendingDoc=null;
-    sbx.innerHTML='<div class="irow"><b>Document read:</b> '+esc(f.name)+' · '+esc(sr.kind)+'</div>'+(isTest?'<div class="irow">Synthetic/test material detected. These rows are for testing only and cannot be imported.</div>':'<div class="irow">No transaction rows were identified. Nothing has been imported.</div>')+'<pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'No readable text was found.')+'</pre>';
-    $p('upMsg').textContent=isTest?'Test data detected. Nothing has been saved or imported.':((sr.warnings||[]).join(' ')||'Document read locally. Nothing was imported.');
+    sr.testOnly=true;
+    if(!sr.lines.length){
+     sbx.innerHTML='<div class="irow"><b>Test document:</b> '+esc(f.name)+'</div><div class="irow">No line items were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'')+'</pre>';
+     $p('upMsg').textContent='Test data detected. Nothing was saved or imported.';
+     return;
+    }
+    window.pxStructure.review(sbx,sr,function(confirmed){
+     var ff=confirmed.fields||{};
+     sbx.innerHTML='<div class="irow"><b>Test review completed:</b> '+esc(f.name)+'</div><div class="irow">Reviewed '+confirmed.lines.length+' editable line item(s). Reference: '+esc(ff.reference||'Not detected')+' · Date: '+esc(ff.date||'Not detected')+' · Total: '+esc(ff.total==null?'Not entered':Number(ff.total).toLocaleString())+' · Payment: '+esc(ff.payment_method||'Not detected')+'</div><div class="irow" style="color:#9a3412">Synthetic test material only. Nothing has been imported into the ledger.</div><button class="btn alt" id="rvEditAgain" type="button">Edit again</button>';
+     $p('rvEditAgain').onclick=function(){window.pxStructure.review(sbx,sr,function(){ $p('upMsg').textContent='Test review completed. Nothing was saved.'; });};
+     $p('upMsg').textContent='Test review completed. Nothing was saved or imported.';
+    });
+    $p('upMsg').textContent='Synthetic test sample detected. Review and edit its extracted fields; nothing can be saved.';
+    return;
+   }
+   if(!sr.lines.length){
+    pendingDoc=null;
+    sbx.innerHTML='<div class="irow"><b>Document read:</b> '+esc(f.name)+' · '+esc(sr.kind)+'</div><div class="irow">No transaction rows were identified. Nothing has been imported.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;font:inherit">'+esc(sr.text||'No readable text was found.')+'</pre>';
+    $p('upMsg').textContent=(sr.warnings||[]).join(' ')||'Document read locally. Nothing was imported.';
     return;
    }
    window.pxStructure.review(sbx,sr,function(confirmed){
