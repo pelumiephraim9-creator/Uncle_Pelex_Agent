@@ -1,14 +1,33 @@
-// Service worker: keeps the app shell available offline, but always fetches fresh pages first
-// so a new deploy shows up right away. Only same-origin requests are handled; chat data and
-// sign-in calls (other origins) always go straight to the network.
-const CACHE='uncle-pelex-v2';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/manifest.webmanifest','/icon/icon-192.png'])).catch(()=>{}));self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
-self.addEventListener('fetch',e=>{
-  const req=e.request,url=new URL(req.url);
-  if(req.method!=='GET'||url.origin!==self.location.origin||url.pathname.startsWith('/.netlify/functions/'))return;
-  e.respondWith(fetch(req).then(res=>{
-    if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy))}
-    return res;
-  }).catch(()=>caches.match(req).then(hit=>hit||caches.match('/'))));
+// Pelex PWA service worker. Bump CACHE on each app-shell release.
+// Navigation requests always go to Cloudflare first; cache is an offline fallback only.
+const CACHE='uncle-pelex-v3';
+self.addEventListener('install',event=>{
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE);
+    try{await cache.addAll(['/','/manifest.webmanifest','/icon-192.png'])}catch(_){}
+    await self.skipWaiting();
+  })());
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith('uncle-pelex-')&&key!==CACHE).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
+self.addEventListener('fetch',event=>{
+  const request=event.request,url=new URL(request.url);
+  if(request.method!=='GET'||url.origin!==self.location.origin)return;
+  if(url.pathname.startsWith('/api/')||url.pathname.startsWith('/auth/')||url.pathname.startsWith('/functions/'))return;
+  if(request.mode==='navigate'){
+    event.respondWith(fetch(request,{cache:'no-store'}).then(response=>{
+      if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put('/',copy));}
+      return response;
+    }).catch(()=>caches.match('/').then(cached=>cached||Response.error())));
+    return;
+  }
+  event.respondWith(fetch(request).then(response=>{
+    if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));}
+    return response;
+  }).catch(()=>caches.match(request).then(cached=>cached||caches.match('/')));
 });
