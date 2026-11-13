@@ -73,7 +73,20 @@
    else return {source:'local',kind:'unsupported',lines:[],fields:{},warnings:['This structural reader accepts PDFs and pictures. Other file types use the existing reader.'],note:'',text:''};
    if(!items.length)return {source:'local',kind:kind,lines:[],fields:{},warnings:warnings.concat(['No readable text was found. Add the rows by hand.']),note:'',text:''};
    var s=window.pxStructure.structure(items);
-   return {source:'local',kind:kind,fields:s.fields,lines:s.lines,total_from_lines:s.total_from_lines,warnings:warnings.concat(s.warnings),text:s.text,note:'Read locally on this device. Nothing has been saved.'};
+   // Remove non-transactional test boilerplate from the editable review text.
+   // Keep the test marker separately so callers can enforce read-only mode.
+   var testOnly=/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(s.text||'');
+   var cleanRows=(s.rows||[]).filter(function(row){
+    return !/PELEX BUSINESS AGENT TEST DATA|SYNTHETIC SAMPLE|NOT A REAL TRANSACTION|TAX INVOICE|TESTING INSTRUCTION|UPLOAD ONLY|MATCHING BUSINESS PROJECT|CHECK EXTRACTED|FICTIONAL NAMES|NOTHING HAS BEEN ADDED|TEST DATA|FOR TESTING ONLY/i.test(row.text||'');
+   });
+   var cleanText=cleanRows.map(function(row){return row.text}).join('\n');
+   var cleanLines=window.pxStructure.readLines(cleanRows);
+   var cleanFields=window.pxStructure.readFields(cleanText);
+   var cleanSum=cleanLines.reduce(function(sum,line){return sum+(Number(line.line_total)||0)},0);
+   var cleanWarnings=[];
+   if(!cleanLines.length)cleanWarnings.push('No line items were found. Add them with Add row.');
+   if(cleanFields.total!=null&&cleanLines.length&&Math.abs(cleanSum-cleanFields.total)>0.5)cleanWarnings.push('The line items do not match the document total. Check each row.');
+   return {source:'local',kind:kind,fields:cleanFields,lines:cleanLines,total_from_lines:cleanSum,warnings:warnings.concat(cleanWarnings),text:cleanText,testOnly:testOnly,note:'Read locally on this device. Nothing has been saved.'};
   }catch(e){return {source:'local',kind:'error',lines:[],fields:{},warnings:[e&&e.message||'This file could not be read on this device. Add the rows by hand.'],note:'',text:''}}
  };
  // Preserve every existing file reader for spreadsheets, CSV, Word and other formats.
