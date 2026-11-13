@@ -49,13 +49,13 @@
  function readFields(text){
   var t=String(text||'');
   function grab(re){var m=re.exec(t);return m?m[1].trim().replace(/\s+/g,' '):null}
-  var total=grab(/\b(?:grand\s*)?total\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/i);
-  var sub=grab(/\bsubtotal\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/i);
-  var date=grab(/\bdate\s*:?\s*(\d{1,2}\s+\w{3,9}\s+\d{4}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}|\d{4}-\d{2}-\d{2})/i);
-  var ref=grab(/(?:slip\s+reference|receipt\s*\/\s*reference|reference|ref|receipt|invoice(?:\s+no)?|slip)\s*(?:no\.?|number|#)?\s*:?\s*([A-Z0-9][A-Z0-9\-\/]{2,})/i);
-  var pay=grab(/payment\s+method\s*:?\s*([A-Za-z ]{3,24}?)(?=\s+status|\s+currency|\s{2,}|$)/i);
-  var status=grab(/status\s*:?\s*(Paid|Unpaid|Pending|Partly paid|Refunded|Void)/i);
-  var cur=grab(/currency\s*:?\s*([A-Z]{3})/i)||(/NGN|₦/.test(t)?'NGN':null);
+  var total=grab(/(?:^|\n)\s*(?:grand\s*)?total\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/im);
+  var sub=grab(/(?:^|\n)\s*subtotal\s*:?\s*(?:NGN|N|₦|\$)?\s*([\d][\d,]*(?:\.\d{1,2})?)/im);
+  var date=grab(/(?:^|\n)\s*date\s*:?\s*(\d{1,2}\s+\w{3,9}\s+\d{4}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}|\d{4}-\d{2}-\d{2})/im);
+  var ref=grab(/(?:^|\n)\s*(?:slip\s+reference|receipt\s*\/\s*reference|reference|ref|receipt|invoice(?:\s+no)?|slip)\s*(?:no\.?|number|#)?\s*:?\s*([A-Z0-9][A-Z0-9\-\/]{2,})/im);
+  var pay=grab(/(?:^|\n)\s*payment\s+method\s*:?\s*([A-Za-z ]{3,24}?)(?=\s+status|\s+currency|$)/im);
+  var status=grab(/(?:^|\n)\s*status\s*:?\s*(Paid|Unpaid|Pending|Partly paid|Refunded|Void)/im);
+  var cur=grab(/(?:^|\n)\s*currency\s*:?\s*([A-Z]{3})/im)||(/NGN|₦/.test(t)?'NGN':null);
   var kind=/invoice/i.test(t)?'invoice':/receipt|slip/i.test(t)?'receipt':/statement/i.test(t)?'statement':'document';
   return {type:kind,date:date,reference:ref,subtotal:sub?toNum(sub):null,total:total?toNum(total):null,payment_method:pay,status:status,currency:cur};
  }
