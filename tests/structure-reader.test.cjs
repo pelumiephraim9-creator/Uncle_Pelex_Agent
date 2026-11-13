@@ -63,7 +63,7 @@ test('review editor exposes editable receipt metadata and line items in test-onl
  const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','pelex_structure.js'),'utf8');
  assert.match(source,/result\.testOnly\?/);
  assert.match(source,/Finish test review/);
- assert.match(source,/data-f="currency"/);
+ assert.match(source,/'currency','subtotal'/);
  assert.match(source,/data-k="description"/);
  assert.match(source,/data-del=/);
 });
