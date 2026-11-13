@@ -64,7 +64,7 @@
   var sum=lines.reduce(function(a,l){return a+(l.line_total||0)},0),warnings=[];
   if(!lines.length)warnings.push('No line items were found. Add them with Add row.');
   if(fields.total!=null&&lines.length&&Math.abs(sum-fields.total)>0.5)warnings.push('The line items add up to '+sum.toLocaleString()+' but the document total says '+fields.total.toLocaleString()+'. Check each line.');
-  return {fields:fields,lines:lines,total_from_lines:sum,warnings:warnings,rows_found:rows.length,text:text};
+  return {fields:fields,lines:lines,rows:rows,total_from_lines:sum,warnings:warnings,rows_found:rows.length,text:text};
  }
  function review(container,result,onConfirm){
   var lines=(result.lines||[]).map(function(l){return {description:l.description||'',qty:Number(l.qty)||1,unit_price:l.unit_price==null?null:Number(l.unit_price),line_total:Number(l.line_total)||0}});
