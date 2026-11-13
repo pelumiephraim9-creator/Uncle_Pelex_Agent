@@ -150,9 +150,15 @@ function pxReady(fn){ if(document.readyState==='complete') setTimeout(fn,0); els
    var structured=await window.pxReadFileStructured(file);
    if(structured.kind==='error'||structured.kind==='unsupported'){msg.textContent=(structured.warnings||['Could not read this file.']).join(' ');return}
    var host=doc.getElementById('slipForm'),fields=structured.fields||{};
-   if(/synthetic sample|not a real transaction|testing instruction|fictional names|nothing has been added to your ledger|test data/i.test(structured.text||'')){
-    host.innerHTML='<div style="font-weight:700;color:#92400e">Test document detected</div><div style="font-size:13px;margin-top:6px">This is synthetic testing material. It can be reviewed but cannot be saved as a real transaction.</div><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto;font:inherit">'+esc(structured.text||'')+'</pre>';
-    msg.textContent='Test data detected. Nothing has been saved.';
+   if(structured.testOnly){
+    structured.testOnly=true;
+    window.pxStructure.review(host,structured,function(confirmed){
+     var f=confirmed.fields||{},count=confirmed.lines.length;
+     host.innerHTML='<div style="font-weight:700;color:#92400e">Test review completed</div><div style="font-size:13px;margin-top:6px">Reviewed '+count+' editable line item(s). This synthetic sample was not saved to the ledger.</div><div style="font-size:13px;margin-top:6px">Reference: '+esc(f.reference||'Not detected')+' · Date: '+esc(f.date||'Not detected')+' · Total: '+esc(f.total==null?'Not entered':Number(f.total).toLocaleString())+' · Payment: '+esc(f.payment_method||'Not detected')+'</div><button type="button" data-px-test-again style="margin-top:8px;padding:8px 12px">Edit again</button>';
+     host.querySelector('[data-px-test-again]').onclick=function(){window.pxStructure.review(host,structured,function(){msg.textContent='Test review completed. Nothing was saved.'})};
+     msg.textContent='Test review completed. Nothing was saved or imported.';
+    });
+    msg.textContent='Synthetic test sample detected. Review and edit the extracted fields; nothing can be saved.';
     return;
    }
    if(!structured.lines.length){
