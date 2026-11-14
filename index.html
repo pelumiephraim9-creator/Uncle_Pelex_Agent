@@ -2199,7 +2199,7 @@ function guestHumanToken(){return tsReady().then(function(){return new Promise(f
   box.innerHTML='';var done=false,id,MSG='Could not confirm you are human. Please try again.';
   function fin(f,v){if(done)return;done=true;clearTimeout(to);try{turnstile.remove(id)}catch(e){}box.innerHTML='';f(v)}
   var to=setTimeout(function(){fin(rej,new Error(MSG))},30000);
-  try{id=turnstile.render(box,{sitekey:TURNSTILE_SITE_KEY,appearance:'interaction-only',theme:'auto',callback:function(t){fin(res,t)},'error-callback':function(){fin(rej,new Error(MSG))}})}catch(e){fin(rej,new Error(MSG))}
+  try{id=turnstile.render(box,{sitekey:TURNSTILE_SITE_KEY,appearance:'always',theme:'auto',callback:function(t){fin(res,t)},'expired-callback':function(){fin(rej,new Error(MSG))},'error-callback':function(){fin(rej,new Error(MSG))}})}catch(e){fin(rej,new Error(MSG))}
 })})}
 async function agentAuth(force,skipUser){
   if(!skipUser){try{var ss=await sb.auth.getSession(),tk=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;if(tk)return tk}catch(e){}}
@@ -2669,11 +2669,14 @@ var TURNSTILE_SITE_KEY='0x4AAAAAAGA6RNkmdtmRIejC',capTok='',capId=null,capBusy=f
 function capOn(){return TURNSTILE_SITE_KEY.indexOf('PASTE_')!==0}
 function capLoad(){
   if(!capOn()||capId!==null||capBusy)return;capBusy=true;
-  var sc=document.createElement('script');sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.async=true;
-  sc.onload=function(){try{capId=turnstile.render('#authCaptcha',{sitekey:TURNSTILE_SITE_KEY,theme:'auto',callback:function(t){capTok=t},'expired-callback':function(){capTok=''},'error-callback':function(){capTok=''}})}catch(e){capBusy=false}};
-  sc.onerror=function(){capBusy=false};document.head.appendChild(sc)}
+  tsReady().then(function(){
+    var box=document.getElementById('authCaptcha');
+    if(!box)throw new Error('The human-check area is unavailable. Please reload and try again.');
+    capId=turnstile.render(box,{sitekey:TURNSTILE_SITE_KEY,theme:'auto',appearance:'always',callback:function(t){capTok=t},'expired-callback':function(){capTok='';try{if(capId!==null)turnstile.reset(capId)}catch(e){}},'error-callback':function(){capTok='';capBusy=false}});
+  }).catch(function(e){capBusy=false;capTok='';authMsg(e&&e.message?e.message:'Could not load the human check. Check your connection and try again.',true)});
+}
 function capOpts(o){o=o||{};if(capOn()&&capTok)o.captchaToken=capTok;return o}
-function capReset(){capTok='';try{if(capId!==null)turnstile.reset(capId)}catch(e){}}
+function capReset(){capTok='';try{if(capId!==null&&window.turnstile)turnstile.reset(capId)}catch(e){}}
 (function(){var el=document.getElementById('authCaptcha');if(!el||!capOn())return;el.style.minHeight='65px';
   if('IntersectionObserver' in window){new IntersectionObserver(function(es){if(es.some(function(x){return x.isIntersecting}))capLoad()}).observe(el)}else capLoad()})();
 async function oauth(provider){
