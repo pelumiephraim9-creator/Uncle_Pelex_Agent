@@ -427,3 +427,143 @@ var editingKnowledgeId=null;
  } setInterval(paint,2500);
 })();
 
+
+
+/* PELEX CHAT REFRESH — safe add-on layer.
+   Keeps the main interface source and illuminated splash animation untouched. */
+(function(){
+  'use strict';
+  if(window.__pxChatRefreshV1)return;
+  window.__pxChatRefreshV1=true;
+  var css = `
+    body::before{content:none!important;display:none!important}
+    aside .nav.newchat{display:none!important}
+    #keepBtn{display:none!important}
+    .px-chat-new{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;border-radius:11px;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;flex:none}
+    .px-chat-new:hover{background:var(--soft)}
+    .px-chat-new svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    body,.app,main,.view,.top,aside,.barwrap{background:var(--bg)!important}
+    .top{border-bottom-color:var(--line)}
+    .msg .md,.bm .md,.md{max-width:100%;min-width:0;line-height:1.68;overflow-wrap:anywhere;word-break:normal}
+    .md p{margin:0 0 12px}.md p:last-child{margin-bottom:0}
+    .md .mdh{font-size:1.08em;font-weight:700;line-height:1.35;letter-spacing:-.01em;margin:20px 0 9px}
+    .md .mdh:first-child{margin-top:0}
+    .md ul,.md ol{padding-left:1.45em;margin:8px 0 14px}
+    .md li{padding-left:2px;margin:5px 0}
+    .md table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:12px 0 16px;font-size:.94em}
+    .md th,.md td{padding:10px 12px;border:1px solid var(--line);text-align:left;vertical-align:top;min-width:90px}
+    .md th{font-weight:700;background:var(--soft)}
+    .md hr{display:none}.md code{overflow-wrap:anywhere;white-space:pre-wrap}
+    .md img{max-width:min(100%,520px);height:auto}.msg{overflow-wrap:anywhere}
+    .px-memory-card{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+    .px-memory-card p{margin:5px 0 10px;font-size:13px;color:var(--muted)}
+    .px-memory-card button{min-height:40px}
+    .px-memory-overlay{position:fixed;inset:0;z-index:10050;background:rgba(5,12,28,.48);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
+    .px-memory-dialog{width:min(100%,460px);max-height:min(82vh,700px);overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.24)}
+    .px-memory-dialog h2{font-size:19px;margin:0 0 5px}
+    .px-memory-dialog .px-memory-help{font-size:13px;color:var(--muted);margin:0 0 12px}
+    .px-memory-option{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin:7px 0;background:var(--bg);color:var(--ink);cursor:pointer}
+    .px-memory-option:hover,.px-memory-option[aria-pressed=true]{border-color:var(--btn);background:var(--soft)}
+    .px-memory-option small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+    .px-memory-status{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px}
+    .px-memory-actions{display:flex;justify-content:flex-end;margin-top:10px}
+    .px-memory-actions button{border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);padding:9px 14px;cursor:pointer}
+    #pxChatEndGesture{position:sticky;bottom:0;z-index:3;align-self:center;margin:8px auto 4px;padding:7px 14px;border:1px solid var(--line);border-radius:99px;background:var(--bg);color:var(--muted);font-size:11px;letter-spacing:.01em;touch-action:pan-x;user-select:none;-webkit-user-select:none}
+    #pxChatEndGesture[hidden]{display:none!important}
+    @media(max-width:600px){
+      .px-memory-overlay{align-items:flex-end;padding:10px}
+      .px-memory-dialog{border-radius:18px 18px 12px 12px;padding:16px;max-height:84vh}
+      .msg .md,.md{font-size:15px}.md th,.md td{min-width:105px}
+    }
+  `;
+  var style=document.createElement('style');style.id='px-chat-refresh-style';style.textContent=css;
+  (document.head||document.documentElement).appendChild(style);
+  function el(id){return document.getElementById(id)}
+  var options=[
+    ['temporary','Temporary','7 days, then deleted'],
+    ['standard','Standard','30 days, then deleted'],
+    ['medium','Medium-long','3 months, then deleted'],
+    ['long','Long-term','6 months, then deleted'],
+    ['extended','Extended','1 year, then deleted'],
+    ['keep','Keep until I delete it','No expiry']
+  ];
+  function currentDefault(){try{return localStorage.getItem('pelex_keep')||'standard'}catch(e){return 'standard'}}
+  function memoryPicker(){
+    if(el('pxMemoryOverlay')||window.__ign)return;
+    var overlay=document.createElement('div');overlay.className='px-memory-overlay';overlay.id='pxMemoryOverlay';
+    overlay.innerHTML='<section class="px-memory-dialog" role="dialog" aria-modal="true" aria-labelledby="pxMemoryTitle"><h2 id="pxMemoryTitle">Choose chat memory duration</h2><p class="px-memory-help">Choose how long Pelex should retain this conversation. You can change the default later in Settings.</p><div id="pxMemoryOptions"></div><div class="px-memory-status" id="pxMemoryStatus" role="status"></div><div class="px-memory-actions"><button type="button" id="pxMemoryClose">Not now</button></div></section>';
+    document.body.appendChild(overlay);
+    var list=el('pxMemoryOptions'),selected=currentDefault();
+    options.forEach(function(item){
+      var b=document.createElement('button');b.type='button';b.className='px-memory-option';b.setAttribute('aria-pressed',item[0]===selected?'true':'false');
+      var left=document.createElement('span'),strong=document.createElement('b'),small=document.createElement('small'),right=document.createElement('span');
+      strong.textContent=item[1];small.textContent=item[2];left.appendChild(strong);left.appendChild(small);right.textContent=item[0]===selected?'✓':'';
+      b.appendChild(left);b.appendChild(right);
+      b.addEventListener('click',async function(){
+        selected=item[0];
+        Array.prototype.forEach.call(list.children,function(x){x.setAttribute('aria-pressed','false');x.lastChild.textContent=''});
+        b.setAttribute('aria-pressed','true');right.textContent='✓';
+        try{localStorage.setItem('pelex_keep',selected)}catch(e){}
+        var status=el('pxMemoryStatus');status.textContent='Saving your preference…';
+        try{
+          if(window.sb&&sb.auth&&sb.auth.updateUser){var result=await sb.auth.updateUser({data:{keep_default:selected}});if(result&&result.error)throw result.error}
+          status.textContent='Saved. '+item[1]+' is selected for this chat and future chats.';
+          var label=el('pxMemoryCurrent');if(label)label.textContent=item[1]+' — '+item[2];
+        }catch(err){status.textContent='Saved on this device. Sign in again to sync this preference to your account.'}
+      });
+      list.appendChild(b);
+    });
+    function close(){overlay.remove()}
+    el('pxMemoryClose').addEventListener('click',close);
+    overlay.addEventListener('click',function(e){if(e.target===overlay)close()});
+    document.addEventListener('keydown',function escKey(e){if(e.key==='Escape'&&el('pxMemoryOverlay')){close();document.removeEventListener('keydown',escKey)}});
+  }
+  function installHeaderNewChat(){
+    var install=el('instNav'),header=install&&install.parentElement;
+    if(!header)header=document.querySelector('.top span[style*="margin-left:auto"]');
+    if(!header||el('pxHeaderNewChat'))return;
+    var b=document.createElement('button');b.type='button';b.id='pxHeaderNewChat';b.className='px-chat-new';
+    b.setAttribute('aria-label','New chat');b.title='New chat';
+    b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.2"/><path d="m9 15 1-.2 6.4-6.4a1.5 1.5 0 0 0-2.1-2.1L7.9 12.7 7.7 16z"/></svg>';
+    b.addEventListener('click',function(){if(typeof window.newChat==='function')window.newChat();if(typeof window.go==='function')window.go('chat')});
+    if(install&&install.parentElement===header)header.insertBefore(b,install);else header.appendChild(b);
+  }
+  function installMemorySettings(){
+    var home=el('p-home');if(!home||el('pxMemorySettings'))return;
+    var card=document.createElement('section');card.id='pxMemorySettings';card.className='px-memory-card';
+    var title=document.createElement('b');title.textContent='Chat memory';
+    var desc=document.createElement('p');desc.textContent='Set the default retention period for new conversations. You will also be asked when you start a new chat.';
+    var current=document.createElement('div');current.id='pxMemoryCurrent';current.style.cssText='font-size:13px;margin:0 0 9px';
+    var item=options.find(function(x){return x[0]===currentDefault()})||options[1];current.textContent=item[1]+' — '+item[2];
+    var button=document.createElement('button');button.type='button';button.className='btn alt';button.textContent='Change memory duration';button.addEventListener('click',memoryPicker);
+    card.appendChild(title);card.appendChild(desc);card.appendChild(current);card.appendChild(button);
+    var appGroup=home.querySelector('.sgroup');if(appGroup&&appGroup.nextSibling)home.insertBefore(card,appGroup.nextSibling);else home.appendChild(card);
+  }
+  function installGesture(){
+    var chat=el('chat');if(!chat||el('pxChatEndGesture'))return;
+    var zone=document.createElement('div');zone.id='pxChatEndGesture';zone.hidden=true;
+    zone.textContent='Swipe up here for a new chat';zone.setAttribute('role','button');zone.setAttribute('tabindex','0');zone.setAttribute('aria-label','Swipe up here or press Enter to start a new chat');
+    function refresh(){zone.hidden=!chat.querySelector('.msg:not(.sys)')}
+    function start(){if(typeof window.newChat==='function')window.newChat();if(typeof window.go==='function')window.go('chat')}
+    zone.addEventListener('touchstart',function(e){if(e.touches&&e.touches.length===1)zone.__pxTouchY=e.touches[0].clientY},{passive:true});
+    zone.addEventListener('touchend',function(e){
+      if(zone.__pxTouchY==null||!e.changedTouches||!e.changedTouches.length)return;
+      var delta=e.changedTouches[0].clientY-zone.__pxTouchY;zone.__pxTouchY=null;
+      if(delta<-65){e.preventDefault();start()}
+    },{passive:false});
+    zone.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();start()}});
+    zone.addEventListener('click',start);
+    chat.appendChild(zone);refresh();
+    new MutationObserver(refresh).observe(chat,{childList:true,subtree:true});
+  }
+  function mount(){installHeaderNewChat();installMemorySettings();installGesture()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+  window.addEventListener('load',mount);
+  var observer=new MutationObserver(mount);observer.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(function(){try{observer.disconnect()}catch(e){}},12000);
+  if(typeof window.newChat==='function'&&!window.__pxNewChatWrapped){
+    var originalNewChat=window.newChat;
+    window.newChat=function(){var result=originalNewChat.apply(this,arguments);if(!window.__ign)setTimeout(memoryPicker,160);return result};
+    window.__pxNewChatWrapped=true;
+  }
+})();
