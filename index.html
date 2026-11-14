@@ -2722,8 +2722,8 @@ document.getElementById('authResend').addEventListener('click',async function(){
   if(capOn()&&!capTok){authMsg('Tick the box that says Verify you are human, then try again.',true);return}
   try{var r=await sb.auth.resend({type:'signup',email:pendingEmail,options:capOpts()});authMsg(r.error?friendly(r.error):'A new code is on its way.',!!r.error)}catch(e){authMsg(friendly(e),true)}
   capReset()});
-document.getElementById('sbAccountBtn').addEventListener('click',function(){
-  if(signedIn){go('settings','account')}else{setAuthMode('in');go('signin')}
+document.getElementById('sbAccountBtn').addEventListener('click',async function(){
+  if(signedIn){try{var account=await sb.auth.getUser();if(!account.error&&account.data&&account.data.user)applyUser(account.data.user)}catch(e){console.warn('Pelex: account details could not be refreshed',e)}go('settings','account')}else{setAuthMode('in');go('signin')}
 });
 var lo=document.getElementById('logoutBtn');
 if(lo)lo.addEventListener('click',async function(){if(sb)await sb.auth.signOut();go('chat')});
