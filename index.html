@@ -5385,7 +5385,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   var up=await sb.storage.from('workspace-uploads').upload(path,f,{upsert:false});
   if(up.error){upSay('Could not store the file: '+errText(up.error),true);return}
   var det=detect((parsed.headers||[]).join(' ')+' '+parsed.rows.map(function(x){return x.type+' '+x.category}).join(' '));
-  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:parsed.rows.length?'Reviewed':'Low',currency:cur});
+  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:f.name,file_size:f.size,file_hash:fh,detected_type:det.type,confidence:parsed.rows.length?'Reviewed':'Low',currency:cur,status:'pending_review'});
   if(ins.error){await sb.storage.from('workspace-uploads').remove([path]);upSay('File could not be registered: '+errText(ins.error),true);return}
   var entries=parsed.rows.map(function(x){return Object.assign({},x,{currency:x.currency||cur,project_id:projectId})});
   var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:entries});
@@ -5845,7 +5845,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
   if(!pendingDoc||!pendingDoc.file){$p('upMsg').textContent='The reviewed document is no longer available. Select it again and review it before importing.';return}
   if(saveButton&&saveButton.disabled)return;
   if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving…'}
-  var uploadedPath=null,uploadId=null,uploadRecordCreated=false;
+  var uploadedPath=null,uploadId=null,uploadRecordCreated=false,stage='preparing the reviewed import';
   try{
    var reviewed=readReview(),t=toRows(reviewed);
    if(pendingDoc.testOnly&&!window.confirm('This document is marked as test material. Import the reviewed rows into the selected business ledger so you can test the complete workflow?'))return;
@@ -5867,16 +5867,16 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var safeName=pendingDoc.file.name.replace(/[^A-Za-z0-9._-]/g,'_');
    var path=ws+'/'+projectId+'/'+id+'/'+safeName;
    $p('upMsg').textContent='Uploading the reviewed document…';
-   var up=await sb.storage.from('workspace-uploads').upload(path,pendingDoc.file,{upsert:false});
+   stage='storing the original invoice in the project workspace';\n   var up=await sb.storage.from('workspace-uploads').upload(path,pendingDoc.file,{upsert:false});
    if(up.error)throw up.error;
    uploadedPath=path;
    var det=detect((pendingDoc.type||'document')+' '+t.ok.map(function(x){return x.type}).join(' '));
-   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:det.type||pendingDoc.type||'other',confidence:'Reviewed',currency:rc});
+   stage='registering the uploaded invoice';\n   var ins=await sb.from('uploads').insert({id:id,workspace_id:ws,uploaded_by:curUser.id,file_path:path,project_id:projectId,file_name:pendingDoc.file.name,file_size:pendingDoc.file.size,file_hash:fh,detected_type:det.type||pendingDoc.type||'other',confidence:'Reviewed',currency:rc,status:'pending_review'});
    if(ins.error)throw ins.error;
    uploadRecordCreated=true;
    var rows=t.ok.map(function(x){return {date:x.date,type:x.type,kind:x.kind,category:x.category,amount:x.amount,currency:x.currency||rc,party:x.party,due:x.due,project_id:projectId}});
    $p('upMsg').textContent='Adding '+rows.length+' reviewed row(s) to your business ledger…';
-   var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
+   stage='confirming the reviewed transaction rows in the project ledger';\n   var cf=await sb.rpc('confirm_upload',{p_upload:id,p_currency:rc,p_entries:rows});
    if(cf.error)throw cf.error;
    $p('upMsg').textContent='Saved successfully. '+cf.data+' row(s) added to the ledger'+(t.bad?' ('+t.bad+' incomplete row(s) skipped)':'')+'.';
    $p('rvBox').innerHTML='';pendingDoc=null;$p('upFile').value='';$p('upLabel').textContent='Tap to choose a file';
@@ -5884,7 +5884,7 @@ if(document.getElementById('pbOpen'))document.getElementById('pbOpen').onclick=f
    var detail=(e&&e.message)||String(e)||'Unknown error';
    if(uploadRecordCreated&&uploadId){try{await sb.from('uploads').delete().eq('id',uploadId)}catch(cleanErr){}}
    if(uploadedPath){try{await sb.storage.from('workspace-uploads').remove([uploadedPath])}catch(cleanErr){}}
-   $p('upMsg').textContent='Import did not complete: '+detail+'. Please correct the issue and try again.';
+   $p('upMsg').textContent='Import stopped while '+stage+': '+detail+'. No ledger import was confirmed. Please retry after the issue is corrected.';
   }finally{
    if(saveButton){saveButton.disabled=false;saveButton.textContent='Confirm and import transactions'}
   }
@@ -6273,7 +6273,7 @@ function parseSheet(text,projectConfig){
   var fh=await window.pxFileHash(text);
   var duplicate=false;try{duplicate=await window.pxDuplicate(fh,projectId)}catch(e){return {ok:false,msg:name+': could not verify duplicates for this project ('+errT(e)+').'}}
   if(duplicate)return {ok:false,msg:name+': this file is already recorded in this project.'};
-  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,project_id:projectId,file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur});
+  var ins=await sb.from('uploads').insert({id:id,workspace_id:ws(),uploaded_by:curUser.id,file_path:'sync/'+id+'/'+name,project_id:projectId,file_name:name,file_size:size||text.length,file_hash:fh,detected_type:'sheet',confidence:'Synced',currency:cur,status:'pending_review'});
   if(ins.error)return {ok:false,msg:name+': '+errT(ins.error)};
   var rc=await sb.rpc('confirm_upload',{p_upload:id,p_currency:cur,p_entries:p.rows.map(function(x){return Object.assign({},x,{project_id:projectId})})});
   if(rc.error)return {ok:false,msg:name+': '+errT(rc.error)};
