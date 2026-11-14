@@ -2055,7 +2055,11 @@ if(!sid){sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage
 var h=new Date().getHours();
 if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__hist=window.__hist||[]);if(cls==='me')hh.push({role:'user',content:t});else if(!cls)hh.push({role:'assistant',content:t});if(hh.length>40)hh.splice(0,hh.length-40)}}catch(e){}var d=document.createElement('div');d.className='msg '+(cls||'');
+function add(t,cls,img,retryFn){
+  // Older backend deployments may still emit frontend-hosted media links.
+  // Route every generated media preview/download to the backend that serves the file.
+  if(typeof t==='string')t=t.replace(/https?:\\/\\/(?:www\\.)?pelex\\.tech(?=\\/media\\/download(?:\\?|$))/gi,'https://pelexn8n.onrender.com');
+  try{if(typeof t==='string'&&t){var hh=(window.__hist=window.__hist||[]);if(cls==='me')hh.push({role:'user',content:t});else if(!cls)hh.push({role:'assistant',content:t});if(hh.length>40)hh.splice(0,hh.length-40)}}catch(e){}var d=document.createElement('div');d.className='msg '+(cls||'');
   if(img){var imgs=Array.isArray(img)?img:[img],box=d;if(imgs.length>1){box=document.createElement('div');box.className='imgs';d.appendChild(box)}imgs.forEach(function(src){var im=document.createElement('img');im.src=src;im.alt='Uploaded image';box.appendChild(im)})}
   var textNode=document.createElement('span');
   // File action URLs are consumed below to build the in-app preview/download card.
