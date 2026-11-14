@@ -549,10 +549,10 @@ var editingKnowledgeId=null;
     zone.addEventListener('touchend',function(e){
       if(zone.__pxTouchY==null||!e.changedTouches||!e.changedTouches.length)return;
       var delta=e.changedTouches[0].clientY-zone.__pxTouchY;zone.__pxTouchY=null;
-      if(delta<-65){e.preventDefault();start()}
+      if(delta<-65){e.preventDefault();zone.__pxSwiped=true;start()}
     },{passive:false});
     zone.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();start()}});
-    zone.addEventListener('click',start);
+    zone.addEventListener('click',function(){if(zone.__pxSwiped){zone.__pxSwiped=false;return}start()});
     chat.appendChild(zone);refresh();
     new MutationObserver(refresh).observe(chat,{childList:true,subtree:true});
   }
