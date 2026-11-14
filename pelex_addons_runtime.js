@@ -503,7 +503,7 @@ var editingKnowledgeId=null;
         selected=item[0];
         Array.prototype.forEach.call(list.children,function(x){x.setAttribute('aria-pressed','false');x.lastChild.textContent=''});
         b.setAttribute('aria-pressed','true');right.textContent='✓';
-        try{localStorage.setItem('pelex_keep',selected)}catch(e){}
+        try{localStorage.setItem('pelex_keep',selected);localStorage.setItem('pelex_keep_asked','1')}catch(e){}
         var status=el('pxMemoryStatus');status.textContent='Saving your preference…';
         try{
           if(window.sb&&sb.auth&&sb.auth.updateUser){var result=await sb.auth.updateUser({data:{keep_default:selected}});if(result&&result.error)throw result.error}
@@ -513,7 +513,7 @@ var editingKnowledgeId=null;
       });
       list.appendChild(b);
     });
-    function close(){overlay.remove()}
+    function close(){try{localStorage.setItem('pelex_keep_asked','1')}catch(e){}overlay.remove()}
     el('pxMemoryClose').addEventListener('click',close);
     overlay.addEventListener('click',function(e){if(e.target===overlay)close()});
     document.addEventListener('keydown',function escKey(e){if(e.key==='Escape'&&el('pxMemoryOverlay')){close();document.removeEventListener('keydown',escKey)}});
