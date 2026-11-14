@@ -20,11 +20,11 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pelex","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://pelex.tech/","publisher":{"@type":"Organization","name":"PelexSkillHub"}}
 </script>
 <link rel="manifest" href="/manifest.webmanifest?v=3">
-<meta name="theme-color" content="#0B2A5B">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-180.png?v=3">
 <meta name="color-scheme" content="light dark">
-<script>try{var _t=localStorage.getItem("pelex_theme");if(_t==="light"||_t==="dark")document.documentElement.setAttribute("data-theme",_t)}catch(e){}</script>
+<script>try{var _t=localStorage.getItem("pelex_theme");if(_t==="dark"){document.documentElement.setAttribute("data-theme","dark");var _m=document.querySelector('meta[name="theme-color"]');if(_m)_m.setAttribute("content","#0C1423")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Pelex">
@@ -1314,7 +1314,7 @@ setTimeout(out,rm?500:4600);setTimeout(out,6500);sp.addEventListener('click',out
 <div class="recsearch" id="recSearchWrap" hidden><input id="recSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
 <div id="recents"></div>
 <div class="sidefoot"><button class="nav" data-go="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Settings</button>
-<button class="me nav" id="sbAccountBtn" style="border-radius:10px;border-top:1px solid var(--line)"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span><strong id="sbName">Sign in</strong><br><span class="badge" id="sbSub">Free plan</span></span></button></div>
+<button class="me nav" id="sbAccountBtn" type="button" aria-label="Sign in" title="Sign in" style="border-radius:10px;border-top:1px solid var(--line);justify-content:center"><span class="av"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span></button></div>
 </aside>
 
 <div id="onb" role="dialog" aria-modal="true" aria-label="Set up your profile"><div class="onbw">
@@ -2106,19 +2106,21 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
   }
   if(!cls){ // bot reply: add copy / thumbs / retry row
     var row=document.createElement('div');row.className='msgactions';
-    var cp=document.createElement('button');cp.setAttribute('aria-label','Copy');cp.textContent='Copy';
+    var cp=document.createElement('button');cp.type='button';cp.className='msg-action-icon';cp.setAttribute('aria-label','Copy response');cp.title='Copy';cp.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';
     cp.onclick=function(){
       var text=displayT;
       (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject())
         .catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()})
-        .then(function(){var o=cp.textContent;cp.textContent='✓';setTimeout(function(){cp.textContent=o},1200)});
+        .then(function(){cp.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';cp.title='Copied';setTimeout(function(){cp.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';cp.title='Copy'},1200)});
     };
     row.appendChild(cp);
-    var up=document.createElement('button');up.setAttribute('aria-label','Good response');up.setAttribute('aria-pressed','false');up.textContent='👍';
-    var down=document.createElement('button');down.setAttribute('aria-label','Bad response');down.setAttribute('aria-pressed','false');down.textContent='👎';
+    var responseId=newMessageId();
+    var up=document.createElement('button');up.type='button';up.className='msg-action-icon';up.setAttribute('aria-label','Good response');up.title='Good response';up.setAttribute('aria-pressed','false');up.textContent='👍';
+    var down=document.createElement('button');down.type='button';down.className='msg-action-icon';down.setAttribute('aria-label','Bad response');down.title='Bad response';down.setAttribute('aria-pressed','false');down.textContent='👎';
     var fb=document.createElement('span');fb.className='fb';
-    up.onclick=function(){up.setAttribute('aria-pressed','true');down.setAttribute('aria-pressed','false');fb.textContent='Thanks for the feedback.'};
-    down.onclick=function(){down.setAttribute('aria-pressed','true');up.setAttribute('aria-pressed','false');fb.textContent='Thanks, noted.'};
+    async function recordResponseFeedback(vote,button){if(window.__ign){fb.textContent='Private chats are not saved.';return}if(!dbOk()||!curUser){fb.textContent='Sign in to save feedback.';return}button.disabled=true;try{var saved=await sb.from('response_feedback').upsert({user_id:curUser.id,chat_id:curChatId||null,response_id:responseId,vote:vote,response_text:String(t||'').slice(0,4000),updated_at:new Date().toISOString()},{onConflict:'user_id,response_id'});if(saved&&saved.error)throw saved.error;up.setAttribute('aria-pressed',vote==='up'?'true':'false');down.setAttribute('aria-pressed',vote==='down'?'true':'false');fb.textContent='Feedback saved.'}catch(err){console.warn('Pelex: response feedback could not be saved',err);fb.textContent='Could not save feedback. Try again.'}finally{button.disabled=false}}
+    up.onclick=function(){recordResponseFeedback('up',up)};
+    down.onclick=function(){recordResponseFeedback('down',down)};
     if(t.length>180){
       var esc=function(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
       var docHtml=function(){return '<html><head><meta charset="utf-8"><title>Pelex</title><style>body{font-family:Arial,sans-serif;line-height:1.55;max-width:720px;margin:32px auto;padding:0 16px}pre{background:#f3f4f6;padding:10px;white-space:pre-wrap} /* PELEX LIGHT THEME: true white surfaces throughout; preserve navy dark theme. */ :root[data-theme="light"]{--bg:#ffffff!important;--panel:#ffffff!important;--card:#ffffff!important;--ink:#0b1b4a!important;--muted:#52617d!important;--line:#d9e0ec!important;--soft:#ffffff!important;color-scheme:light!important} :root[data-theme="light"] body,:root[data-theme="light"] main,:root[data-theme="light"] .card,:root[data-theme="light"] .dcard,:root[data-theme="light"] .panel,:root[data-theme="light"] section{background-color:#ffffff} :root[data-theme="light"] input,:root[data-theme="light"] select,:root[data-theme="light"] textarea{background-color:#ffffff;color:#0b1b4a} :root[data-theme="dark"]{--bg:#0c1423!important;--panel:#121e31!important;--card:#121e31!important;--ink:#e8eef8!important;--muted:#a1aec2!important;--line:#26364d!important;--soft:#17263d!important;color-scheme:dark!important}  </style></head><body><div style="white-space:pre-wrap">'+esc(t)+'</div><p style="color:#888;font-size:12px;margin-top:30px">Made with Pelex</p></body></html>'};
@@ -2127,21 +2129,21 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
       var wd=document.createElement('button');wd.type='button';wd.className='dl';wd.textContent='Word';wd.setAttribute('aria-label','Save as Word document');
       wd.onclick=function(){var bl=new Blob(['\ufeff'+docHtml()],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='pelex-document.doc';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)};
       row.appendChild(pdf);row.appendChild(wd)}
-    var rt=document.createElement('button');rt.setAttribute('aria-label','Reload');rt.textContent='Reload';
+    var rt=document.createElement('button');rt.type='button';rt.className='msg-action-icon';rt.setAttribute('aria-label','Reload response');rt.title='Reload';rt.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg>';
     rt.onclick=function(){if(retryFn){rt.disabled=true;retryFn().finally(function(){rt.disabled=false})}else if(window.__lastQ){input.value=window.__lastQ;var sb2=document.getElementById('send');if(sb2)sb2.click()}};
     row.appendChild(rt);
-    var sh=document.createElement('button');sh.setAttribute('aria-label','Share');sh.textContent='Share';
+    var sh=document.createElement('button');sh.type='button';sh.className='msg-action-icon';sh.setAttribute('aria-label','Share response');sh.title='Share';sh.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.4M8.7 13.3l6.6 4.4"/></svg>';
     sh.onclick=function(){if(navigator.share){navigator.share({text:t}).catch(function(){})}else{cp.click()}};
     row.appendChild(sh);row.appendChild(up);row.appendChild(down);
     row.appendChild(fb);
     d.appendChild(row);
   }else if(cls==='me'&&typeof t==='string'&&t){
     window.__lastQ=t;var ur=document.createElement('div');ur.className='msgactions';
-    var uc=document.createElement('button');uc.type='button';uc.textContent='Copy';
+    var uc=document.createElement('button');uc.type='button';uc.className='msg-action-icon';uc.setAttribute('aria-label','Copy message');uc.title='Copy';uc.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';
     uc.onclick=function(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){}).then(function(){uc.textContent='Copied';setTimeout(function(){uc.textContent='Copy'},1200)})};
-    var ue=document.createElement('button');ue.type='button';ue.textContent='Edit';
+    var ue=document.createElement('button');ue.type='button';ue.className='msg-action-icon';ue.setAttribute('aria-label','Edit message');ue.title='Edit';ue.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5Z"/><path d="m13.8 6.7 3.5 3.5"/></svg>';
     ue.onclick=function(){input.value=t;input.focus()};
-    ur.appendChild(uc);ur.appendChild(ue);d.appendChild(ur);
+    uc.onclick=function(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}).then(function(){uc.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';uc.title='Copied';setTimeout(function(){uc.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';uc.title='Copy'},1200)})};ur.appendChild(uc);ur.appendChild(ue);d.appendChild(ur);
   }
   chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
 
@@ -2658,8 +2660,7 @@ function friendly(e){
 function applyUser(u){
   signedIn=!!u;curUser=u||null;
   var nm=u?((u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name||u.user_metadata.user_name))||(u.email||'').split('@')[0]||'Account'):'Sign in';
-  document.getElementById('sbName').textContent=nm;
-  document.getElementById('sbSub').textContent=u?(u.email||'Signed in'):'Free plan';
+  var accountButton=document.getElementById('sbAccountBtn');if(accountButton){accountButton.setAttribute('aria-label',u?'Account':'Sign in');accountButton.title=u?'Account':'Sign in'}
   var n=document.getElementById('n'),e=document.getElementById('e');
   if(n)n.value=u?nm:'';if(e)e.value=u?(u.email||''):'';
   var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
@@ -2721,8 +2722,8 @@ document.getElementById('authResend').addEventListener('click',async function(){
   if(capOn()&&!capTok){authMsg('Tick the box that says Verify you are human, then try again.',true);return}
   try{var r=await sb.auth.resend({type:'signup',email:pendingEmail,options:capOpts()});authMsg(r.error?friendly(r.error):'A new code is on its way.',!!r.error)}catch(e){authMsg(friendly(e),true)}
   capReset()});
-document.getElementById('sbAccountBtn').addEventListener('click',function(){
-  if(signedIn){go('settings','account')}else{setAuthMode('in');go('signin')}
+document.getElementById('sbAccountBtn').addEventListener('click',async function(){
+  if(signedIn){try{var account=await sb.auth.getUser();if(!account.error&&account.data&&account.data.user)applyUser(account.data.user)}catch(e){console.warn('Pelex: account details could not be refreshed',e)}go('settings','account')}else{setAuthMode('in');go('signin')}
 });
 var lo=document.getElementById('logoutBtn');
 if(lo)lo.addEventListener('click',async function(){if(sb)await sb.auth.signOut();go('chat')});
@@ -3175,7 +3176,7 @@ function newChat(projectId){
   curChatId=null;curProjectId=projectId||null;pendingDoc=null;
   try{clearAttach()}catch(e){}
   sid='s'+Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem('pelex_sid',sid)}catch(e){}
-  resetChatView();loadRecents();
+  resetChatView();if(dbOk()&&window.histOn()&&curUser){ensureChat('New chat').then(function(ok){if(!ok)loadRecents()})}else loadRecents();
 }
 var ncb=document.querySelector('.newchat');if(ncb)ncb.addEventListener('click',function(){newChat()});
 
@@ -3575,18 +3576,18 @@ document.addEventListener('keydown',function(e){
 window.addEventListener('pagehide',function(){if(window.__ign)wipe()});
 // ---------- How long to keep a chat ----------
 var ask=document.createElement('div');ask.id='keepAsk';ask.hidden=true;ask.innerHTML='<span>How long should Pelex keep this chat?</span><button type="button" class="btn" id="kaStd">Standard, 30 days</button><button type="button" class="btn alt" id="kaPick">Choose</button><button type="button" class="btn alt" id="kaNo">Not now</button>';document.body.appendChild(ask);
-async function setKeep(key){if(!dbOk())return false;var ok=false;if(curChatId){var r=await sb.from('chats').update({retention:key}).eq('id',curChatId);ok=!r.error}try{await sb.auth.updateUser({data:{keep_default:key}})}catch(e){}return true}
+async function setKeep(key){if(!dbOk()||!curUser)return false;var map={temporary:'temporary',standard:'standard',medium:'medium_long',long:'long_term',extended:'extended',keep:'keep_until_deleted'},stored=map[key];if(!stored)return false;if(curChatId){var r=await sb.from('chats').update({retention_policy:stored}).eq('id',curChatId).select('id').maybeSingle();if(r&&r.error){console.warn('Pelex: chat retention update failed',r.error);return false}if(!r||!r.data){console.warn('Pelex: chat retention update matched no chat');return false}}var u=await sb.auth.updateUser({data:{keep_default:key}});if(u&&u.error){console.warn('Pelex: retention preference update failed',u.error);return false}return true}
 function sheet(){if(!dbOk()||!curChatId||window.__ign)return;
   var o=document.createElement('div');o.className='pvmodal';o.innerHTML='<div class="pvbox" style="height:auto;max-width:460px"><div class="pvtop"><b>Keep this chat for</b><button type="button" class="pvx" aria-label="Close">\u00d7</button></div><div style="padding:12px 14px 16px;color:#111"><div id="keepMsg" class="muted" style="min-height:18px;font-size:13px"></div><div id="keepList"></div></div></div>';
   document.body.appendChild(o);o.querySelector('.pvx').onclick=function(){o.remove()};o.addEventListener('click',function(e){if(e.target===o)o.remove()});
   var cur=ls('pelex_keep')||'standard';
-  sb.from('chats').select('retention').eq('id',curChatId).single().then(function(r){if(r&&r.data&&r.data.retention)cur=r.data.retention;draw()},function(){draw()});
+  sb.from('chats').select('retention_policy').eq('id',curChatId).single().then(function(r){if(r&&r.data&&r.data.retention_policy){var reverse={temporary:'temporary',standard:'standard',medium_long:'medium',long_term:'long',extended:'extended',keep_until_deleted:'keep'};cur=reverse[r.data.retention_policy]||cur}draw()},function(){draw()});
   function draw(){var L=o.querySelector('#keepList');L.innerHTML='';OPT.forEach(function(x){var b=document.createElement('button');b.type='button';b.className='keepopt'+(x[0]===cur?' on':'');b.innerHTML='<span><b></b><br><small></small></span><span>'+(x[0]===cur?'\u2713':'')+'</span>';b.querySelector('b').textContent=x[1];b.querySelector('small').textContent=x[2];
     b.onclick=async function(){var ok=await setKeep(x[0]);if(!ok){o.querySelector('#keepMsg').textContent='Saving chat time is not switched on yet.';return}cur=x[0];ls('pelex_keep',x[0]);ls('pelex_keep_asked','1');draw();o.querySelector('#keepMsg').textContent='Saved. This chat will be kept: '+x[2]+'.'};L.appendChild(b)})}}
 $('keepBtn').onclick=sheet;
 $('kaPick').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1');sheet()};$('kaNo').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1')};
 $('kaStd').onclick=async function(){ask.hidden=true;ls('pelex_keep_asked','1');ls('pelex_keep','standard');await setKeep('standard')};
-var _ec=ensureChat;ensureChat=async function(t){if(window.__ign)return false;var had=curChatId;var ready=await _ec(t);var d=ls('pelex_keep');if(!had&&curChatId&&d&&d!=='standard')await setKeep(d);return ready===true&&!!curChatId};
+var _ec=ensureChat;ensureChat=async function(t){if(window.__ign)return false;var had=curChatId;var ready=await _ec(t);var d=ls('pelex_keep')||'standard';if(!had&&curChatId)await setKeep(d);return ready===true&&!!curChatId};
 var _sm=saveMsg;saveMsg=function(){if(window.__ign)return Promise.resolve({ok:true,skipped:true});var result=_sm.apply(this,arguments);if(arguments[0]==='assistant'&&curChatId&&!window.__ign&&dbOk()&&!ls('pelex_keep_asked'))ask.hidden=false;return result};
 setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},1500);
 // ---------- Image creation ----------
@@ -7131,5 +7132,26 @@ function pxCommandHelp(){
 
 <script src="/pelex_projects.js?v=12"></script>
 <script src="/pelex_addons_runtime.js?v=2"></script>
+
+<style id="pelex-final-ui-fixes">
+#sbAccountBtn{display:flex!important;justify-content:center!important;align-items:center!important;gap:0!important;padding:8px!important;min-height:52px!important}#sbAccountBtn .av{margin:0!important;flex:none}
+:root:not([data-theme="dark"]){--bg:#fff!important;--panel:#fff!important;--card:#fff!important;--soft:#fff!important;--sel:#fff!important;--ink:#17243b;--muted:#68758c;--line:#e3e8f1;color-scheme:light!important}
+:root:not([data-theme="dark"]) body,:root:not([data-theme="dark"]) main,:root:not([data-theme="dark"]) aside,:root:not([data-theme="dark"]) .top,:root:not([data-theme="dark"]) .sidefoot,:root:not([data-theme="dark"]) .view,:root:not([data-theme="dark"]) #chat,:root:not([data-theme="dark"]) .chatbody,:root:not([data-theme="dark"]) .barwrap,:root:not([data-theme="dark"]) .field{background:#fff!important}
+body::before{display:none!important;content:none!important}
+.msgactions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.msgactions button.msg-action-icon{width:34px;height:34px;min-width:34px;min-height:34px;padding:6px!important;border:0!important;border-radius:9px!important;background:transparent!important;color:var(--muted);display:inline-grid;place-items:center;font-size:17px;line-height:1}
+.msgactions button.msg-action-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.msgactions button.msg-action-icon:hover{background:var(--soft)!important;color:var(--ink)}.msgactions button.msg-action-icon[aria-pressed="true"]{background:var(--soft)!important;color:var(--btn)}.msgactions button.msg-action-icon:disabled{opacity:.45;cursor:wait}
+#pelexNewChatGrip{display:flex;align-items:center;justify-content:center;width:100%;height:18px;margin:0 auto 2px;padding:0;border:0;background:transparent;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;position:relative;z-index:4}
+#pelexNewChatGrip::before{content:"";display:block;width:38px;height:5px;border-radius:99px;background:#aab4c2;box-shadow:0 2px 0 rgba(0,0,0,.10),0 4px 10px rgba(0,0,0,.10);transition:width .12s,background .12s,transform .12s}
+:root[data-theme="dark"] #pelexNewChatGrip::before{background:#71839e}
+#pelexNewChatGrip.dragging::before{width:52px;background:var(--btn);transform:scaleY(1.25)}
+#pelexNewChatGrip.ready::before{width:64px;box-shadow:0 0 0 5px rgba(20,43,82,.14),0 6px 14px rgba(0,0,0,.2)}
+@media(prefers-reduced-motion:reduce){#pelexNewChatGrip::before{transition:none}}
+</style>
+<script id="pelex-final-ui-behavior">
+(function(){var root=document.documentElement,meta=document.querySelector('meta[name="theme-color"]');function syncThemeColor(){if(meta)meta.setAttribute('content',root.getAttribute('data-theme')==='dark'?'#0C1423':'#FFFFFF')}syncThemeColor();try{new MutationObserver(syncThemeColor).observe(root,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+var barwrap=document.querySelector('#v-chat .barwrap');if(barwrap&&!document.getElementById('pelexNewChatGrip')){var grip=document.createElement('button');grip.id='pelexNewChatGrip';grip.type='button';grip.setAttribute('aria-label','Drag upward to start a new chat');grip.title='Drag up for a new chat';grip.innerHTML='<span aria-hidden="true"></span>';barwrap.insertBefore(grip,barwrap.firstChild);var startY=0,lastY=0,active=false,threshold=112;function reset(){active=false;grip.classList.remove('dragging','ready');grip.style.transform='';grip.style.filter=''}grip.addEventListener('pointerdown',function(e){if(e.button!==undefined&&e.button!==0)return;active=true;startY=e.clientY;lastY=startY;grip.classList.add('dragging');try{grip.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});grip.addEventListener('pointermove',function(e){if(!active)return;lastY=e.clientY;var dy=lastY-startY,up=Math.max(0,-dy),progress=Math.min(1,up/threshold);grip.style.transform='translateY('+Math.max(-76,Math.min(12,dy*.42))+'px) scale('+(1+progress*.08)+')';grip.style.filter='drop-shadow(0 '+(2+progress*9)+'px '+(4+progress*12)+'px rgba(20,43,82,'+(.08+progress*.18)+'))';grip.classList.toggle('ready',up>=threshold);e.preventDefault()});function finish(e){if(!active)return;var shouldOpen=startY-lastY>=threshold;reset();if(shouldOpen&&typeof window.newChat==='function')window.newChat();if(e&&e.cancelable)e.preventDefault()}grip.addEventListener('pointerup',finish);grip.addEventListener('pointercancel',reset);grip.addEventListener('lostpointercapture',function(){if(active)reset()});grip.addEventListener('click',function(e){e.preventDefault();e.stopPropagation()})}})();
+</script>
 </body>
 </html>
