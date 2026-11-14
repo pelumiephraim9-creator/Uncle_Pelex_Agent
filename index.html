@@ -2665,7 +2665,7 @@ function applyUser(u){
   var lo=document.getElementById('logoutBtn');if(lo)lo.hidden=!u;
   if(window.onUserChange)window.onUserChange(u);
 }
-var TURNSTILE_SITE_KEY='0x4AAAAAAF34zjfzJgj0akV9',capTok='',capId=null,capBusy=false;
+var TURNSTILE_SITE_KEY='0x4AAAAAAGA6RNkmdtmRIejC',capTok='',capId=null,capBusy=false;
 function capOn(){return TURNSTILE_SITE_KEY.indexOf('PASTE_')!==0}
 function capLoad(){
   if(!capOn()||capId!==null||capBusy)return;capBusy=true;
