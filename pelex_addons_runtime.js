@@ -475,7 +475,7 @@ var editingKnowledgeId=null;
     body,.app,main,.view,.chat,.chatbody,.top,.barwrap{background-color:var(--bg)!important}
     :root[data-theme="light"]{--bg:#fff!important;--panel:#fff!important;--card:#fff!important;--ink:#0b1b4a!important;--muted:#52617d!important;--soft:#fff!important;--line:#e1e6ef!important;color-scheme:light!important}
     :root[data-theme="dark"]{--bg:#0c1423!important;--panel:#0c1423!important;--card:#0c1423!important;--ink:#fff!important;--muted:#b8c4d8!important;--soft:#0c1423!important;--line:#26364d!important;color-scheme:dark!important}
-    @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1423!important;--panel:#0c1423!important;--card:#0c1423!important;--ink:#fff!important;--muted:#b8c4d8!important;--soft:#0c1423!important;--line:#26364d!important;color-scheme:dark!important}}
+
     .msg,.msg.me,.msg:not(.sys),.msg.me:not(.sys),.bm,.bm .md,.msg .md{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--ink)!important}
     .msg,.msg:not(.sys),.msg.me:not(.sys){padding:0!important;border-radius:0!important;max-width:min(92%,860px);margin:14px 0!important}
     .msg.me{margin-left:auto!important;text-align:left}
