@@ -2143,7 +2143,7 @@ function add(t,cls,img,retryFn){try{if(typeof t==='string'&&t){var hh=(window.__
     uc.onclick=function(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){}).then(function(){uc.textContent='Copied';setTimeout(function(){uc.textContent='Copy'},1200)})};
     var ue=document.createElement('button');ue.type='button';ue.className='msg-action-icon';ue.setAttribute('aria-label','Edit message');ue.title='Edit';ue.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5Z"/><path d="m13.8 6.7 3.5 3.5"/></svg>';
     ue.onclick=function(){input.value=t;input.focus()};
-    ur.appendChild(uc);ur.appendChild(ue);d.appendChild(ur);
+    uc.onclick=function(){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}).then(function(){uc.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';uc.title='Copied';setTimeout(function(){uc.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';uc.title='Copy'},1200)})};ur.appendChild(uc);ur.appendChild(ue);d.appendChild(ur);
   }
   chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
 
@@ -3576,7 +3576,7 @@ document.addEventListener('keydown',function(e){
 window.addEventListener('pagehide',function(){if(window.__ign)wipe()});
 // ---------- How long to keep a chat ----------
 var ask=document.createElement('div');ask.id='keepAsk';ask.hidden=true;ask.innerHTML='<span>How long should Pelex keep this chat?</span><button type="button" class="btn" id="kaStd">Standard, 30 days</button><button type="button" class="btn alt" id="kaPick">Choose</button><button type="button" class="btn alt" id="kaNo">Not now</button>';document.body.appendChild(ask);
-async function setKeep(key){if(!dbOk()||!curUser)return false;var map={temporary:'temporary',standard:'standard',medium:'medium_long',long:'long_term',extended:'extended',keep:'keep_until_deleted'},stored=map[key];if(!stored)return false;if(curChatId){var r=await sb.from('chats').update({retention_policy:stored}).eq('id',curChatId);if(r&&r.error){console.warn('Pelex: chat retention update failed',r.error);return false}}var u=await sb.auth.updateUser({data:{keep_default:key}});if(u&&u.error){console.warn('Pelex: retention preference update failed',u.error);return false}return true}
+async function setKeep(key){if(!dbOk()||!curUser)return false;var map={temporary:'temporary',standard:'standard',medium:'medium_long',long:'long_term',extended:'extended',keep:'keep_until_deleted'},stored=map[key];if(!stored)return false;if(curChatId){var r=await sb.from('chats').update({retention_policy:stored}).eq('id',curChatId).select('id').maybeSingle();if(r&&r.error){console.warn('Pelex: chat retention update failed',r.error);return false}if(!r||!r.data){console.warn('Pelex: chat retention update matched no chat');return false}}var u=await sb.auth.updateUser({data:{keep_default:key}});if(u&&u.error){console.warn('Pelex: retention preference update failed',u.error);return false}return true}
 function sheet(){if(!dbOk()||!curChatId||window.__ign)return;
   var o=document.createElement('div');o.className='pvmodal';o.innerHTML='<div class="pvbox" style="height:auto;max-width:460px"><div class="pvtop"><b>Keep this chat for</b><button type="button" class="pvx" aria-label="Close">\u00d7</button></div><div style="padding:12px 14px 16px;color:#111"><div id="keepMsg" class="muted" style="min-height:18px;font-size:13px"></div><div id="keepList"></div></div></div>';
   document.body.appendChild(o);o.querySelector('.pvx').onclick=function(){o.remove()};o.addEventListener('click',function(e){if(e.target===o)o.remove()});
@@ -3587,7 +3587,7 @@ function sheet(){if(!dbOk()||!curChatId||window.__ign)return;
 $('keepBtn').onclick=sheet;
 $('kaPick').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1');sheet()};$('kaNo').onclick=function(){ask.hidden=true;ls('pelex_keep_asked','1')};
 $('kaStd').onclick=async function(){ask.hidden=true;ls('pelex_keep_asked','1');ls('pelex_keep','standard');await setKeep('standard')};
-var _ec=ensureChat;ensureChat=async function(t){if(window.__ign)return false;var had=curChatId;var ready=await _ec(t);var d=ls('pelex_keep');if(!had&&curChatId&&d&&d!=='standard')await setKeep(d);return ready===true&&!!curChatId};
+var _ec=ensureChat;ensureChat=async function(t){if(window.__ign)return false;var had=curChatId;var ready=await _ec(t);var d=ls('pelex_keep')||'standard';if(!had&&curChatId)await setKeep(d);return ready===true&&!!curChatId};
 var _sm=saveMsg;saveMsg=function(){if(window.__ign)return Promise.resolve({ok:true,skipped:true});var result=_sm.apply(this,arguments);if(arguments[0]==='assistant'&&curChatId&&!window.__ign&&dbOk()&&!ls('pelex_keep_asked'))ask.hidden=false;return result};
 setInterval(function(){$('keepBtn').hidden=!(curChatId&&!window.__ign&&dbOk())},1500);
 // ---------- Image creation ----------
