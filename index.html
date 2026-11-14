@@ -3394,9 +3394,9 @@ $('newProjectBtn').onclick=function(){
 // ---- Scheduled board ----
 var AGL={general:'General Agent',personal:'Personal Agent',business:'Business Agent',pitch:'Pitch Agent',gmail:'Gmail Bot'};
 function scheduleSafeError(value){
-  var t=String(value||'').replace(/<!--[\\s\\S]*?-->/g,'').trim();
+  var t=String(value||'').replace(/<!--[\s\S]*?-->/g,'').trim();
   if(!t)return 'Please try again later.';
-  if(/supabase|render(?:\\.com)?|cloudflare|github|postgres|postgrest|row[- ]level security|\\brls\\b|database|storage|backend|rpc|sql|stack|trace|policy|claim_token|scheduled_tasks|https?:\\/\\//i.test(t))return 'We could not complete this task just now. Please try again later or contact Pelex support.';
+  if(/supabase|render(?:\.com)?|cloudflare|github|postgres|postgrest|row[- ]level security|\brls\b|database|storage|backend|rpc|sql|stack|trace|policy|claim_token|scheduled_tasks|https?:\/\//i.test(t))return 'We could not complete this task just now. Please try again later or contact Pelex support.';
   return t.slice(0,180);
 }
 function schedStatusLine(t){
