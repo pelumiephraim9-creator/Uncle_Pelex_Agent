@@ -1,0 +1,15 @@
+# ArtCraft browser runtime and desktop packages: keep large binary assets in Git LFS.
+public/artcraft/packages/*.zip filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.data filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.bin filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.pack filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.unityweb filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.br filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/**/*.gz filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/designcraft/designcraft-web-6fe2a088b8a9125b_bg.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/pdfcraft/pdfcraft-web-dbf16682ba914f2f_bg.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/vectorcraft/vectorcraft-web-80ef79e0b9e423a1_bg.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/effectcraft/effectcraft_web_bg.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/apps/wordcraft/wordcraft-web-bc9cdbc0b42827ee_bg.wasm filter=lfs diff=lfs merge=lfs -text
+public/artcraft/packages/filmcraft.zip filter=lfs diff=lfs merge=lfs -text

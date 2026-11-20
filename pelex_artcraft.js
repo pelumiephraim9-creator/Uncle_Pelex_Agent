@@ -68,6 +68,8 @@
    '.px-art-monogram{width:48px;height:48px;display:grid;place-items:center;border-radius:11px;background:var(--bg,#f2f5fa);border:1px solid var(--line,#e3e8f1);font-weight:800;color:var(--ink,#17243b);flex:none}'+
    '.px-art-card h3{font-size:15px;line-height:1.25;margin:0;color:var(--ink,#17243b)}.px-art-card p{font-size:12px;line-height:1.45;margin:0;color:var(--muted,#68758c);min-height:35px}'+
    '.px-art-status{font-size:10px;font-weight:700;color:var(--muted,#68758c);padding-top:8px;border-top:1px solid var(--line,#e3e8f1)}'+
+   '.px-art-download{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border-radius:9px;background:#0b2a5b;color:#fff!important;text-decoration:none;font-size:12px;font-weight:700;margin-top:2px}'+
+   '.px-art-download:hover{background:#123b78}'+
    '.px-art-note{font-size:12px;color:var(--muted,#68758c);margin:16px 0 0}'+
    '@media(max-width:560px){.px-art-head{align-items:flex-start;gap:12px}.px-art-brand{width:175px}.px-art-studio{padding:14px}.px-art-card{padding:12px}}'+
    ':root[data-theme="dark"] .px-art-icon{background:#fff}';
@@ -85,8 +87,24 @@
   grid.innerHTML=APPS.map(function(a){
    var slug=a[0],name=a[1],desc=a[2],src=APP_ICON_URLS[slug]||(VERIFIED_ICONS[slug]?ROOT+'/apps/'+slug+'/icon.webp':'');
    var icon=src?'<img class="px-art-icon" src="'+src+'" alt="" loading="lazy" decoding="async">':'<span class="px-art-monogram" aria-hidden="true">'+esc(name.split(/\s+/).map(function(x){return x[0]}).join('').slice(0,2).toUpperCase())+'</span>';
-   return '<article class="px-art-card"><div class="px-art-cardtop">'+icon+'<h3>'+esc(name)+'</h3></div><p>'+esc(desc)+'</p><div class="px-art-status">App launch and file connection: next integration stage</div></article>';
+   return '<article class="px-art-card" data-artcraft-id="'+esc(slug)+'"><div class="px-art-cardtop">'+icon+'<h3>'+esc(name)+'</h3></div><p>'+esc(desc)+'</p><div class="px-art-status">Package not yet installed</div><div class="px-art-action"></div></article>';
   }).join('');
+  loadPackageManifest();
+ }
+
+ function loadPackageManifest(){
+  fetch('/artcraft/package-manifest.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('manifest unavailable');return r.json()}).then(function(data){
+   var packages=Array.isArray(data.packages)?data.packages:[];
+   packages.forEach(function(pkg){
+    if(!pkg||pkg.validated!==true||!pkg.id||!APPS.some(function(app){return app[0]===pkg.id}))return;
+    var card=Array.prototype.find.call(document.querySelectorAll('.px-art-card[data-artcraft-id]'),function(el){return el.getAttribute('data-artcraft-id')===pkg.id});
+    if(!card)return;
+    var status=card.querySelector('.px-art-status'),action=card.querySelector('.px-art-action');
+    var url=pkg.platform==='desktop'?pkg.download_path:pkg.app_url;
+    if(status)status.textContent=pkg.platform==='desktop'?'Desktop package verified · '+(Number(pkg.bytes||0)/1024/1024).toFixed(1)+' MB':'Browser app verified · '+(pkg.version||'official release');
+    if(action&&url){var link=document.createElement('a');link.className='px-art-download';link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=pkg.platform==='desktop'?'Download desktop app':'Launch '+(APPS.filter(function(app){return app[0]===pkg.id})[0]||[])[1];action.appendChild(link)}
+   });
+  }).catch(function(){/* Keep unavailable state unless a verified manifest is published. */});
  }
 
  function addStudioActions(){
